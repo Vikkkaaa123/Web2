@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web2</title>
+</head>
+<body>
+    <h1>Скриншоты</h1>
+    <h2>Получение главной страницы методом GET в протоколе HTTP 1.0</h2>
+    <img src="./lesson2/Screen1.png" alt="скрин1">
+    <h2>Получение внутренней страницы методом GET в протоколе HTTP 1.1</h2>
+    <img src="./lesson2/Screen2.png" alt="скрин2">
+    <h2>Определение размер файла "file.tar.gz"</h2>
+    <img src="./lesson2/Screen3.png" alt="скрин3">
+    <h2>Определение медиатипа ресурса /image.png</h2>
+    <img src="./lesson2/Screen4.png" alt="скрин4">
+    <h2>Отправка комментария на сервер по адресу /index.php</h2>
+    <img src="./lesson2/Screen5.png" alt="скрин5">
+    <img src="./lesson2/Screen5.5.png" alt="скрин5.5">
+    <h2>получение первых 100 байт файла /file.tar.gz</h2>
+    <img src="./lesson2/Screen6.png" alt="скрин6">
+    <h2>определение кодировки ресурса /index.php</h2>
+    <img src="./lesson2/Screen7.png" alt="скрин7">
+</body>
+</html>
