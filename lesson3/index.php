@@ -2,6 +2,33 @@
 // Устанавливаем кодировку
 header('Content-Type: text/html; charset=UTF-8');
 
+// Подключение к базе данных
+$user = 'u68606'; 
+$pass = '9347178'; 
+$db = new PDO('mysql:host=localhost;dbname=u68606', $user, $pass, [
+    PDO::ATTR_PERSISTENT => true,
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+]);
+
+// Функция для получения списка допустимых языков программирования
+function getLangs($db) {
+    try {
+        $allowed_lang = [];
+        $data = $db->query("SELECT id, name FROM programming_languages")->fetchAll();
+        foreach ($data as $lang) {
+            $id = $lang['id'];
+            $name = $lang['name'];
+            $allowed_lang[$id] = $name;
+        }
+        return $allowed_lang;
+    } catch (PDOException $e) {
+        print('Error: ' . $e->getMessage());
+        exit();
+    }
+}
+
+$allowed_lang = getLangs($db);
+
 // Проверяем метод запроса
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // Если есть параметр save, выводим сообщение
@@ -13,86 +40,95 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     exit();
 }
 
-// Если метод POST, выводим данные формы для отладки
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    echo "<pre>";
-    print_r($_POST); // Вывод данных формы
-    echo "</pre>";
-    // Не завершаем выполнение, чтобы продолжить обработку
-}
+// Получаем данные из формы
+$fio = $_POST['full_name'];
+$num = $_POST['phone'];
+$email = $_POST['email'];
+$bdate = $_POST['birth_date'];
+$biography = $_POST['biography'];
+$gen = $_POST['gender'];
+$languages = $_POST['languages'] ?? [];
+$agreement = isset($_POST['agreement']) ? 1 : 0;
 
 // Инициализируем массив для ошибок
 $errors = FALSE;
 
 // Проверка поля "ФИО"
-if (empty($_POST['full_name'])) {
-    print('Заполните ФИО.<br/>');
+if (empty($fio)) {
+    print('Имя не указано.<br/>');
     $errors = TRUE;
-} elseif (!preg_match('/^[а-яА-ЯёЁ\s]{1,150}$/u', $_POST['full_name'])) {
-    print('ФИО должно содержать только буквы и пробелы и быть не длиннее 150 символов.<br/>');
+} elseif (strlen($fio) > 128) {
+    print('Введенное имя указано некорректно. Имя не должно превышать 128 символов.<br/>');
+    $errors = TRUE;
+} elseif (!preg_match('/^[a-zA-Zа-яА-ЯёЁ\s]+$/u', $fio)) {
+    print('Введенное имя указано некорректно. Имя должно содержать только буквы и пробелы.<br/>');
     $errors = TRUE;
 }
 
 // Проверка поля "Телефон"
-if (empty($_POST['phone'])) {
-    print('Заполните телефон.<br/>');
+if (empty($num)) {
+    print('Номер не указан.<br/>');
     $errors = TRUE;
-} elseif (!preg_match('/^\+?\d{10,15}$/', $_POST['phone'])) {
-    print('Телефон должен содержать от 10 до 15 цифр.<br/>');
+} elseif (!preg_match('/^\+7\d{10}$/', $num)) {
+    print('Номер указан некорректно.<br/>');
     $errors = TRUE;
 }
 
 // Проверка поля "Email"
-if (empty($_POST['email'])) {
-    print('Заполните email.<br/>');
+if (empty($email)) {
+    print('Email не указан.<br/>');
     $errors = TRUE;
-} elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-    print('Некорректный email.<br/>');
-    $errors = TRUE;
-}
-
-// Проверка поля "Дата рождения"
-if (empty($_POST['birth_date'])) {
-    print('Заполните дату рождения.<br/>');
-    $errors = TRUE;
-} elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $_POST['birth_date'])) {
-    print('Некорректный формат даты рождения.<br/>');
+} elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    print('Введенный email указан некорректно.<br/>');
     $errors = TRUE;
 }
 
 // Проверка поля "Пол"
-if (empty($_POST['gender'])) {
-    print('Выберите пол.<br/>');
-    $errors = TRUE;
-} elseif (!in_array($_POST['gender'], ['male', 'female'])) {
-    print('Некорректное значение пола.<br/>');
-    $errors = TRUE;
-}
-
-// Проверка поля "Любимые языки программирования"
-if (empty($_POST['languages'])) {
-    print('Выберите хотя бы один язык программирования.<br/>');
+if (empty($gen)) {
+    print('Пол не указан.<br/>');
     $errors = TRUE;
 } else {
-    $validLanguages = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-    foreach ($_POST['languages'] as $language) {
-        if (!in_array($language, $validLanguages)) {
-            print('Некорректный выбор языка программирования.<br/>');
-            $errors = TRUE;
-            break;
-        }
+    $allowed_genders = ["male", "female"];
+    if (!in_array($gen, $allowed_genders)) {
+        print('Поле "пол" содержит недопустимое значение.<br/>');
+        $errors = TRUE;
     }
 }
 
 // Проверка поля "Биография"
-if (empty($_POST['biography'])) {
+if (empty($biography)) {
     print('Заполните биографию.<br/>');
+    $errors = TRUE;
+} elseif (strlen($biography) > 512) {
+    print('Количество символов в поле "биография" не должно превышать 512.<br/>');
+    $errors = TRUE;
+} elseif (!preg_match('/^[а-яА-Яa-zA-Z1-9.,: ]+$/u', $biography)) {
+    print('Поле "биография" содержит недопустимые символы.<br/>');
+    $errors = TRUE;
+}
+
+// Проверка поля "Любимые языки программирования"
+if (empty($languages)) {
+    print('Укажите любимый(ые) язык(и) программирования.<br/>');
+    $errors = TRUE;
+} else {
+    foreach ($languages as $lang) {
+        if (!array_key_exists($lang, $allowed_lang)) {
+            print('Указан недопустимый язык (' . $lang . ').<br/>');
+            $errors = TRUE;
+        }
+    }
+}
+
+// Проверка поля "Дата рождения"
+if (empty($bdate)) {
+    print('Дата рождения не указана.<br/>');
     $errors = TRUE;
 }
 
 // Проверка поля "Согласие с контрактом"
-if (empty($_POST['agreement'])) {
-    print('Необходимо согласие с контрактом.<br/>');
+if (!isset($_POST['agreement'])) {
+    print('Подтвердите, что вы ознакомлены с контрактом.<br/>');
     $errors = TRUE;
 }
 
@@ -101,36 +137,20 @@ if ($errors) {
     exit();
 }
 
-// Подключение к базе данных
-$user = 'u68606'; 
-$pass = '9347178'; 
-$db = new PDO('mysql:host=localhost;dbname=u68606', $user, $pass, [
-    PDO::ATTR_PERSISTENT => true,
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-]);
-
+// Сохранение данных в таблицу applications
 try {
-    // Сохраняем данные в таблицу applications
     $stmt = $db->prepare("INSERT INTO applications (full_name, phone, email, birth_date, gender, biography, agreement) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([
-        $_POST['full_name'],
-        $_POST['phone'],
-        $_POST['email'],
-        $_POST['birth_date'],
-        $_POST['gender'],
-        $_POST['biography'],
-        $_POST['agreement']
-    ]);
+    $stmt->execute([$fio, $num, $email, $bdate, $gen, $biography, $agreement]);
 
     // Получаем ID последней вставленной записи
     $application_id = $db->lastInsertId();
     echo "ID заявки: $application_id<br>"; // Отладочный вывод
 
     // Сохраняем выбранные языки программирования в таблицу application_languages
-    foreach ($_POST['languages'] as $language_id) {
-        $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
-        $stmt->execute([$application_id, $language_id]);
-        echo "Добавлен язык: $language_id<br>"; // Отладочный вывод
+    $stmt_insert = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
+    foreach ($languages as $language_id) {
+        $stmt_insert->execute([$application_id, $language_id]);
+        echo "Добавлен язык: " . $allowed_lang[$language_id] . "<br>"; // Отладочный вывод
     }
 
     // Перенаправляем на страницу с сообщением об успехе
