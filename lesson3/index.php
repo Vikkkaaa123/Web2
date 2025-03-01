@@ -40,6 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     exit();
 }
 
+// Если метод POST, выводим данные формы для отладки
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    echo "<pre>";
+    print_r($_POST); // Вывод данных формы
+    echo "</pre>";
+    // Не завершаем выполнение, чтобы продолжить обработку
+}
+
 // Получаем данные из формы
 $fio = $_POST['full_name'];
 $num = $_POST['phone'];
