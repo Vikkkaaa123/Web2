@@ -13,6 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     exit();
 }
 
+// Если метод POST, выводим данные формы для отладки
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    echo "<pre>";
+    print_r($_POST); // Вывод данных формы
+    echo "</pre>";
+    // Не завершаем выполнение, чтобы продолжить обработку
+}
+
 // Инициализируем массив для ошибок
 $errors = FALSE;
 
@@ -116,11 +124,13 @@ try {
 
     // Получаем ID последней вставленной записи
     $application_id = $db->lastInsertId();
+    echo "ID заявки: $application_id<br>"; // Отладочный вывод
 
     // Сохраняем выбранные языки программирования в таблицу application_languages
     foreach ($_POST['languages'] as $language_id) {
         $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
         $stmt->execute([$application_id, $language_id]);
+        echo "Добавлен язык: $language_id<br>"; // Отладочный вывод
     }
 
     // Перенаправляем на страницу с сообщением об успехе
