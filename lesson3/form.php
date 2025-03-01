@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Форма</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <form action="" method="POST">
+    <form action="index.php" method="POST">
         <label for="full_name">ФИО:</label>
         <input type="text" id="full_name" name="full_name" required maxlength="150"><br>
 
