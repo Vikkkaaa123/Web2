@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <form action="http://u68606.kubsu-dev.ru/index.php" method="POST">
+    <form action="index.php" method="POST">
         <label for="full_name">ФИО:</label>
         <input type="text" id="full_name" name="full_name" required maxlength="150"><br>
 
