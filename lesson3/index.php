@@ -59,7 +59,7 @@ $agreement = isset($_POST['agreement']) && $_POST['agreement'] === 'on' ? 1 : 0;
 // Валидация данных
 $errors = [];
 
-if (empty($fio)  strlen($fio) > 128  !preg_match('/^[a-zA-Zа-яА-ЯёЁ\s]+$/u', $fio)) {
+if (empty($fio) || strlen($fio) > 128 || !preg_match('/^[a-zA-Zа-яА-ЯёЁ\s]+$/u', $fio)) {
     $errors[] = 'Некорректное имя.';
 }
 if (empty($num) || !preg_match('/^\+7\d{10}$/', $num)) {
