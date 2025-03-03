@@ -4,6 +4,7 @@ header('Content-Type: text/html; charset=UTF-8');
 // Подключение к базе данных
 $user = 'u68606'; 
 $pass = '9347178'; 
+
 try {
     $db = new PDO('mysql:host=localhost;dbname=u68606', $user, $pass, [
         PDO::ATTR_PERSISTENT => true,
@@ -29,6 +30,7 @@ function getLangs($db) {
 
 $allowed_lang = getLangs($db);
 
+// Если метод запроса GET, показываем форму
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if (!empty($_GET['save'])) {
         echo '<p style="color:green;">Спасибо, данные сохранены!</p>';
@@ -37,14 +39,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     exit();
 }
 
-// Проверяем POST
+// Проверяем метод POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     echo "<pre>";
-    print_r($_POST);
+    print_r($_POST); // Отладочный вывод для проверки данных
     echo "</pre>";
 }
 
-// Получение данных
+// Получение данных из формы
 $fio = trim($_POST['full_name'] ?? '');
 $num = trim($_POST['phone'] ?? '');
 $email = trim($_POST['email'] ?? '');
@@ -54,10 +56,10 @@ $gen = $_POST['gender'] ?? '';
 $languages = is_array($_POST['languages']) ? $_POST['languages'] : [];
 $agreement = isset($_POST['agreement']) && $_POST['agreement'] === 'on' ? 1 : 0;
 
-// Валидация
+// Валидация данных
 $errors = [];
 
-if (empty($fio) || strlen($fio) > 128 || !preg_match('/^[a-zA-Zа-яА-ЯёЁ\s]+$/u', $fio)) {
+if (empty($fio)  strlen($fio) > 128  !preg_match('/^[a-zA-Zа-яА-ЯёЁ\s]+$/u', $fio)) {
     $errors[] = 'Некорректное имя.';
 }
 if (empty($num) || !preg_match('/^\+7\d{10}$/', $num)) {
@@ -80,8 +82,9 @@ if (empty($languages)) {
 }
 if (!$agreement) {
     $errors[] = 'Необходимо согласие.';
+}
 
-// Если есть ошибки, показать и выйти
+// Если есть ошибки, показываем их и останавливаем выполнение
 if ($errors) {
     foreach ($errors as $error) {
         echo "<p style='color:red;'>$error</p>";
@@ -90,17 +93,21 @@ if ($errors) {
     exit();
 }
 
-// Запись в БД
+// Запись данных в базу
 try {
     $stmt = $db->prepare("INSERT INTO applications (full_name, phone, email, birth_date, gender, biography, agreement) VALUES (?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([$fio, $num, $email, $bdate, $gen, $biography, $agreement]);
+    
+    // Получаем ID последней вставленной заявки
     $application_id = $db->lastInsertId();
 
+    // Записываем языки программирования в базу
     $stmt_insert = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
     foreach ($languages as $language_id) {
         $stmt_insert->execute([$application_id, $language_id]);
     }
 
+    // Перенаправляем пользователя на страницу с сообщением об успехе
     header('Location: index.php?save=1');
     exit();
 } catch (PDOException $e) {
