@@ -8,6 +8,7 @@
 </head>
 <body>
     <form action="index.php" method="POST">
+     <h1 style="text-align: center;">ФОРМА</h1>
         <label for="full_name">ФИО:</label>
         <input type="text" id="full_name" name="full_name" required maxlength="150"><br>
 
