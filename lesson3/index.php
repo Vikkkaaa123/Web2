@@ -47,12 +47,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fio = trim($_POST['full_name'] ?? '');
     $num = trim($_POST['phone'] ?? '');
     $email = trim($_POST['email'] ?? '');
-    $bdate = $_POST['birth_date'] ?? '';
+    $day = $_POST['birth_day'];
+    $month = $_POST['birth_month'];
+    $year = $_POST['birth_year'];
     $biography = trim($_POST['biography'] ?? '');
     $gen = $_POST['gender'] ?? '';
     $languages = is_array($_POST['languages']) ? $_POST['languages'] : [];
     $agreement = isset($_POST['agreement']) && $_POST['agreement'] === 'on' ? 1 : 0;
 
+    // Форматируем дату в строку YYYY-MM-DD
+    $birth_date = sprintf("%04d-%02d-%02d", $year, $month, $day);
+    
     // Валидация данных
     $errors = [];
 
