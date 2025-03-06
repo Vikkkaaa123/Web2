@@ -22,13 +22,15 @@
         <input type="date" id="birth_date" name="birth_date" required><br>
 
         <label>Пол:</label>
+        <div class="gender-options">
         <input type="radio" id="male" name="gender" value="male" required>
         <label for="male">Мужской</label>
         <input type="radio" id="female" name="gender" value="female" required>
-        <label for="female">Женский</label><br>
+        <label for="female">Женский</label>
+        </div>
 
-        <label for="languages">Любимый язык программирования:</label>
-        <select id="languages" name="languages[]" multiple required>
+         <label for="languages">Любимый язык программирования:</label>
+         <select id="languages" name="languages[]" multiple required>
             <option value="1">Pascal</option>
             <option value="2">C</option>
             <option value="3">C++</option>
