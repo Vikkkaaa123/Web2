@@ -63,6 +63,21 @@ textarea {
     border-radius: 4px;
 }
 
+input::placeholder,
+        textarea::placeholder {
+            color: #999; 
+            font-style: italic;
+        }
+
+        .date-fields {
+            display: flex;
+            gap: 10px; 
+        }
+
+        .date-fields input {
+            flex: 1; 
+        }
+
 /* Стили для radio и checkbox */
 input[type="radio"],
 input[type="checkbox"] {
