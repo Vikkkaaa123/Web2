@@ -34,6 +34,22 @@ label {
     font-weight: bold;
 }
 
+/* Стили для контейнера с выбором пола */
+.gender-options {
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+}
+
+/* Стили для radio-кнопок и их label */
+.gender-options input[type="radio"] {
+    margin: 0; 
+}
+
+.gender-options label {
+    margin: 0; /* Убираем отступы */
+}
+
 /* Стили для input, select, textarea */
 input[type="text"],
 input[type="tel"],
