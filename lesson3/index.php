@@ -76,9 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($biography) || strlen($biography) > 512) {
         $errors[] = 'Некорректная биография.';
     }
-    if (empty($bdate)) {
-        $errors[] = 'Дата рождения не указана.';
-    }
+if (!checkdate($month, $day, $year)) {
+    die("Некорректная дата.");
+}
     if (empty($languages)) {
         $errors[] = 'Не выбран язык программирования.';
     }
