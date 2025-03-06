@@ -33,7 +33,7 @@ $allowed_lang = getLangs($db);
 // Если метод запроса GET, показываем форму
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if (!empty($_GET['save'])) {
-        echo '<p style="color:green;">Спасибо, данные сохранены!</p>';
+        echo '<p style="color: black; font-size: 24px; text-align: center; margin-top: 20px;">Спасибо, данные сохранены!</p>';
     } else {
         include('form.php');  // Показываем форму
     }
