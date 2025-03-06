@@ -1,13 +1,7 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 /* Стили для body */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f8ff !important; 
+    background-color: #CCFFFF; 
     background-image: url('fon.png'); 
     background-size: cover;
     background-position: center;
@@ -20,7 +14,7 @@ body {
 form {
     max-width: 700px;
     margin: 20px auto;
-    background: #99FFFF !important; 
+    background: #FFCCFF; 
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
