@@ -47,9 +47,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fio = trim($_POST['full_name'] ?? '');
     $num = trim($_POST['phone'] ?? '');
     $email = trim($_POST['email'] ?? '');
-    $day = $_POST['birth_day'];
-    $month = $_POST['birth_month'];
-    $year = $_POST['birth_year'];
+    $day = trim($_POST['birth_day'] ?? '');
+    $month = trim($_POST['birth_month'] ?? ''); 
+    $year = trim($_POST['birth_year'] ?? '');
     $biography = trim($_POST['biography'] ?? '');
     $gen = $_POST['gender'] ?? '';
     $languages = is_array($_POST['languages']) ? $_POST['languages'] : [];
