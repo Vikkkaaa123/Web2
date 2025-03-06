@@ -9,17 +9,21 @@
 <body>
     <form action="index.php" method="POST">
      <h1 style="text-align: center;">ФОРМА</h1>
-        <label for="full_name">ФИО:</label>
-        <input type="text" id="full_name" name="full_name" required maxlength="150"><br>
+       <label for="full_name">ФИО:</label>
+        <input type="text" id="full_name" name="full_name" placeholder="Введите Ваше фамилию, имя, отчество" required maxlength="150"><br>
 
-        <label for="phone">Телефон:</label>
-        <input type="tel" id="phone" name="phone" required><br>
+         <label for="phone">Телефон:</label>
+          <input type="tel" id="phone" name="phone" placeholder="+7" required><br>
 
         <label for="email">E-mail:</label>
-        <input type="email" id="email" name="email" required><br>
+        <input type="email" id="email" name="email" placeholder="Введите Вашу почту" required><br>
 
         <label for="birth_date">Дата рождения:</label>
-        <input type="date" id="birth_date" name="birth_date" required><br>
+        <div class="date-fields">
+            <input type="number" id="birth_day" name="birth_day" placeholder="День" min="1" max="31" required>
+            <input type="number" id="birth_month" name="birth_month" placeholder="Месяц" min="1" max="12" required>
+            <input type="number" id="birth_year" name="birth_year" placeholder="Год" min="1900" max="2100" required>
+        </div><br>
 
         <label>Пол:</label>
         <div class="gender-options">
@@ -27,7 +31,7 @@
         <label for="male">Мужской</label>
         <input type="radio" id="female" name="gender" value="female" required>
         <label for="female">Женский</label>
-        </div>
+        </div><br>
 
          <label for="languages">Любимый язык программирования:</label>
          <select id="languages" name="languages[]" multiple required>
