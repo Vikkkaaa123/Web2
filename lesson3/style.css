@@ -1,23 +1,26 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
-    background-image: url('fon.png'); 
-    background-size: cover;
-    background-position: center;
+    margin: 0; /* Убираем отступы по умолчанию */
+    background-color: #f0f8ff; /* Цвет фона страницы (голубой) */
+    background-image: url('./fon.png'); 
+    background-size: cover; 
+    background-position: center; 
+    background-repeat: no-repeat; 
+    height: 100vh; 
     color: #333;
 }
 
 form {
     max-width: 700px; 
-    margin: 0 auto;
-    background: #99FFFF;
+    margin: 20px auto; 
+    background: #99FFFF; 
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 form h1 {
-    text-align: center; 
+    text-align: center; /* Заголовок по центру */
     color: #333;
     margin-bottom: 20px;
 }
