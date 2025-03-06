@@ -76,9 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($biography) || strlen($biography) > 512) {
         $errors[] = 'Некорректная биография.';
     }
-if (!checkdate($month, $day, $year)) {
-    die("Некорректная дата.");
-}
+    if (!checkdate($month, $day, $year)) {
+        $errors[] = 'Некорректная дата.';
+    }
     if (empty($languages)) {
         $errors[] = 'Не выбран язык программирования.';
     }
@@ -99,7 +99,7 @@ if (!checkdate($month, $day, $year)) {
     try {
         // Запись заявки в таблицу applications
         $stmt = $db->prepare("INSERT INTO applications (full_name, phone, email, birth_date, gender, biography, agreement) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$fio, $num, $email, $bdate, $gen, $biography, $agreement]);
+        $stmt->execute([$fio, $num, $email, $birth_date, $gen, $biography, $agreement]); // Используем $birth_date
 
         // Получаем ID последней вставленной заявки
         $application_id = $db->lastInsertId();
