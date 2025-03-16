@@ -1,6 +1,6 @@
 /* Стили для body */
 body {
-    background-color: #CCFFFF; 
+    background-color: #A6FFA6; 
     background-image: url('fon.png'); 
     background-size: cover;
     background-position: center;
@@ -86,7 +86,7 @@ input[type="checkbox"] {
 
 /* Стили для кнопки submit */
 input[type="submit"] {
-    background-color: #007500;
+    background-color: #009100;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -97,7 +97,7 @@ input[type="submit"] {
 
 /* Стили для hover кнопки submit */
 input[type="submit"]:hover {
-    background-color: #90EE90;
+    background-color: #006000;
 }
 
 /* Стили для textarea */
