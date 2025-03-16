@@ -92,48 +92,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Валидация данных
     if (empty($fio) || strlen($fio) > 128 || !preg_match('/^[a-zA-Zа-яА-ЯёЁ\s]+$/u', $fio)) {
         setcookie('full_name_error', '1', time() + 24 * 60 * 60);
-        setcookie('full_name_value', $fio, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
+    setcookie('full_name_value', $fio, time() + 365 * 24 * 60 * 60);
+
     if (empty($num) || !preg_match('/^\+7\d{10}$/', $num)) {
         setcookie('phone_error', '1', time() + 24 * 60 * 60);
-        setcookie('phone_value', $num, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
+    setcookie('phone_value', $num, time() + 365 * 24 * 60 * 60);
+
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         setcookie('email_error', '1', time() + 24 * 60 * 60);
-        setcookie('email_value', $email, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
+    setcookie('email_value', $email, time() + 365 * 24 * 60 * 60);
+
     if (empty($gen) || !in_array($gen, ["male", "female"])) {
         setcookie('gender_error', '1', time() + 24 * 60 * 60);
-        setcookie('gender_value', $gen, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
+    setcookie('gender_value', $gen, time() + 365 * 24 * 60 * 60);
+
     if (empty($biography) || strlen($biography) > 512) {
         setcookie('biography_error', '1', time() + 24 * 60 * 60);
-        setcookie('biography_value', $biography, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
+    setcookie('biography_value', $biography, time() + 365 * 24 * 60 * 60);
+
     if (!checkdate($month, $day, $year)) {
         setcookie('birth_day_error', '1', time() + 24 * 60 * 60);
         setcookie('birth_month_error', '1', time() + 24 * 60 * 60);
         setcookie('birth_year_error', '1', time() + 24 * 60 * 60);
-        setcookie('birth_day_value', $day, time() + 30 * 24 * 60 * 60);
-        setcookie('birth_month_value', $month, time() + 30 * 24 * 60 * 60);
-        setcookie('birth_year_value', $year, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
+    setcookie('birth_day_value', $day, time() + 365 * 24 * 60 * 60);
+    setcookie('birth_month_value', $month, time() + 365 * 24 * 60 * 60);
+    setcookie('birth_year_value', $year, time() + 365 * 24 * 60 * 60);
+
     if (empty($languages)) {
         setcookie('languages_error', '1', time() + 24 * 60 * 60);
-        setcookie('languages_value', implode(',', $languages), time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
+    setcookie('languages_value', implode(',', $languages), time() + 365 * 24 * 60 * 60);
+
     if (!$agreement) {
         setcookie('agreement_error', '1', time() + 24 * 60 * 60);
-        setcookie('agreement_value', $agreement, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
+    setcookie('agreement_value', $agreement, time() + 365 * 24 * 60 * 60);
 
     if ($errors) {
         // Перенаправляем на форму с сохранением данных
@@ -144,7 +151,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $fields = ['full_name', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year', 'gender', 'biography', 'languages', 'agreement'];
         foreach ($fields as $field) {
             setcookie($field . '_error', '', 100000);
-            setcookie($field . '_value', '', 100000);
         }
 
         // Сохранение в БД
