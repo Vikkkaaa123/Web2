@@ -86,7 +86,7 @@ input[type="checkbox"] {
 
 /* Стили для кнопки submit */
 input[type="submit"] {
-    background-color: #90EE90;
+    background-color: #007500;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -97,7 +97,7 @@ input[type="submit"] {
 
 /* Стили для hover кнопки submit */
 input[type="submit"]:hover {
-    background-color: #45a049;
+    background-color: #90EE90;
 }
 
 /* Стили для textarea */
