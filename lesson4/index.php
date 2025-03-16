@@ -165,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt_insert->execute([$application_id, $language_id]);
             }
 
-            // Перенаправляем на форму с сообщением об успехе
+            // Перенаправляем на форму
             setcookie('save', '1', time() + 24 * 60 * 60);
             header('Location: index.php?save=1');
             exit();
