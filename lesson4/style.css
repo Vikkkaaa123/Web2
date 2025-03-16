@@ -64,19 +64,19 @@ textarea {
 }
 
 input::placeholder,
-        textarea::placeholder {
-            color: #999; 
-            font-style: italic;
-        }
+textarea::placeholder {
+    color: #999; 
+    font-style: italic;
+}
 
-        .date-fields {
-            display: flex;
-            gap: 10px; 
-        }
+.date-fields {
+    display: flex;
+    gap: 10px; 
+}
 
-        .date-fields input {
-            flex: 1; 
-        }
+.date-fields input {
+    flex: 1; 
+}
 
 /* Стили для radio и checkbox */
 input[type="radio"],
@@ -104,4 +104,15 @@ input[type="submit"]:hover {
 textarea {
     resize: vertical;
     height: 100px;
+}
+
+/* Стили для ошибок */
+.error {
+    border: 2px solid red;
+}
+
+.error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
 }
