@@ -62,7 +62,14 @@ textarea {
     margin-top: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    background-color: #CEFFCE; 
+    background-color: #DFFFDF; 
+}
+
+/* Подсветка полей с ошибками */
+input.error,
+select.error,
+textarea.error {
+    border: 2px solid red; 
 }
 
 input::placeholder,
@@ -108,13 +115,10 @@ textarea {
     height: 100px;
 }
 
-/* Стили для ошибок */
-.error {
-    border: 2px solid red;
-}
-
+/* Стили для сообщений об ошибках */
 .error-message {
-    color: red;
+    color: red; 
+    font-style: italic; 
     font-size: 0.9em;
     margin-top: 5px;
 }
