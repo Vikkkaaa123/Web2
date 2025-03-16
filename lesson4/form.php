@@ -3,22 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet"  href="style.css">
+    <link rel="stylesheet" href="style.css">
     <title>Задание 4</title>
-    <style>
-        .error {
-            border: 2px solid red;
-        }
-        .error-message {
-            color: red;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-    </style>
 </head>
 <body>
     <form action="index.php" method="POST">
-        <h1 style="text-align: center;">ФОРМА</h1>
+        <h1>ФОРМА</h1>
 
         <!-- Поле ФИО -->
         <label for="full_name">ФИО:</label>
