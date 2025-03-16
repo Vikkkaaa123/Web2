@@ -45,28 +45,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     // Выводим сообщения об ошибках
     if ($errors['full_name']) {
-        $messages[] = '<div class="error">Некорректное имя. Допустимы только буквы и пробелы.</div>';
+        $messages['full_name'] = '<div class="error">Некорректное имя. Допустимы только буквы и пробелы.</div>';
     }
     if ($errors['phone']) {
-        $messages[] = '<div class="error">Некорректный номер телефона. Формат: +7XXXXXXXXXX.</div>';
+        $messages['phone'] = '<div class="error">Некорректный номер телефона. Формат: +7XXXXXXXXXX.</div>';
     }
     if ($errors['email']) {
-        $messages[] = '<div class="error">Некорректный email.</div>';
+        $messages['email'] = '<div class="error">Некорректный email.</div>';
     }
     if ($errors['birth_day'] || $errors['birth_month'] || $errors['birth_year']) {
-        $messages[] = '<div class="error">Некорректная дата рождения.</div>';
+        $messages['birth_date'] = '<div class="error">Некорректная дата рождения.</div>';
     }
     if ($errors['gender']) {
-        $messages[] = '<div class="error">Некорректный пол.</div>';
+        $messages['gender'] = '<div class="error">Некорректный пол.</div>';
     }
     if ($errors['biography']) {
-        $messages[] = '<div class="error">Некорректная биография.</div>';
+        $messages['biography'] = '<div class="error">Некорректная биография.</div>';
     }
     if ($errors['languages']) {
-        $messages[] = '<div class="error">Не выбран язык программирования.</div>';
+        $messages['languages'] = '<div class="error">Не выбран язык программирования.</div>';
     }
     if ($errors['agreement']) {
-        $messages[] = '<div class="error">Необходимо согласие.</div>';
+        $messages['agreement'] = '<div class="error">Необходимо согласие.</div>';
     }
 
     include('form.php');
@@ -136,6 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if ($errors) {
+        // Перенаправляем на форму с сохранением данных
         header('Location: index.php');
         exit();
     } else {
