@@ -1,0 +1,107 @@
+/* Стили для body */
+body {
+    background-color: #CCFFFF; 
+    background-image: url('fon.png'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    color: #333;
+}
+
+/* Стили для формы */
+form {
+    max-width: 700px;
+    margin: 15px auto;
+    background: #98FB98; 
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для заголовка */
+form h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Стили для label */
+label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Стили для контейнера с выбором пола */
+.gender-options {
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+}
+
+/* Стили для radio-кнопок и их label */
+.gender-options input[type="radio"] {
+    margin: 0; 
+}
+
+.gender-options label {
+    margin: 0; /* Убираем отступы */
+}
+
+/* Стили для input, select, textarea */
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input::placeholder,
+        textarea::placeholder {
+            color: #999; 
+            font-style: italic;
+        }
+
+        .date-fields {
+            display: flex;
+            gap: 10px; 
+        }
+
+        .date-fields input {
+            flex: 1; 
+        }
+
+/* Стили для radio и checkbox */
+input[type="radio"],
+input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+/* Стили для кнопки submit */
+input[type="submit"] {
+    background-color: #90EE90;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 20px;
+}
+
+/* Стили для hover кнопки submit */
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+/* Стили для textarea */
+textarea {
+    resize: vertical;
+    height: 100px;
+}
