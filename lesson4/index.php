@@ -43,13 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $values[$field] = empty($_COOKIE[$field . '_value']) ? '' : $_COOKIE[$field . '_value'];
     }
 
-    // Удаляем Cookies после использования
+    // Удаляем Cookies с ошибками после использования
     foreach ($fields as $field) {
         setcookie($field . '_error', '', time() - 3600); // Удаляем Cookie с ошибкой
-        setcookie($field . '_value', '', time() - 3600); // Удаляем Cookie со значением
     }
 
-    // Выводим сообщения об ошибках
+   // Выводим сообщения об ошибках
     if ($errors['full_name']) {
         $messages['full_name'] = '<div class="error">Некорректное имя. Допустимы только буквы и пробелы.</div>';
     }
@@ -74,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if ($errors['agreement']) {
         $messages['agreement'] = '<div class="error">Необходимо согласие.</div>';
     }
-include('form.php');
+    include('form.php');
     exit();
 }
 
@@ -94,60 +93,53 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $languages = is_array($_POST['languages']) ? $_POST['languages'] : [];
     $agreement = isset($_POST['agreement']) && $_POST['agreement'] === 'on' ? 1 : 0;
 
-    // Валидация данных
+     // Валидация данных
     if (empty($fio) || strlen($fio) > 128 || !preg_match('/^[a-zA-Zа-яА-ЯёЁ\s]+$/u', $fio)) {
         setcookie('full_name_error', '1', time() + 24 * 60 * 60);
+        setcookie('full_name_value', $fio, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
-    setcookie('full_name_value', $fio, time() + 365 * 24 * 60 * 60);
-
     if (empty($num) || !preg_match('/^\+7\d{10}$/', $num)) {
         setcookie('phone_error', '1', time() + 24 * 60 * 60);
+        setcookie('phone_value', $num, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
-    setcookie('phone_value', $num, time() + 365 * 24 * 60 * 60);
-
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         setcookie('email_error', '1', time() + 24 * 60 * 60);
+        setcookie('email_value', $email, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
-    setcookie('email_value', $email, time() + 365 * 24 * 60 * 60);
-
     if (empty($gen) || !in_array($gen, ["male", "female"])) {
         setcookie('gender_error', '1', time() + 24 * 60 * 60);
+        setcookie('gender_value', $gen, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
-    setcookie('gender_value', $gen, time() + 365 * 24 * 60 * 60);
-
     if (empty($biography) || strlen($biography) > 512) {
         setcookie('biography_error', '1', time() + 24 * 60 * 60);
+        setcookie('biography_value', $biography, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
-    setcookie('biography_value', $biography, time() + 365 * 24 * 60 * 60);
-
     if (!checkdate($month, $day, $year)) {
         setcookie('birth_day_error', '1', time() + 24 * 60 * 60);
         setcookie('birth_month_error', '1', time() + 24 * 60 * 60);
         setcookie('birth_year_error', '1', time() + 24 * 60 * 60);
+        setcookie('birth_day_value', $day, time() + 30 * 24 * 60 * 60);
+        setcookie('birth_month_value', $month, time() + 30 * 24 * 60 * 60);
+        setcookie('birth_year_value', $year, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
-    setcookie('birth_day_value', $day, time() + 365 * 24 * 60 * 60);
-    setcookie('birth_month_value', $month, time() + 365 * 24 * 60 * 60);
-    setcookie('birth_year_value', $year, time() + 365 * 24 * 60 * 60);
-
     if (empty($languages)) {
         setcookie('languages_error', '1', time() + 24 * 60 * 60);
+        setcookie('languages_value', implode(',', $languages), time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
-    setcookie('languages_value', implode(',', $languages), time() + 365 * 24 * 60 * 60);
-
     if (!$agreement) {
         setcookie('agreement_error', '1', time() + 24 * 60 * 60);
+        setcookie('agreement_value', $agreement, time() + 30 * 24 * 60 * 60);
         $errors = TRUE;
     }
-    setcookie('agreement_value', $agreement, time() + 365 * 24 * 60 * 60);
-
-   if ($errors) {
+    
+    if ($errors) {
         // Перенаправляем на форму с сохранением данных
         header('Location: index.php');
         exit();
@@ -156,36 +148,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $fields = ['full_name', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year', 'gender', 'biography', 'languages', 'agreement'];
         foreach ($fields as $field) {
             setcookie($field . '_error', '', time() - 3600); // Удаляем Cookie с ошибкой
-            setcookie($field . '_value', '', time() - 3600); // Удаляем Cookie со значением
         }
 
-        // Сохранение в БД
-        try {
-            $birth_date = sprintf("%04d-%02d-%02d", $year, $month, $day);
-            $stmt = $db->prepare("INSERT INTO applications (full_name, phone, email, birth_date, gender, biography, agreement) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$fio, $num, $email, $birth_date, $gen, $biography, $agreement]);
+        // Сохраняем значения в Cookies на год
+        setcookie('full_name_value', $fio, time() + 365 * 24 * 60 * 60);
+        setcookie('phone_value', $num, time() + 365 * 24 * 60 * 60);
+        setcookie('email_value', $email, time() + 365 * 24 * 60 * 60);
+        setcookie('birth_day_value', $day, time() + 365 * 24 * 60 * 60);
+        setcookie('birth_month_value', $month, time() + 365 * 24 * 60 * 60);
+        setcookie('birth_year_value', $year, time() + 365 * 24 * 60 * 60);
+        setcookie('gender_value', $gen, time() + 365 * 24 * 60 * 60);
+        setcookie('biography_value', $biography, time() + 365 * 24 * 60 * 60);
+        setcookie('languages_value', implode(',', $languages), time() + 365 * 24 * 60 * 60);
+        setcookie('agreement_value', $agreement, time() + 365 * 24 * 60 * 60);
 
-            $application_id = $db->lastInsertId();
-            $stmt_insert = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
-            foreach ($languages as $language_id) {
-                $stmt_insert->execute([$application_id, $language_id]);
-            }
-
-            // Сохраняем значения в Cookies на год (если нужно)
-            foreach ($_POST as $key => $value) {
-                if (is_array($value)) {
-                    setcookie($key, implode(',', $value), time() + 365 * 24 * 60 * 60);
-                } else {
-                    setcookie($key, $value, time() + 365 * 24 * 60 * 60);
-                }
-            }
-
-            setcookie('save', '1', time() + 24 * 60 * 60);
-            header('Location: index.php?save=1');
-            exit();
-        } catch (PDOException $e) {
-            die('Ошибка сохранения: ' . $e->getMessage());
-        }
+        // Перенаправляем на форму с сообщением об успехе
+        setcookie('save', '1', time() + 24 * 60 * 60);
+        header('Location: index.php?save=1');
+        exit();
     }
 }
 ?>
