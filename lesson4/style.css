@@ -46,13 +46,14 @@ label {
 }
 
 .gender-options label {
-    margin: 0; /* Убираем отступы */
+    margin: 0; 
 }
 
 /* Стили для input, select, textarea */
 input[type="text"],
 input[type="tel"],
 input[type="email"],
+input[type="number"],
 input[type="date"],
 select,
 textarea {
@@ -61,6 +62,7 @@ textarea {
     margin-top: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    background-color: #CEFFCE; 
 }
 
 input::placeholder,
