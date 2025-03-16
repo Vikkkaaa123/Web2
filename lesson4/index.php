@@ -43,6 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $values[$field] = empty($_COOKIE[$field . '_value']) ? '' : $_COOKIE[$field . '_value'];
     }
 
+    // Удаляем Cookies после использования
+    foreach ($fields as $field) {
+        setcookie($field . '_error', '', time() - 3600); // Удаляем Cookie с ошибкой
+        setcookie($field . '_value', '', time() - 3600); // Удаляем Cookie со значением
+    }
+
     // Выводим сообщения об ошибках
     if ($errors['full_name']) {
         $messages['full_name'] = '<div class="error">Некорректное имя. Допустимы только буквы и пробелы.</div>';
@@ -68,8 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if ($errors['agreement']) {
         $messages['agreement'] = '<div class="error">Необходимо согласие.</div>';
     }
-
-    include('form.php');
+include('form.php');
     exit();
 }
 
@@ -142,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     setcookie('agreement_value', $agreement, time() + 365 * 24 * 60 * 60);
 
-    if ($errors) {
+   if ($errors) {
         // Перенаправляем на форму с сохранением данных
         header('Location: index.php');
         exit();
@@ -150,7 +155,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Удаляем Cookies с признаками ошибок
         $fields = ['full_name', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year', 'gender', 'biography', 'languages', 'agreement'];
         foreach ($fields as $field) {
-            setcookie($field . '_error', '', 100000);
+            setcookie($field . '_error', '', time() - 3600); // Удаляем Cookie с ошибкой
+            setcookie($field . '_value', '', time() - 3600); // Удаляем Cookie со значением
         }
 
         // Сохранение в БД
@@ -165,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt_insert->execute([$application_id, $language_id]);
             }
 
-            // Сохраняем значения в Cookies на год
+            // Сохраняем значения в Cookies на год (если нужно)
             foreach ($_POST as $key => $value) {
                 if (is_array($value)) {
                     setcookie($key, implode(',', $value), time() + 365 * 24 * 60 * 60);
