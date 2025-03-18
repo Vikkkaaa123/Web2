@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($user && password_verify($pass, $user['password_hash'])) {
         // Начинаем сессию и сохраняем данные
         $_SESSION['login'] = $login;
+        $_SESSION['uid'] = $user['id'];
         header('Location: index.php');
         exit();
     } else {
@@ -44,11 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // Если запрос был методом GET, выводим форму входа
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    // Если есть сгенерированные логин и пароль, заполняем форму
+    $generated_login = $_SESSION['generated_login'] ?? '';
+    $generated_password = $_SESSION['generated_password'] ?? '';
 ?>
 <form action="" method="post">
-  <input name="login" placeholder="Логин" required />
-  <input name="pass" type="password" placeholder="Пароль" required />
+  <input name="login" placeholder="Логин" required value="<?php echo htmlspecialchars($generated_login); ?>" />
+  <input name="pass" type="password" placeholder="Пароль" required value="<?php echo htmlspecialchars($generated_password); ?>" />
   <input type="submit" value="Войти" />
 </form>
 <?php
+    // Очищаем сгенерированные данные из сессии
+    unset($_SESSION['generated_login']);
+    unset($_SESSION['generated_password']);
 }
