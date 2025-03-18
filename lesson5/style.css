@@ -1,6 +1,6 @@
 /* Стили для body */
 body {
-    background-color: #CCFFFF; 
+    background-color: #80d8ff; 
     background-image: url('fon.png'); 
     background-size: cover;
     background-position: center;
@@ -46,13 +46,14 @@ label {
 }
 
 .gender-options label {
-    margin: 0; /* Убираем отступы */
+    margin: 0; 
 }
 
 /* Стили для input, select, textarea */
 input[type="text"],
 input[type="tel"],
 input[type="email"],
+input[type="number"],
 input[type="date"],
 select,
 textarea {
@@ -61,22 +62,30 @@ textarea {
     margin-top: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    background-color: #e1f5fe; 
+}
+
+/* Подсветка полей с ошибками */
+input.error,
+select.error,
+textarea.error {
+    border: 2px solid red; 
 }
 
 input::placeholder,
-        textarea::placeholder {
-            color: #999; 
-            font-style: italic;
-        }
+textarea::placeholder {
+    color: #999; 
+    font-style: italic;
+}
 
-        .date-fields {
-            display: flex;
-            gap: 10px; 
-        }
+.date-fields {
+    display: flex;
+    gap: 10px; 
+}
 
-        .date-fields input {
-            flex: 1; 
-        }
+.date-fields input {
+    flex: 1; 
+}
 
 /* Стили для radio и checkbox */
 input[type="radio"],
@@ -104,4 +113,12 @@ input[type="submit"]:hover {
 textarea {
     resize: vertical;
     height: 100px;
+}
+
+/* Стили для сообщений об ошибках */
+.error-message {
+    color: red; 
+    font-style: italic; 
+    font-size: 0.9em;
+    margin-top: 5px;
 }
