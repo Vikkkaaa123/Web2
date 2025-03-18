@@ -201,13 +201,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt = $db->prepare("INSERT INTO user_applications (user_id, application_id) VALUES (?, ?)");
             $stmt->execute([$user_id, $application_id]);
 
-            // Сохраняем логин и пароль в Cookies
-            setcookie('login', $login);
-            setcookie('pass', $pass);
+            // Сохраняем логин и пароль в сессии
+            $_SESSION['generated_login'] = $login;
+            $_SESSION['generated_password'] = $pass;
 
-            // Отображаем логин и пароль пользователю
-            echo "Ваш логин: $login<br>Ваш пароль: $pass<br>";
-            echo '<a href="login.php">Войти</a>';
+            // Перенаправляем на страницу входа
+            header('Location: login.php');
+            exit();
         }
 
         // Перенаправляем на форму
