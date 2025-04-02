@@ -21,41 +21,75 @@ if (!empty($_SESSION['login'])) {
     exit();
 }
 
+$messages = array();
+
 // Если запрос был методом POST, проверяем логин и пароль
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $login = $_POST['login'];
-    $pass = $_POST['pass'];
+    $login = trim($_POST['login'] ?? '');
+    $pass = trim($_POST['pass'] ?? '');
 
-    // Ищем пользователя в таблице `users`
-    $stmt = $db->prepare("SELECT * FROM users WHERE login = ?");
-    $stmt->execute([$login]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    // Проверяем пароль
-    if ($user && password_verify($pass, $user['password_hash'])) {
-        // Начинаем сессию и сохраняем данные
-        $_SESSION['login'] = $login;
-        $_SESSION['uid'] = $user['id'];
-        header('Location: index.php');
-        exit();
+    if (empty($login) || empty($pass)) {
+        $messages[] = '<div class="error">Заполните все поля</div>';
     } else {
-        echo 'Неверный логин или пароль.';
+        try {
+            $stmt = $db->prepare("SELECT id, login, password_hash FROM users WHERE login = ?");
+            $stmt->execute([$login]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($user && password_verify($pass, $user['password_hash'])) {
+                $_SESSION['login'] = $user['login'];
+                $_SESSION['uid'] = $user['id'];
+                header('Location: index.php');
+                exit();
+            } else {
+                $messages[] = '<div class="error">Неверный логин или пароль</div>';
+            }
+        } catch (PDOException $e) {
+            $messages[] = '<div class="error">Ошибка при проверке данных</div>';
+        }
     }
 }
 
-// Если запрос был методом GET, выводим форму входа
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    // Если есть сгенерированные логин и пароль, заполняем форму
-    $generated_login = $_SESSION['generated_login'] ?? '';
-    $generated_password = $_SESSION['generated_password'] ?? '';
+// Получаем сгенерированные данные из кук
+$generated_login = $_COOKIE['login'] ?? '';
+$generated_password = $_COOKIE['password'] ?? '';
 ?>
-<form action="" method="post">
-  <input name="login" placeholder="Логин" required value="<?php echo htmlspecialchars($generated_login); ?>" />
-  <input name="pass" type="password" placeholder="Пароль" required value="<?php echo htmlspecialchars($generated_password); ?>" />
-  <input type="submit" value="Войти" />
-</form>
-<?php
-    // Очищаем сгенерированные данные из сессии
-    unset($_SESSION['generated_login']);
-    unset($_SESSION['generated_password']);
-}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход в систему</title>
+    <style>
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        .form-group { margin-bottom: 15px; }
+        input { padding: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Вход в систему</h1>
+    
+    <?php foreach ($messages as $message): ?>
+        <?php echo $message; ?>
+    <?php endforeach; ?>
+    
+    <form action="" method="post">
+        <div class="form-group">
+            <label>Логин:</label><br>
+            <input name="login" required value="<?php echo htmlspecialchars($generated_login); ?>">
+        </div>
+        
+        <div class="form-group">
+            <label>Пароль:</label><br>
+            <input name="pass" type="password" required value="<?php echo htmlspecialchars($generated_password); ?>">
+        </div>
+        
+        <div class="form-group">
+            <input type="submit" value="Войти">
+        </div>
+    </form>
+    
+    <p>Нет аккаунта? <a href="index.php">Зарегистрируйтесь</a></p>
+</body>
+</html>
