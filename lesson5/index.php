@@ -38,16 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // Сообщение об успешном сохранении
     if (!empty($_COOKIE['save'])) {
         setcookie('save', '', time() - 3600);
-        $messages[] = 'Спасибо, результаты сохранены.';
-        
-        // Показываем логин и пароль если они есть в куках
-        if (!empty($_COOKIE['login']) && !empty($_COOKIE['password'])) {
-            $messages[] = sprintf(
-                'Вы можете <a href="login.php">войти</a> с логином <strong>%s</strong> и паролем <strong>%s</strong> для изменения данных.',
-                strip_tags($_COOKIE['login']),
-                strip_tags($_COOKIE['password'])
-            );
-        }
+        $messages[] = '<div class="success">Спасибо, результаты сохранены.</div>';
     }
 
     $errors = array();
@@ -65,7 +56,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         elseif ($code == '2') $messages[] = '<div class="error">Имя не должно превышать 128 символов.</div>';
         else $messages[] = '<div class="error">Имя должно содержать только буквы и пробелы.</div>';
     }
-    // Аналогично для других полей...
+    if ($errors['phone']) {
+        $code = $_COOKIE['phone_error'];
+        if ($code == '1') $messages[] = '<div class="error">Телефон не указан.</div>';
+        else $messages[] = '<div class="error">Телефон должен быть в формате +7XXXXXXXXXX.</div>';
+    }
+    if ($errors['email']) {
+        $code = $_COOKIE['email_error'];
+        if ($code == '1') $messages[] = '<div class="error">Email не указан.</div>';
+        else $messages[] = '<div class="error">Некорректный email.</div>';
+    }
+    if ($errors['gender']) {
+        $code = $_COOKIE['gender_error'];
+        if ($code == '1') $messages[] = '<div class="error">Пол не указан.</div>';
+        else $messages[] = '<div class="error">Некорректное значение пола.</div>';
+    }
+    if ($errors['biography']) {
+        $code = $_COOKIE['biography_error'];
+        if ($code == '1') $messages[] = '<div class="error">Биография не указана.</div>';
+        elseif ($code == '2') $messages[] = '<div class="error">Биография не должна превышать 512 символов.</div>';
+        else $messages[] = '<div class="error">Биография содержит недопустимые символы.</div>';
+    }
+    if ($errors['languages']) {
+        $code = $_COOKIE['languages_error'];
+        if ($code == '1') $messages[] = '<div class="error">Языки программирования не выбраны.</div>';
+        else $messages[] = '<div class="error">Выбран недопустимый язык программирования.</div>';
+    }
+    if ($errors['birth_day'] || $errors['birth_month'] || $errors['birth_year']) {
+        $messages[] = '<div class="error">Некорректная дата рождения.</div>';
+    }
+    if ($errors['agreement']) {
+        $messages[] = '<div class="error">Необходимо согласие с контрактом.</div>';
+    }
 
     // Удаляем куки ошибок
     foreach ($fields as $field) {
@@ -74,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     $values = array();
     foreach ($fields as $field) {
-        $values[$field] = empty($_COOKIE[$field . '_value']) ? '' : $_COOKIE[$field . '_value'];
+        $values[$field] = empty($_COOKIE[$field . '_value']) ? '' : strip_tags($_COOKIE[$field . '_value']);
     }
 
     // Особый случай для языков программирования
@@ -109,11 +131,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             }
             
             // Добавляем сообщение о текущем входе
-            $messages[] = 'Вы вошли как ' . $_SESSION['login'] . 
-                         ' (<a href="logout.php">выйти</a>)';
+            $messages[] = '<div class="info">Вы вошли как ' . $_SESSION['login'] . 
+                         ' (<a href="logout.php">выйти</a>)</div>';
         } catch (PDOException $e) {
             die('Ошибка: ' . $e->getMessage());
         }
+    }
+    // Показываем сгенерированные логин/пароль если они есть
+    elseif (!empty($_COOKIE['login']) && !empty($_COOKIE['password'])) {
+        $messages[] = sprintf(
+            '<div class="info">Вы можете <a href="login.php">войти</a> с логином <strong>%s</strong> и паролем <strong>%s</strong> для изменения данных.</div>',
+            strip_tags($_COOKIE['login']),
+            strip_tags($_COOKIE['password'])
+        );
     }
 
     include('form.php');
@@ -149,10 +179,74 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     setcookie('full_name_value', $fio, time() + 365 * 24 * 60 * 60);
 
-    // Аналогичная валидация для других полей...
+    if (empty($num)) {
+        setcookie('phone_error', '1', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    } elseif (!preg_match('/^\+7\d{10}$/', $num)) {
+        setcookie('phone_error', '2', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    }
+    setcookie('phone_value', $num, time() + 365 * 24 * 60 * 60);
 
-    // Сохраняем языки программирования
+    if (empty($email)) {
+        setcookie('email_error', '1', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        setcookie('email_error', '2', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    }
+    setcookie('email_value', $email, time() + 365 * 24 * 60 * 60);
+
+    if (empty($gen)) {
+        setcookie('gender_error', '1', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    } elseif (!in_array($gen, ["male", "female"])) {
+        setcookie('gender_error', '2', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    }
+    setcookie('gender_value', $gen, time() + 365 * 24 * 60 * 60);
+
+    if (empty($biography)) {
+        setcookie('biography_error', '1', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    } elseif (strlen($biography) > 512) {
+        setcookie('biography_error', '2', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    } elseif (preg_match('/[<>{}\[\]]|<script|<\?php/i', $biography)) {
+        setcookie('biography_error', '3', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    }
+    setcookie('biography_value', $biography, time() + 365 * 24 * 60 * 60);
+
+    if (!checkdate($month, $day, $year)) {
+        setcookie('birth_day_error', '1', time() + 24 * 60 * 60);
+        setcookie('birth_month_error', '1', time() + 24 * 60 * 60);
+        setcookie('birth_year_error', '1', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    }
+    setcookie('birth_day_value', $day, time() + 365 * 24 * 60 * 60);
+    setcookie('birth_month_value', $month, time() + 365 * 24 * 60 * 60);
+    setcookie('birth_year_value', $year, time() + 365 * 24 * 60 * 60);
+
+    if (empty($languages)) {
+        setcookie('languages_error', '1', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    } else {
+        foreach ($languages as $lang_id) {
+            if (!array_key_exists($lang_id, $allowed_lang)) {
+                setcookie('languages_error', '2', time() + 24 * 60 * 60);
+                $errors = TRUE;
+                break;
+            }
+        }
+    }
     setcookie('languages_value', implode(',', $languages), time() + 365 * 24 * 60 * 60);
+
+    if (!$agreement) {
+        setcookie('agreement_error', '1', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    }
+    setcookie('agreement_value', $agreement, time() + 365 * 24 * 60 * 60);
 
     if ($errors) {
         header('Location: index.php');
