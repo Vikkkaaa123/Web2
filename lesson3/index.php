@@ -82,6 +82,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($languages)) {
         $errors[] = 'Не выбран язык программирования.';
     }
+    
+    // Проверка языков программирования
+    $invalid_langs = array_diff($languages, array_keys($allowed_lang));
+    if (!empty($invalid_langs)) {
+        $errors[] = 'Выбраны недопустимые языки программирования.';
+    }
+    
     if (!$agreement) {
         $errors[] = 'Необходимо согласие.';
     }
@@ -99,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         // Запись заявки в таблицу applications
         $stmt = $db->prepare("INSERT INTO applications (full_name, phone, email, birth_date, gender, biography, agreement) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$fio, $num, $email, $birth_date, $gen, $biography, $agreement]); // Используем $birth_date
+        $stmt->execute([$fio, $num, $email, $birth_date, $gen, $biography, $agreement]);
 
         // Получаем ID последней вставленной заявки
         $application_id = $db->lastInsertId();
