@@ -2,7 +2,11 @@
 session_start();
 header('Content-Type: text/html; charset=UTF-8');
 
-// Подключение к базе данных
+if (!empty($_SESSION['login'])) {
+    header('Location: index.php');
+    exit();
+}
+
 $user = 'u68606'; 
 $pass = '9347178'; 
 
@@ -15,42 +19,30 @@ try {
     die('Ошибка подключения: ' . $e->getMessage());
 }
 
-// Если пользователь уже авторизован, перенаправляем на главную страницу
-if (!empty($_SESSION['login'])) {
-    header('Location: index.php');
-    exit();
-}
+$messages = [];
 
-$messages = array();
-
-// Если запрос был методом POST, проверяем логин и пароль
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $login = trim($_POST['login'] ?? '');
-    $pass = trim($_POST['pass'] ?? '');
+    $password = trim($_POST['pass'] ?? '');
 
-    if (empty($login) || empty($pass)) {
-        $messages[] = '<div class="error">Заполните все поля</div>';
-    } else {
-        try {
-            $stmt = $db->prepare("SELECT id, login, password_hash FROM users WHERE login = ?");
-            $stmt->execute([$login]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $db->prepare("SELECT id, login, password_hash FROM users WHERE login = ?");
+        $stmt->execute([$login]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($user && password_verify($pass, $user['password_hash'])) {
-                $_SESSION['login'] = $user['login'];
-                $_SESSION['uid'] = $user['id'];
-                header('Location: index.php');
-                exit();
-            } else {
-                $messages[] = '<div class="error">Неверный логин или пароль</div>';
-            }
-        } catch (PDOException $e) {
-            $messages[] = '<div class="error">Ошибка при проверке данных</div>';
+        if ($user && password_verify($password, $user['password_hash'])) {
+            $_SESSION['login'] = $user['login'];
+            $_SESSION['uid'] = $user['id'];
+            header('Location: index.php');
+            exit();
+        } else {
+            $messages[] = '<div class="error">Неверный логин или пароль</div>';
         }
+    } catch (PDOException $e) {
+        $messages[] = '<div class="error">Ошибка при входе в систему</div>';
     }
 }
 
-// Получаем сгенерированные данные из кук
 $generated_login = $_COOKIE['login'] ?? '';
 $generated_password = $_COOKIE['password'] ?? '';
 ?>
@@ -61,10 +53,8 @@ $generated_password = $_COOKIE['password'] ?? '';
     <title>Вход в систему</title>
     <style>
         .error { color: red; }
-        .success { color: green; }
-        .info { color: blue; }
-        .form-group { margin-bottom: 15px; }
-        input { padding: 5px; width: 200px; }
+        .form-group { margin: 10px 0; }
+        label { display: inline-block; width: 100px; }
     </style>
 </head>
 <body>
@@ -74,15 +64,15 @@ $generated_password = $_COOKIE['password'] ?? '';
         <?php echo $message; ?>
     <?php endforeach; ?>
     
-    <form action="" method="post">
+    <form method="post">
         <div class="form-group">
-            <label>Логин:</label><br>
-            <input name="login" required value="<?php echo htmlspecialchars($generated_login); ?>">
+            <label for="login">Логин:</label>
+            <input type="text" id="login" name="login" required value="<?= htmlspecialchars($generated_login) ?>">
         </div>
         
         <div class="form-group">
-            <label>Пароль:</label><br>
-            <input name="pass" type="password" required value="<?php echo htmlspecialchars($generated_password); ?>">
+            <label for="pass">Пароль:</label>
+            <input type="password" id="pass" name="pass" required value="<?= htmlspecialchars($generated_password) ?>">
         </div>
         
         <div class="form-group">
