@@ -166,7 +166,7 @@
         <!-- Кнопка отправки формы -->
         <div class="form-actions">
             <input type="submit" value="<?php 
-                echo !empty($_SESSION['login']) ? 'Обновить данные' : 'Зарегистрироваться'; 
+                echo !empty($_SESSION['login']) ? 'Обновить данные' : 'Сохранить'; 
             ?>">
         </div>
     </form>
