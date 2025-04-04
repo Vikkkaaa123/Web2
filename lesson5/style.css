@@ -1,4 +1,4 @@
-/* Основные стили */
+/* Основные стили страницы */
 body {
     background-color: #80d8ff;
     background-image: url('fon.png');
@@ -7,22 +7,46 @@ body {
     background-repeat: no-repeat;
     min-height: 100vh;
     margin: 0;
-    padding: 20px;
+    padding: 70px 20px 20px; /* Добавлен отступ сверху для кнопок авторизации */
     font-family: Arial, sans-serif;
     color: #333;
 }
 
-/* Общие стили форм */
+/* Стили для кнопок авторизации (правый верхний угол) */
+.auth-buttons {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.auth-btn {
+    background-color: #0288d1;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.auth-btn:hover {
+    background-color: #01579b;
+}
+
+/* Стили основной формы */
 form {
     max-width: 700px;
-    margin: 20px auto;
+    margin: 0 auto;
     background: #b3e5fc;
     padding: 25px;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
+form h1 {
     text-align: center;
     color: #01579b;
     margin-bottom: 25px;
@@ -40,7 +64,7 @@ h1 {
     color: #0277bd;
 }
 
-/* Стили для полей ввода */
+/* Стили полей ввода */
 input[type="text"],
 input[type="tel"],
 input[type="email"],
@@ -96,9 +120,8 @@ select[multiple] {
     min-height: 100px;
 }
 
-/* Стили для кнопок */
-input[type="submit"],
-input[type="button"] {
+/* Стили кнопки отправки */
+input[type="submit"] {
     background-color: #0288d1;
     color: white;
     border: none;
@@ -107,16 +130,14 @@ input[type="button"] {
     border-radius: 4px;
     font-size: 16px;
     transition: background-color 0.3s;
+    width: 100%;
 }
 
-input[type="submit"]:hover,
-input[type="button"]:hover {
+input[type="submit"]:hover {
     background-color: #01579b;
 }
 
 .form-actions {
-    display: flex;
-    justify-content: space-between;
     margin-top: 25px;
 }
 
@@ -146,7 +167,7 @@ input[type="button"]:hover {
     color: #01579b;
 }
 
-/* Стили для формы входа */
+/* Стили для формы входа (login.php) */
 .login-form {
     max-width: 400px;
     margin: 50px auto;
@@ -156,8 +177,12 @@ input[type="button"]:hover {
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
-.login-form .form-actions {
-    justify-content: center;
+.login-form .form-group {
+    margin-bottom: 15px;
+}
+
+.login-form input[type="submit"] {
+    margin-top: 10px;
 }
 
 .register-link {
