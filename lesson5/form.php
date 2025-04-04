@@ -32,7 +32,7 @@
 
     <!-- Основная форма -->
     <form action="index.php" method="POST">
-        <h1>Форма регистрации</h1>
+        <h1>Форма</h1>
 
         <!-- Поле ФИО -->
         <div class="form-group">
