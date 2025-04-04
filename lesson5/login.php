@@ -7,8 +7,8 @@ if (!empty($_SESSION['login'])) {
     exit();
 }
 
-$user = 'u68606'; 
-$pass = '9347178'; 
+$user = 'u68606';
+$pass = '9347178';
 
 try {
     $db = new PDO('mysql:host=localhost;dbname=u68606', $user, $pass, [
@@ -36,50 +36,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Location: index.php');
             exit();
         } else {
-            $messages[] = '<div class="error">Неверный логин или пароль</div>';
+            $messages[] = 'Неверный логин или пароль';
         }
     } catch (PDOException $e) {
-        $messages[] = '<div class="error">Ошибка при входе в систему</div>';
+        $messages[] = 'Ошибка при входе в систему';
     }
 }
-
-$generated_login = $_COOKIE['login'] ?? '';
-$generated_password = $_COOKIE['password'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Вход в систему</title>
-    <style>
-        .error { color: red; }
-        .form-group { margin: 10px 0; }
-        label { display: inline-block; width: 100px; }
-    </style>
 </head>
 <body>
-    <h1>Вход в систему</h1>
-    
-    <?php foreach ($messages as $message): ?>
-        <?php echo $message; ?>
-    <?php endforeach; ?>
-    
-    <form method="post">
-        <div class="form-group">
-            <label for="login">Логин:</label>
-            <input type="text" id="login" name="login" required value="<?= htmlspecialchars($generated_login) ?>">
-        </div>
+    <div class="login-form">
+        <h1>Вход в систему</h1>
         
-        <div class="form-group">
-            <label for="pass">Пароль:</label>
-            <input type="password" id="pass" name="pass" required value="<?= htmlspecialchars($generated_password) ?>">
-        </div>
+        <?php if (!empty($messages)): ?>
+            <div class="error-message">
+                <?php foreach ($messages as $message): ?>
+                    <p><?php echo $message; ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
         
-        <div class="form-group">
-            <input type="submit" value="Войти">
-        </div>
-    </form>
-    
-    <p>Нет аккаунта? <a href="index.php">Зарегистрируйтесь</a></p>
+        <form method="post">
+            <div class="form-group">
+                <label for="login">Логин:</label>
+                <input type="text" id="login" name="login" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="pass">Пароль:</label>
+                <input type="password" id="pass" name="pass" required>
+            </div>
+            
+            <div class="form-actions">
+                <input type="submit" value="Войти">
+            </div>
+        </form>
+        
+        <p class="register-link">Нет аккаунта? <a href="index.php">Заполните форму</a></p>
+    </div>
 </body>
 </html>
