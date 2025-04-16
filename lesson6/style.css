@@ -1,0 +1,251 @@
+/* Основные стили страницы */
+body {
+    background-color: #80d8ff;
+    background-image: url('fon.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    margin: 0;
+    padding: 70px 20px 20px; /* Добавлен отступ сверху для кнопок авторизации */
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+/* Стили для кнопок авторизации (правый верхний угол) */
+.auth-buttons {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.auth-btn {
+    background-color: #0288d1;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.auth-btn:hover {
+    background-color: #01579b;
+}
+
+/* Стили основной формы */
+form {
+    max-width: 700px;
+    margin: 0 auto;
+    background: #b3e5fc;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+form h1 {
+    text-align: center;
+    color: #01579b;
+    margin-bottom: 25px;
+}
+
+/* Стили для групп полей */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #0277bd;
+}
+
+/* Стили полей ввода */
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #81d4fa;
+    border-radius: 4px;
+    background-color: #e1f5fe;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Стили для radio и checkbox */
+input[type="radio"],
+input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.gender-options {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.gender-options label {
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+}
+
+/* Стили для полей даты */
+.date-fields {
+    display: flex;
+    gap: 10px;
+}
+
+.date-fields input {
+    flex: 1;
+}
+
+/* Стили для select multiple */
+select[multiple] {
+    height: auto;
+    min-height: 100px;
+}
+
+/* Стили кнопки отправки */
+input[type="submit"] {
+    background-color: #0288d1;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+input[type="submit"]:hover {
+    background-color: #01579b;
+}
+
+.form-actions {
+    margin-top: 25px;
+}
+
+/* Стили для ошибок */
+.error {
+    border: 2px solid #d32f2f !important;
+}
+
+.error-message {
+    color: #d32f2f;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Стили для блока с учетными данными */
+.credentials {
+    max-width: 700px;
+    margin: 0 auto 25px;
+    background: #e1f5fe;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.credentials h3 {
+    margin-top: 0;
+    color: #01579b;
+}
+
+/* Стили для формы входа (login.php) */
+.login-form {
+    max-width: 400px;
+    margin: 50px auto;
+    background: #b3e5fc;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.login-form .form-group {
+    margin-bottom: 15px;
+}
+
+.login-form input[type="submit"] {
+    margin-top: 10px;
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.register-link a {
+    color: #0277bd;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+/* Стили для поля соглашения */
+.agreement-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.agreement-field label {
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+
+/* Админка */
+.admin-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.admin-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.admin-table th, .admin-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: #f2f2f2;
+}
+
+.admin-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.stats {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f0f8ff;
+    border-radius: 5px;
+}
