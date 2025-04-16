@@ -1,7 +1,7 @@
 /* Основные стили страницы */
 body {
     background-color: #80d8ff;
-    background-image: url('fon.png');
+    background-image: url('fon.PNG');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
