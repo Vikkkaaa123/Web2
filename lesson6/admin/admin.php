@@ -1,29 +1,17 @@
 <?php
-// Подключение к БД
-$db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-]);
+require_once 'db.php';
+require_once 'auth.php';
 
-// HTTP-авторизация
-if (empty($_SERVER['PHP_AUTH_USER']) || 
-    empty($_SERVER['PHP_AUTH_PW']) ||
-    !checkAdminCredentials($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'], $db)) {
-    
-    header('HTTP/1.1 401 Unauthorized');
-    header('WWW-Authenticate: Basic realm="Admin Panel"');
-    die('<h1>401 Требуется авторизация</h1>');
-}
+// Проверка авторизации администратора
+checkAdminAuth();
 
 // Обработка действий
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['delete_id'])) {
         deleteApplication($_POST['delete_id'], $db);
-    } elseif (isset($_POST['edit_id'])) {
-        header("Location: edit.php?id=".$_POST['edit_id']);
+        header('Location: admin.php');
         exit;
     }
-    header('Location: admin.php');
-    exit;
 }
 
 // Получение данных
@@ -31,13 +19,6 @@ $applications = getApplications($db);
 $stats = getLanguageStats($db);
 
 // Функции
-function checkAdminCredentials($login, $password, $db) {
-    $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
-    $stmt->execute([$login]);
-    $admin = $stmt->fetch();
-    return $admin && password_verify($password, $admin['password_hash']);
-}
-
 function getApplications($db) {
     return $db->query("
         SELECT a.*, GROUP_CONCAT(l.name SEPARATOR ', ') as languages 
@@ -108,7 +89,6 @@ function deleteApplication($id, $db) {
                 <th>Email</th>
                 <th>Дата рождения</th>
                 <th>Пол</th>
-                <th>Биография</th>
                 <th>Языки</th>
                 <th>Действия</th>
             </tr>
@@ -120,16 +100,12 @@ function deleteApplication($id, $db) {
                 <td><?= htmlspecialchars($app['email']) ?></td>
                 <td><?= date('d.m.Y', strtotime($app['birth_date'])) ?></td>
                 <td><?= $app['gender'] == 'male' ? 'Мужской' : 'Женский' ?></td>
-                <td><?= htmlspecialchars(substr($app['biography'], 0, 50)) ?>...</td>
                 <td><?= htmlspecialchars($app['languages']) ?></td>
                 <td>
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="edit_id" value="<?= $app['id'] ?>">
-                        <button type="submit">Редактировать</button>
-                    </form>
+                    <a href="edit.php?id=<?= $app['id'] ?>" class="button">Редактировать</a>
                     <form method="POST" style="display:inline;" onsubmit="return confirm('Удалить эту заявку?')">
                         <input type="hidden" name="delete_id" value="<?= $app['id'] ?>">
-                        <button type="submit">Удалить</button>
+                        <button type="submit" class="button delete">Удалить</button>
                     </form>
                 </td>
             </tr>
