@@ -1,198 +1,66 @@
 <?php
-// Включение отладки
+// 1. Включение максимального вывода ошибок
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+header('Content-Type: text/html; charset=utf-8');
 
-// 1. Проверка базовой авторизации
+// 2. Явная проверка получения данных авторизации
+echo "<pre>";
+echo "Данные сервера:\n";
+var_dump([
+    'PHP_AUTH_USER' => $_SERVER['PHP_AUTH_USER'] ?? 'NOT SET',
+    'PHP_AUTH_PW' => $_SERVER['PHP_AUTH_PW'] ?? 'NOT SET',
+    'HTTP_AUTHORIZATION' => $_SERVER['HTTP_AUTHORIZATION'] ?? 'NOT SET'
+]);
+echo "</pre>";
+
+// 3. Если данные не получены - запрашиваем авторизацию
 if (!isset($_SERVER['PHP_AUTH_USER'])) {
     header('WWW-Authenticate: Basic realm="Admin Panel"');
     header('HTTP/1.1 401 Unauthorized');
-    die('<h1>Для доступа введите логин и пароль</h1>');
+    die('<h1>Введите логин и пароль</h1>');
 }
 
-// 2. Подключение к БД
+// 4. Подключение к БД с явной проверкой
 try {
     $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
-} catch (PDOException $e) {
-    die("Ошибка подключения к БД: " . $e->getMessage());
-}
-
-// 3. Проверка учетных данных (важная правка!)
-$login = $_SERVER['PHP_AUTH_USER'];
-$password = $_SERVER['PHP_AUTH_PW'];
-
-// Для теста - выведем что получили
-echo "<!-- Отладочная информация: $login / $password -->";
-
-$stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
-$stmt->execute([$login]);
-$admin = $stmt->fetch();
-
-if (!$admin) {
-    die("Пользователь $login не найден в БД");
-}
-
-// Критически важный момент проверки
-if (!password_verify($password, $admin['password_hash'])) {
-    // Выведем дополнительную отладочную информацию
-    echo "<!-- Ожидаемый хеш: {$admin['password_hash']} -->";
-    echo "<!-- Введенный пароль: $password -->";
-    header('HTTP/1.1 403 Forbidden');
-    die('<h1>Неверный логин или пароль</h1>');
-}
-
-// 4. Обработка удаления записи
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
-    $id = (int)$_POST['delete_id'];
-    $db->beginTransaction();
-    try {
-        $db->exec("DELETE FROM application_languages WHERE application_id = $id");
-        $db->exec("DELETE FROM applications WHERE id = $id");
-        $db->commit();
-        header('Location: admin.php?deleted=1');
-        exit;
-    } catch (PDOException $e) {
-        $db->rollBack();
-        die("Ошибка удаления: " . $e->getMessage());
+    
+    // 5. Проверка существования таблицы admins
+    $tableExists = $db->query("SHOW TABLES LIKE 'admins'")->rowCount() > 0;
+    if (!$tableExists) {
+        die("Таблица admins не существует в БД");
     }
+    
+    // 6. Проверка наличия пользователя admin
+    $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
+    $stmt->execute([$_SERVER['PHP_AUTH_USER']]);
+    $admin = $stmt->fetch();
+    
+    if (!$admin) {
+        die("Пользователь '{$_SERVER['PHP_AUTH_USER']}' не найден в БД");
+    }
+    
+    // 7. Визуализация проверки пароля
+    echo "<pre>";
+    echo "Проверка пароля:\n";
+    echo "Введённый пароль: {$_SERVER['PHP_AUTH_PW']}\n";
+    echo "Хеш из БД: {$admin['password_hash']}\n";
+    echo "Результат password_verify(): " . (password_verify($_SERVER['PHP_AUTH_PW'], $admin['password_hash']) ? 'TRUE' : 'FALSE');
+    echo "</pre>";
+    
+    // 8. Финальная проверка
+    if (!password_verify($_SERVER['PHP_AUTH_PW'], $admin['password_hash'])) {
+        header('HTTP/1.1 403 Forbidden');
+        die('<h1>Неверный логин или пароль (финальная проверка)</h1>');
+    }
+    
+    // 9. Если дошли сюда - авторизация успешна
+    echo "<h1>Добро пожаловать, {$_SERVER['PHP_AUTH_USER']}!</h1>";
+    echo "<p>Вы успешно авторизовались в системе.</p>";
+    
+} catch (PDOException $e) {
+    die("Ошибка БД: " . $e->getMessage());
 }
-
-// 5. Получение данных
-$applications = $db->query("
-    SELECT a.*, GROUP_CONCAT(l.name SEPARATOR ', ') as languages
-    FROM applications a
-    LEFT JOIN application_languages al ON a.id = al.application_id
-    LEFT JOIN programming_languages l ON al.language_id = l.id
-    GROUP BY a.id
-")->fetchAll();
-
-$stats = $db->query("
-    SELECT l.name, COUNT(*) as count
-    FROM application_languages al
-    JOIN programming_languages l ON al.language_id = l.id
-    GROUP BY l.name
-    ORDER BY count DESC
-")->fetchAll();
 ?>
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Админ-панель</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        tr:hover {
-            background-color: #f9f9f9;
-        }
-        .alert {
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        .alert-success {
-            background-color: #dff0d8;
-            color: #3c763d;
-        }
-        button {
-            background-color: #d9534f;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #c9302c;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Админ-панель</h1>
-        <p>Вы вошли как: <strong><?= htmlspecialchars($_SERVER['PHP_AUTH_USER']) ?></strong></p>
-
-        <?php if (isset($_GET['deleted'])): ?>
-            <div class="alert alert-success">
-                Запись успешно удалена!
-            </div>
-        <?php endif; ?>
-
-        <h2>Статистика по языкам программирования</h2>
-        <ul>
-            <?php foreach ($stats as $stat): ?>
-                <li><?= htmlspecialchars($stat['name']) ?>: <?= $stat['count'] ?></li>
-            <?php endforeach; ?>
-        </ul>
-
-        <h2>Список заявок</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>ФИО</th>
-                    <th>Телефон</th>
-                    <th>Email</th>
-                    <th>Дата рождения</th>
-                    <th>Пол</th>
-                    <th>Языки</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($applications as $app): ?>
-                <tr>
-                    <td><?= $app['id'] ?></td>
-                    <td><?= htmlspecialchars($app['full_name']) ?></td>
-                    <td><?= htmlspecialchars($app['phone']) ?></td>
-                    <td><?= htmlspecialchars($app['email']) ?></td>
-                    <td><?= $app['birth_date'] ?></td>
-                    <td><?= $app['gender'] === 'male' ? 'Мужской' : 'Женский' ?></td>
-                    <td><?= htmlspecialchars($app['languages']) ?></td>
-                    <td>
-                        <form method="POST" onsubmit="return confirm('Удалить эту запись?')">
-                            <input type="hidden" name="delete_id" value="<?= $app['id'] ?>">
-                            <button type="submit">Удалить</button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>
