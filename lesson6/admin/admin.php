@@ -1,9 +1,16 @@
 <?php
-// Включение отображения ошибок для диагностики
+// Включение отладки
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// 1. Подключение к БД
+// 1. Проверка базовой авторизации
+if (!isset($_SERVER['PHP_AUTH_USER'])) {
+    header('WWW-Authenticate: Basic realm="Admin Panel"');
+    header('HTTP/1.1 401 Unauthorized');
+    die('<h1>Для доступа введите логин и пароль</h1>');
+}
+
+// 2. Подключение к БД
 try {
     $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -13,21 +20,28 @@ try {
     die("Ошибка подключения к БД: " . $e->getMessage());
 }
 
-// 2. Проверка HTTP-авторизации
-if (!isset($_SERVER['PHP_AUTH_USER'])) {
-    header('WWW-Authenticate: Basic realm="Admin Panel"');
-    header('HTTP/1.1 401 Unauthorized');
-    die('<h1 style="text-align: center">Требуется авторизация</h1>');
-}
+// 3. Проверка учетных данных (важная правка!)
+$login = $_SERVER['PHP_AUTH_USER'];
+$password = $_SERVER['PHP_AUTH_PW'];
 
-// 3. Проверка учетных данных
+// Для теста - выведем что получили
+echo "<!-- Отладочная информация: $login / $password -->";
+
 $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
-$stmt->execute([$_SERVER['PHP_AUTH_USER']]);
+$stmt->execute([$login]);
 $admin = $stmt->fetch();
 
-if (!$admin || !password_verify($_SERVER['PHP_AUTH_PW'], $admin['password_hash'])) {
+if (!$admin) {
+    die("Пользователь $login не найден в БД");
+}
+
+// Критически важный момент проверки
+if (!password_verify($password, $admin['password_hash'])) {
+    // Выведем дополнительную отладочную информацию
+    echo "<!-- Ожидаемый хеш: {$admin['password_hash']} -->";
+    echo "<!-- Введенный пароль: $password -->";
     header('HTTP/1.1 403 Forbidden');
-    die('<h1 style="text-align: center">Неверный логин или пароль</h1>');
+    die('<h1>Неверный логин или пароль</h1>');
 }
 
 // 4. Обработка удаления записи
