@@ -5,6 +5,29 @@ $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 ]);
 
+
+
+
+// Проверка авторизации
+if (empty($_SERVER['PHP_AUTH_USER']) {
+    header('WWW-Authenticate: Basic realm="Admin Panel"');
+    header('HTTP/1.1 401 Unauthorized');
+    die('Требуется авторизация');
+}
+
+// Проверка логина/пароля
+$stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
+$stmt->execute([$_SERVER['PHP_AUTH_USER']]);
+$admin = $stmt->fetch();
+
+if (!$admin || !password_verify($_SERVER['PHP_AUTH_PW'], $admin['password_hash'])) {
+    header('HTTP/1.1 403 Forbidden');
+    die('Неверный логин или пароль');
+}
+
+
+
+
 // 2. HTTP-авторизация
 if (empty($_SERVER['PHP_AUTH_USER']) || 
     empty($_SERVER['PHP_AUTH_PW']) ||
