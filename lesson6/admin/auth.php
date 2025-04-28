@@ -2,53 +2,53 @@
 function checkAdminAuth() {
     global $db;
     
-    file_put_contents('auth_log.txt', date('Y-m-d H:i:s')." - Auth started\n", FILE_APPEND);
-    
-    if (empty($_SERVER['PHP_AUTH_USER']) || empty($_SERVER['PHP_AUTH_PW'])) {
-        file_put_contents('auth_log.txt', "Empty credentials\n", FILE_APPEND);
-        header('HTTP/1.1 401 Unauthorized');
+    // Проверяем, что авторизация Basic отправлена
+    if (!isset($_SERVER['PHP_AUTH_USER'])) {
         header('WWW-Authenticate: Basic realm="Admin Panel"');
-        die('<h1>401 Требуется авторизация</h1>');
+        header('HTTP/1.1 401 Unauthorized');
+        exit('<h1>Требуется авторизация</h1>');
     }
-    
-    $login = $_SERVER['PHP_AUTH_USER'];
-    $password = $_SERVER['PHP_AUTH_PW'];
-    
-    file_put_contents('auth_log.txt', "Attempt: $login\n", FILE_APPEND);
-    
+
+    // Получаем введенные данные
+    $input_login = $_SERVER['PHP_AUTH_USER'];
+    $input_password = $_SERVER['PHP_AUTH_PW'] ?? '';
+
+    // Экстренный лог (удалите после отладки)
+    file_put_contents('admin_auth_debug.log', 
+        date('Y-m-d H:i:s')." - Attempt: $input_login\n", 
+        FILE_APPEND);
+
+    // Запрос к базе с обработкой ошибок
     try {
-        $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
-        $stmt->execute([$login]);
-        $admin = $stmt->fetch();
-        
-        file_put_contents('auth_log.txt', "DB result: ".print_r($admin, true)."\n", FILE_APPEND);
+        $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ? LIMIT 1");
+        $stmt->execute([$input_login]);
+        $admin = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$admin) {
-            file_put_contents('auth_log.txt', "User not found\n", FILE_APPEND);
-            header('HTTP/1.1 401 Unauthorized');
-            header('WWW-Authenticate: Basic realm="Admin Panel"');
-            die('<h1>401 Неверные учетные данные</h1>');
+            throw new Exception("Admin not found");
         }
-        
-        $hash = $admin['password_hash'];
-        $verify = password_verify($password, $hash);
-        
-        file_put_contents('auth_log.txt', "Password verify: ".($verify ? 'true' : 'false')."\n", FILE_APPEND);
-        file_put_contents('auth_log.txt', "Input password: $password\n", FILE_APPEND);
-        file_put_contents('auth_log.txt', "Stored hash: $hash\n", FILE_APPEND);
-        
-        if (!$verify) {
-            error_log("FAILED AUTH: login=$login, password=$password, hash=$hash");
-            header('HTTP/1.1 401 Unauthorized');
-            header('WWW-Authenticate: Basic realm="Admin Panel"');
-            die('<h1>401 Неверные учетные данные</h1>');
+
+        // Валидация пароля
+        if (!password_verify($input_password, $admin['password_hash'])) {
+            throw new Exception("Password mismatch");
         }
+
+        // Успешная авторизация
+        return true;
+
+    } catch (Exception $e) {
+        // Подробное логирование ошибки
+        $error_msg = sprintf(
+            "FAILED LOGIN: %s | IP: %s | Error: %s\n",
+            $input_login,
+            $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            $e->getMessage()
+        );
+        file_put_contents('admin_auth_errors.log', $error_msg, FILE_APPEND);
         
-        file_put_contents('auth_log.txt', "Auth successful\n", FILE_APPEND);
-        
-    } catch (PDOException $e) {
-        file_put_contents('auth_log.txt', "Error: ".$e->getMessage()."\n", FILE_APPEND);
-        die('Ошибка авторизации: ' . $e->getMessage());
+        header('WWW-Authenticate: Basic realm="Admin Panel"');
+        header('HTTP/1.1 401 Unauthorized');
+        exit('<h1>Неверные учетные данные</h1>');
     }
 }
 ?>
