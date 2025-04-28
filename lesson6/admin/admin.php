@@ -20,32 +20,40 @@ $stats = getLanguageStats($db);
 
 // Функции
 function getApplications($db) {
-    return $db->query("
+    $stmt = $db->query("
         SELECT a.*, GROUP_CONCAT(l.name SEPARATOR ', ') as languages 
         FROM applications a
         LEFT JOIN application_languages al ON a.id = al.application_id
         LEFT JOIN programming_languages l ON al.language_id = l.id
         GROUP BY a.id
         ORDER BY a.id DESC
-    ")->fetchAll();
+    ");
+    return $stmt->fetchAll();
 }
 
 function getLanguageStats($db) {
-    return $db->query("
+    $stmt = $db->query("
         SELECT l.name, COUNT(al.application_id) as count
         FROM programming_languages l
         LEFT JOIN application_languages al ON l.id = al.language_id
         GROUP BY l.id
         ORDER BY count DESC
-    ")->fetchAll();
+    ");
+    return $stmt->fetchAll();
 }
 
 function deleteApplication($id, $db) {
     $db->beginTransaction();
     try {
-        $db->exec("DELETE FROM application_languages WHERE application_id = $id");
-        $db->exec("DELETE FROM user_applications WHERE application_id = $id");
-        $db->exec("DELETE FROM applications WHERE id = $id");
+        $stmt = $db->prepare("DELETE FROM application_languages WHERE application_id = ?");
+        $stmt->execute([$id]);
+        
+        $stmt = $db->prepare("DELETE FROM user_applications WHERE application_id = ?");
+        $stmt->execute([$id]);
+        
+        $stmt = $db->prepare("DELETE FROM applications WHERE id = ?");
+        $stmt->execute([$id]);
+        
         $db->commit();
     } catch (Exception $e) {
         $db->rollBack();
@@ -58,11 +66,12 @@ function deleteApplication($id, $db) {
 <html>
 <head>
     <title>Админ-панель</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
 </head>
 <body>
     <div class="admin-container">
         <h1>Панель администратора</h1>
+        <p>Вы вошли как: <?php echo htmlspecialchars($_SERVER['PHP_AUTH_USER']); ?></p>
         
         <div class="stats">
             <h2>Статистика по языкам программирования</h2>
@@ -102,7 +111,7 @@ function deleteApplication($id, $db) {
                 <td><?= $app['gender'] == 'male' ? 'Мужской' : 'Женский' ?></td>
                 <td><?= htmlspecialchars($app['languages']) ?></td>
                 <td>
-                    <a href="edit.php?id=<?= $app['id'] ?>" class="button">Редактировать</a>
+                    <a href="edit.php?id=<?= $app['id'] ?>" class="button edit">Редактировать</a>
                     <form method="POST" style="display:inline;" onsubmit="return confirm('Удалить эту заявку?')">
                         <input type="hidden" name="delete_id" value="<?= $app['id'] ?>">
                         <button type="submit" class="button delete">Удалить</button>
