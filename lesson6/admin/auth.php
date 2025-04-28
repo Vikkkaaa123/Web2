@@ -1,4 +1,20 @@
 <?php
+
+function verifyAdminCredentials($login, $password) {
+    global $db;
+    
+    $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
+    $stmt->execute([$login]);
+    $admin = $stmt->fetch();
+    
+    error_log("Checking admin login: $login");
+    error_log("Password hash from DB: " . ($admin['password_hash'] ?? 'NULL'));
+    error_log("Password verify result: " . (password_verify($password, $admin['password_hash']) ? 'true' : 'false'));
+    
+    return $admin && password_verify($password, $admin['password_hash']);
+}
+
+
 function checkAdminAuth() {
     global $db;
     
