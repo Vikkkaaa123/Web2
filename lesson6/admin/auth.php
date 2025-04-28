@@ -2,7 +2,6 @@
 function checkAdminAuth() {
     global $db;
     
-    // Диагностика
     file_put_contents('auth_log.txt', date('Y-m-d H:i:s')." - Auth started\n", FILE_APPEND);
     
     if (empty($_SERVER['PHP_AUTH_USER']) || empty($_SERVER['PHP_AUTH_PW'])) {
@@ -39,7 +38,6 @@ function checkAdminAuth() {
         file_put_contents('auth_log.txt', "Stored hash: $hash\n", FILE_APPEND);
         
         if (!$verify) {
-            // Экстренный лог
             error_log("FAILED AUTH: login=$login, password=$password, hash=$hash");
             header('HTTP/1.1 401 Unauthorized');
             header('WWW-Authenticate: Basic realm="Admin Panel"');
