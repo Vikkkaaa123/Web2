@@ -1,9 +1,31 @@
 <?php
-require_once 'db.php';
-require_once 'auth.php';
 
-// Проверка авторизации администратора
+// Временный режим отладки
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+require 'db.php';
+require 'auth.php';
+
+// Принудительный дамп введенных данных
+echo "<pre>";
+var_dump([
+    'SERVER_AUTH' => [
+        'user' => $_SERVER['PHP_AUTH_USER'] ?? 'NOT SET',
+        'pass' => $_SERVER['PHP_AUTH_PW'] ?? 'NOT SET'
+    ],
+    'DB_VERSION' => $db->getAttribute(PDO::ATTR_SERVER_VERSION),
+    'PHP_VERSION' => phpversion()
+]);
+echo "</pre>";
+
 checkAdminAuth();
+
+
+
+
+
 
 // Обработка действий
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
