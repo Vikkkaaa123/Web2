@@ -1,5 +1,7 @@
 <?php
+session_start();
 require 'auth.php';
+
 checkAdminAuth();
 
 // Получение данных из БД
