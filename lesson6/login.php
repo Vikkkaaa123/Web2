@@ -2,7 +2,6 @@
 session_start();
 header('Content-Type: text/html; charset=UTF-8');
 
-// Если пользователь уже авторизован - перенаправляем
 if (!empty($_SESSION['login'])) {
     header('Location: index.php');
     exit();
@@ -38,20 +37,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['login'] = $user['login'];
             $_SESSION['uid'] = $user['id'];
             
-            // Дополнительная проверка на админа
             $admin_stmt = $db->prepare("SELECT 1 FROM admins WHERE login = ?");
             $admin_stmt->execute([$login]);
             
             if ($admin_stmt->fetch()) {
                 $_SESSION['admin'] = true;
-                header('Location: admin/admin.php'); // Перенаправляем в админку
+                header('Location: admin/admin.php'); 
             } else {
-                header('Location: index.php'); // Перенаправляем обычного пользователя
+                header('Location: index.php'); 
             }
             exit();
         }
         
-        // Проверяем администратора (если не нашли как пользователя)
         $admin_stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
         $admin_stmt->execute([$login]);
         $admin = $admin_stmt->fetch();
@@ -63,7 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit();
         }
 
-        // Если дошли сюда - авторизация не удалась
         $messages[] = 'Неверный логин или пароль';
 
     } catch (PDOException $e) {
@@ -144,7 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <p class="register-link">Нет аккаунта? <a href="index.php">Заполните форму</a></p>
         
         <p class="admin-notice" style="margin-top: 20px; font-size: 0.9em; color: #666;">
-            Для входа в админ-панель используйте логин/пароль из таблицы admins
         </p>
     </div>
 </body>
