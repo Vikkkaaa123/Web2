@@ -2,11 +2,13 @@
 session_start();
 header('Content-Type: text/html; charset=UTF-8');
 
+// Если пользователь уже авторизован - перенаправляем
 if (!empty($_SESSION['login'])) {
     header('Location: index.php');
     exit();
 }
 
+// Подключение к БД
 $user = 'u68606';
 $pass = '9347178';
 
@@ -21,11 +23,13 @@ try {
 
 $messages = [];
 
+// Обработка формы входа
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $login = trim($_POST['login'] ?? '');
     $password = trim($_POST['pass'] ?? '');
 
     try {
+        // Проверяем обычного пользователя
         $stmt = $db->prepare("SELECT id, login, password_hash FROM users WHERE login = ?");
         $stmt->execute([$login]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -33,13 +37,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($user && password_verify($password, $user['password_hash'])) {
             $_SESSION['login'] = $user['login'];
             $_SESSION['uid'] = $user['id'];
-            header('Location: index.php');
+            
+            // Дополнительная проверка на админа
+            $admin_stmt = $db->prepare("SELECT 1 FROM admins WHERE login = ?");
+            $admin_stmt->execute([$login]);
+            
+            if ($admin_stmt->fetch()) {
+                $_SESSION['admin'] = true;
+                header('Location: admin/admin.php'); // Перенаправляем в админку
+            } else {
+                header('Location: index.php'); // Перенаправляем обычного пользователя
+            }
             exit();
-        } else {
-            $messages[] = 'Неверный логин или пароль';
         }
+        
+        // Проверяем администратора (если не нашли как пользователя)
+        $admin_stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
+        $admin_stmt->execute([$login]);
+        $admin = $admin_stmt->fetch();
+        
+        if ($admin && password_verify($password, $admin['password_hash'])) {
+            $_SESSION['admin'] = true;
+            $_SESSION['admin_login'] = $login;
+            header('Location: admin/admin.php');
+            exit();
+        }
+
+        // Если дошли сюда - авторизация не удалась
+        $messages[] = 'Неверный логин или пароль';
+
     } catch (PDOException $e) {
         $messages[] = 'Ошибка при входе в систему';
+        error_log('Login error: ' . $e->getMessage());
     }
 }
 ?>
@@ -50,6 +79,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Вход в систему</title>
+    <style>
+        .login-form {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-actions {
+            margin-top: 20px;
+        }
+        .error-message {
+            color: #d32f2f;
+            margin-bottom: 15px;
+        }
+        .register-link {
+            margin-top: 15px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <div class="login-form">
@@ -58,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php if (!empty($messages)): ?>
             <div class="error-message">
                 <?php foreach ($messages as $message): ?>
-                    <p><?php echo $message; ?></p>
+                    <p><?= htmlspecialchars($message) ?></p>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
@@ -75,11 +137,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             
             <div class="form-actions">
-                <input type="submit" value="Войти">
+                <button type="submit" class="btn">Войти</button>
             </div>
         </form>
         
         <p class="register-link">Нет аккаунта? <a href="index.php">Заполните форму</a></p>
+        
+        <p class="admin-notice" style="margin-top: 20px; font-size: 0.9em; color: #666;">
+            Для входа в админ-панель используйте логин/пароль из таблицы admins
+        </p>
     </div>
 </body>
 </html>
