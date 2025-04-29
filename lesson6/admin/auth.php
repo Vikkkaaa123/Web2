@@ -1,5 +1,5 @@
 <?php
-require '../db.php'; 
+require __DIR__ . '/db.php';
 
 // Включим логирование
 file_put_contents('admin_auth.log', date('Y-m-d H:i:s')." - Auth started\n", FILE_APPEND);
@@ -35,7 +35,6 @@ try {
         throw new Exception("Invalid credentials");
     }
 
-    // Сохраняем в сессию для единой авторизации
     $_SESSION['admin_logged'] = true;
     file_put_contents('admin_auth.log', "Auth success for $login\n", FILE_APPEND);
 
