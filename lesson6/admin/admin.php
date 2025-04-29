@@ -4,6 +4,12 @@ require 'auth.php';
 
 checkAdminAuth();
 
+// Проверка авторизации
+if (empty($_SESSION['admin'])) {
+    header('Location: ../login.php');
+    exit();
+}
+
 // Получение данных из БД
 $applications = $db->query("
     SELECT a.*, GROUP_CONCAT(l.name SEPARATOR ', ') as languages 
