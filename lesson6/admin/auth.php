@@ -1,55 +1,46 @@
 <?php
-require 'db.php';
+require '../db.php'; 
 
-// Включим максимальное логирование
+// Включим логирование
 file_put_contents('admin_auth.log', date('Y-m-d H:i:s')." - Auth started\n", FILE_APPEND);
 
-// 1. Альтернативный способ получить авторизацию (для FastCGI)
-$auth = $_SERVER['HTTP_AUTHORIZATION'] ?? 
-        $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+// 1. Проверка сессии 
+session_start();
+if (!empty($_SESSION['admin_logged'])) {
+    file_put_contents('admin_auth.log', "Session auth OK\n", FILE_APPEND);
+    return;
+}
 
-// 2. Если авторизация через стандартный метод
-if (isset($_SERVER['PHP_AUTH_USER'])) {
+// 2. Проверка HTTP-авторизации
+$auth = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+if (empty($auth) && isset($_SERVER['PHP_AUTH_USER'])) {
     $login = $_SERVER['PHP_AUTH_USER'];
     $password = $_SERVER['PHP_AUTH_PW'] ?? '';
-} 
-// 3. Если через заголовки
-elseif (strpos($auth, 'Basic ') === 0) {
+} elseif (strpos($auth, 'Basic ') === 0) {
     $decoded = base64_decode(substr($auth, 6));
     list($login, $password) = explode(':', $decoded, 2);
-} 
-// 4. Если авторизация не передана
-else {
-    file_put_contents('admin_auth.log', "No auth headers found\n", FILE_APPEND);
+} else {
     header('WWW-Authenticate: Basic realm="Admin Panel"');
     header('HTTP/1.1 401 Unauthorized');
     exit('Требуется авторизация');
 }
 
-file_put_contents('admin_auth.log', "Auth attempt: $login\n", FILE_APPEND);
-
-if ($login === 'admin' && $password === '123') {
-    file_put_contents('admin_auth.log', "Emergency auth OK\n", FILE_APPEND);
-    return;
-}
-
+// 3. Проверка учетных данных
 try {
-    $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ? LIMIT 1");
+    $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
     $stmt->execute([$login]);
     $admin = $stmt->fetch();
 
-    if (!$admin) {
-        throw new Exception("Admin not found");
+    if (!$admin || !password_verify($password, $admin['password_hash'])) {
+        throw new Exception("Invalid credentials");
     }
 
-    if (!password_verify($password, $admin['password_hash'])) {
-        throw new Exception("Password mismatch");
-    }
+    // Сохраняем в сессию для единой авторизации
+    $_SESSION['admin_logged'] = true;
+    file_put_contents('admin_auth.log', "Auth success for $login\n", FILE_APPEND);
 
-    file_put_contents('admin_auth.log', "Auth success\n", FILE_APPEND);
-    
 } catch (Exception $e) {
-    file_put_contents('admin_auth.log', "Error: ".$e->getMessage()."\n", FILE_APPEND);
+    file_put_contents('admin_auth.log', "Auth failed: ".$e->getMessage()."\n", FILE_APPEND);
     header('WWW-Authenticate: Basic realm="Admin Panel"');
     header('HTTP/1.1 401 Unauthorized');
     exit('Неверные учетные данные');
