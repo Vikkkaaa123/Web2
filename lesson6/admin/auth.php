@@ -1,5 +1,11 @@
 <?php
+session_start();
 require __DIR__ . '/db.php';
+
+// Если уже авторизован через сессию
+if (!empty($_SESSION['admin'])) {
+    return;
+}
 
 // Включим логирование
 file_put_contents('admin_auth.log', date('Y-m-d H:i:s')." - Auth started\n", FILE_APPEND);
