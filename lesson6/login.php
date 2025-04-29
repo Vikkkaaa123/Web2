@@ -2,11 +2,6 @@
 session_start();
 header('Content-Type: text/html; charset=UTF-8');
 
-if (!empty($_SESSION['login'])) {
-    header('Location: index.php');
-    exit();
-}
-
 // Подключение к БД
 $user = 'u68606';
 $pass = '9347178';
@@ -22,37 +17,16 @@ try {
 
 $messages = [];
 
-// Обработка формы входа
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $login = trim($_POST['login'] ?? '');
     $password = trim($_POST['pass'] ?? '');
 
     try {
-        // Проверяем обычного пользователя
-        $stmt = $db->prepare("SELECT id, login, password_hash FROM users WHERE login = ?");
+        // Сначала проверяем в таблице admins
+        $stmt = $db->prepare("SELECT login, password_hash FROM admins WHERE login = ?");
         $stmt->execute([$login]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $admin = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password_hash'])) {
-            $_SESSION['login'] = $user['login'];
-            $_SESSION['uid'] = $user['id'];
-            
-            $admin_stmt = $db->prepare("SELECT 1 FROM admins WHERE login = ?");
-            $admin_stmt->execute([$login]);
-            
-            if ($admin_stmt->fetch()) {
-                $_SESSION['admin'] = true;
-                header('Location: admin/admin.php'); 
-            } else {
-                header('Location: index.php'); 
-            }
-            exit();
-        }
-        
-        $admin_stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
-        $admin_stmt->execute([$login]);
-        $admin = $admin_stmt->fetch();
-        
         if ($admin && password_verify($password, $admin['password_hash'])) {
             $_SESSION['admin'] = true;
             $_SESSION['admin_login'] = $login;
@@ -60,12 +34,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit();
         }
 
+        // Если не админ, проверяем как обычного пользователя
+        $stmt = $db->prepare("SELECT id, login, password_hash FROM users WHERE login = ?");
+        $stmt->execute([$login]);
+        $user = $stmt->fetch();
+
+        if ($user && password_verify($password, $user['password_hash'])) {
+            $_SESSION['login'] = $user['login'];
+            $_SESSION['uid'] = $user['id'];
+            header('Location: index.php');
+            exit();
+        }
+
+        // Если дошли сюда - авторизация не удалась
         $messages[] = 'Неверный логин или пароль';
 
     } catch (PDOException $e) {
         $messages[] = 'Ошибка при входе в систему';
         error_log('Login error: ' . $e->getMessage());
     }
+}
+
+// Если уже авторизован - перенаправляем
+if (!empty($_SESSION['login'])) {
+    header('Location: index.php');
+    exit();
+}
+if (!empty($_SESSION['admin'])) {
+    header('Location: admin/admin.php');
+    exit();
 }
 ?>
 <!DOCTYPE html>
@@ -75,39 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Вход в систему</title>
-    <style>
-        .login-form {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .form-actions {
-            margin-top: 20px;
-        }
-        .error-message {
-            color: #d32f2f;
-            margin-bottom: 15px;
-        }
-        .register-link {
-            margin-top: 15px;
-            text-align: center;
-        }
-    </style>
 </head>
 <body>
     <div class="login-form">
@@ -124,23 +88,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <form method="post">
             <div class="form-group">
                 <label for="login">Логин:</label>
-                <input type="text" id="login" name="login" required>
+                <input type="text" id="login" name="login" required value="admin">
             </div>
             
             <div class="form-group">
                 <label for="pass">Пароль:</label>
-                <input type="password" id="pass" name="pass" required>
+                <input type="password" id="pass" name="pass" required value="123">
             </div>
             
             <div class="form-actions">
-                <button type="submit" class="btn">Войти</button>
+                <button type="submit">Войти</button>
             </div>
         </form>
-        
-        <p class="register-link">Нет аккаунта? <a href="index.php">Заполните форму</a></p>
-        
-        <p class="admin-notice" style="margin-top: 20px; font-size: 0.9em; color: #666;">
-        </p>
     </div>
 </body>
 </html>
