@@ -2,104 +2,96 @@
 session_start();
 header('Content-Type: text/html; charset=UTF-8');
 
-// Подключение к БД
-$user = 'u68606';
-$pass = '9347178';
-
-try {
-    $db = new PDO('mysql:host=localhost;dbname=u68606', $user, $pass, [
-        PDO::ATTR_PERSISTENT => true,
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]);
-} catch (PDOException $e) {
-    die('Ошибка подключения: ' . $e->getMessage());
-}
+$db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+]);
 
 $messages = [];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $login = trim($_POST['login'] ?? '');
-    $password = trim($_POST['pass'] ?? '');
+    $login = trim($_POST['login']);
+    $password = trim($_POST['pass']);
 
     try {
-        // Сначала проверяем в таблице admins
-        $stmt = $db->prepare("SELECT login, password_hash FROM admins WHERE login = ?");
+        // 1. Проверка администратора
+        $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
         $stmt->execute([$login]);
         $admin = $stmt->fetch();
 
-        if ($admin && password_verify($password, $admin['password_hash'])) {
-            $_SESSION['admin'] = true;
-            $_SESSION['admin_login'] = $login;
-            header('Location: admin/admin.php');
-            exit();
+        if ($admin) {
+            if (password_verify($password, $admin['password_hash'])) {
+                $_SESSION['admin'] = true;
+                header('Location: admin/admin.php');
+                exit;
+            } else {
+                $messages[] = 'Неверный пароль администратора';
+                error_log("Admin password mismatch for: $login");
+            }
         }
 
-        // Если не админ, проверяем как обычного пользователя
-        $stmt = $db->prepare("SELECT id, login, password_hash FROM users WHERE login = ?");
+        // 2. Проверка обычного пользователя
+        $stmt = $db->prepare("SELECT id, password_hash FROM users WHERE login = ?");
         $stmt->execute([$login]);
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password_hash'])) {
-            $_SESSION['login'] = $user['login'];
+            $_SESSION['login'] = $login;
             $_SESSION['uid'] = $user['id'];
             header('Location: index.php');
-            exit();
+            exit;
         }
 
-        // Если дошли сюда - авторизация не удалась
-        $messages[] = 'Неверный логин или пароль';
+        if (!$admin && !$user) {
+            $messages[] = 'Пользователь не найден';
+            error_log("User not found: $login");
+        }
 
     } catch (PDOException $e) {
-        $messages[] = 'Ошибка при входе в систему';
-        error_log('Login error: ' . $e->getMessage());
+        $messages[] = 'Ошибка базы данных';
+        error_log("DB Error: " . $e->getMessage());
     }
-}
-
-// Если уже авторизован - перенаправляем
-if (!empty($_SESSION['login'])) {
-    header('Location: index.php');
-    exit();
-}
-if (!empty($_SESSION['admin'])) {
-    header('Location: admin/admin.php');
-    exit();
 }
 ?>
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Вход в систему</title>
+    <title>Вход</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; }
+        .error { color: red; margin: 10px 0; }
+        input { width: 100%; padding: 8px; margin: 5px 0; }
+        button { background: #4CAF50; color: white; border: none; padding: 10px; width: 100%; }
+    </style>
 </head>
 <body>
-    <div class="login-form">
-        <h1>Вход в систему</h1>
-        
-        <?php if (!empty($messages)): ?>
-            <div class="error-message">
-                <?php foreach ($messages as $message): ?>
-                    <p><?= htmlspecialchars($message) ?></p>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-        
-        <form method="post">
-            <div class="form-group">
-                <label for="login">Логин:</label>
-                <input type="text" id="login" name="login" required value="admin">
-            </div>
-            
-            <div class="form-group">
-                <label for="pass">Пароль:</label>
-                <input type="password" id="pass" name="pass" required value="123">
-            </div>
-            
-            <div class="form-actions">
-                <button type="submit">Войти</button>
-            </div>
-        </form>
+    <h2>Вход в систему</h2>
+    
+    <?php if ($messages): ?>
+        <div class="error">
+            <?= implode('<br>', $messages) ?>
+        </div>
+    <?php endif; ?>
+
+    <form method="post">
+        <input type="text" name="login" placeholder="Логин" value="admin" required>
+        <input type="password" name="pass" placeholder="Пароль" value="123" required>
+        <button type="submit">Войти</button>
+    </form>
+
+    <!-- Отладочная информация (удалить в боевом режиме) -->
+    <div style="margin-top: 20px; font-size: 12px; color: #666;">
+        <h4>Отладочная информация:</h4>
+        <pre><?php
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                echo "Login attempt:\n";
+                echo "Login: $login\n";
+                echo "Password: " . str_repeat('*', strlen($password)) . "\n";
+                
+                $hashes = $db->query("SELECT login, password_hash FROM admins UNION SELECT login, password_hash FROM users")->fetchAll();
+                echo "\nAll password hashes in DB:\n";
+                print_r($hashes);
+            }
+        ?></pre>
     </div>
 </body>
 </html>
