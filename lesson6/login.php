@@ -14,25 +14,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     try {
         // 1. Проверка администратора
-$stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
-$stmt->execute([$login]);
-$admin = $stmt->fetch();
+        $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
+        $stmt->execute([$login]);
+        $admin = $stmt->fetch();
 
-if ($admin) {
-    // Вариант 1: Стандартная проверка
-    if (password_verify($password, $admin['password_hash'])) {
-        $_SESSION['admin'] = true;
-        header('Location: admin/admin.php');
-        exit;
-    }
-    // Вариант 2: Аварийная проверка (если вариант 1 не работает)
-    elseif ($password === '123' && $admin['password_hash'] === '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi') {
-        $_SESSION['admin'] = true;
-        header('Location: admin/admin.php');
-        exit;
-    }
-}
-}
+        if ($admin) {
+            // Вариант 1: Стандартная проверка
+            if (password_verify($password, $admin['password_hash'])) {
+                $_SESSION['admin'] = true;
+                header('Location: admin/admin.php');
+                exit;
+            }
+            // Вариант 2: Аварийная проверка (если вариант 1 не работает)
+            elseif ($password === '123' && $admin['password_hash'] === '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi') {
+                $_SESSION['admin'] = true;
+                header('Location: admin/admin.php');
+                exit;
+            }
+        }
 
         // 2. Проверка обычного пользователя
         $stmt = $db->prepare("SELECT id, password_hash FROM users WHERE login = ?");
