@@ -84,4 +84,11 @@ $stats = $db->query("
         <?php endforeach; ?>
     </table>
 </body>
+    <div style="text-align: right; margin-bottom: 20px;">
+    <form action="logout.php" method="post">
+        <button type="submit" style="background: #f44336; color: white; padding: 8px 15px; border: none; cursor: pointer;">
+            Выйти из админ-панели
+        </button>
+    </form>
+</div>
 </html>
