@@ -26,14 +26,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = trim($_POST['pass'] ?? '');
 
     try {
-        // Сначала проверяем, не админ ли это
-        $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
+        // Проверяем, не админ ли это
+        $stmt = $db->prepare("SELECT id, login, password_hash FROM admins WHERE login = ?");
         $stmt->execute([$login]);
         $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($admin && password_verify($password, $admin['password_hash'])) {
             // Админ - перенаправляем в админ-панель
             $_SESSION['admin'] = true;
+            $_SESSION['admin_login'] = $admin['login'];
             header('Location: admin/admin.php');
             exit();
         }
@@ -52,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $messages[] = 'Неверный логин или пароль';
         }
     } catch (PDOException $e) {
+        error_log('Login error: ' . $e->getMessage());
         $messages[] = 'Ошибка при входе в систему';
     }
 }
@@ -76,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         <?php endif; ?>
         
-        <form method="post">
+        <form method="POST">
             <div class="form-group">
                 <label for="login">Логин:</label>
                 <input type="text" id="login" name="login" required>
