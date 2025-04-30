@@ -6,6 +6,10 @@ ini_set('display_startup_errors', 1);
 
 session_start();
 
+// Жестко прописанные тестовые данные для админа
+define('ADMIN_LOGIN', 'admin');
+define('ADMIN_PASS_HASH', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+
 // Подключение к БД с обработкой ошибок
 try {
     $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
@@ -21,32 +25,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login = trim($_POST['login'] ?? '');
     $password = trim($_POST['pass'] ?? '');
 
-    // Жестко прописанные тестовые данные для админа
-    $ADMIN_LOGIN = 'admin';
-    $ADMIN_PASS_HASH = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
-    
-   // Проверка администратора (жестко прописано для теста)
-const ADMIN_DATA = [
-    'login' => 'admin',
-    'hash' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
-];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $login = trim($_POST['login']);
-    $password = trim($_POST['pass']);
-
-    if ($login === ADMIN_DATA['login']) {
-        if (password_verify($password, ADMIN_DATA['hash'])) {
+    // Проверка администратора
+    if ($login === ADMIN_LOGIN) {
+        if (password_verify($password, ADMIN_PASS_HASH)) {
             $_SESSION['admin'] = true;
+            $_SESSION['admin_login'] = ADMIN_LOGIN;
             header('Location: admin/admin.php');
             exit();
         } else {
-            die("Ошибка: Неверный пароль. Проверка: " . 
-                (password_verify($password, ADMIN_DATA['hash']) ? 'true' : 'false') .
-                "<br>Ожидаемый хеш: " . ADMIN_DATA['hash']);
+            $error = 'Неверный пароль администратора';
+            
+            // Отладочная информация
+            error_log("Admin login failed: " . print_r([
+                'input_login' => $login,
+                'input_pass' => $password,
+                'expected_hash' => ADMIN_PASS_HASH,
+                'verify_result' => password_verify($password, ADMIN_PASS_HASH)
+            ], true));
         }
-    }
-    else {
+    } else {
         // Проверка обычного пользователя
         try {
             $stmt = $db->prepare("SELECT * FROM users WHERE login = ?");
@@ -66,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (PDOException $e) {
             $error = 'Ошибка базы данных';
+            error_log("DB error: " . $e->getMessage());
         }
     }
 }
@@ -102,10 +100,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div style="margin-top: 30px; padding: 15px; background: #f5f5f5;">
         <h3>Тестовые данные:</h3>
-        <p><strong>Администратор:</strong> admin / 123</p>
-        <p><strong>Хеш пароля:</strong> <?= $ADMIN_PASS_HASH ?? '' ?></p>
+        <p><strong>Администратор:</strong> <?= ADMIN_LOGIN ?> / 123</p>
+        <p><strong>Хеш пароля:</strong> <?= ADMIN_PASS_HASH ?></p>
         <p><strong>Проверка хеша:</strong> 
-            <?= (isset($ADMIN_PASS_HASH) && password_verify('123', $ADMIN_PASS_HASH)) ? 'OK' : 'Ошибка' ?>
+            <?= password_verify('123', ADMIN_PASS_HASH) ? 'OK' : 'Ошибка' ?>
         </p>
     </div>
 </body>
