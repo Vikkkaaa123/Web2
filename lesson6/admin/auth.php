@@ -1,30 +1,29 @@
 <?php
+session_start();
+
 function checkAdminAuth() {
-    session_start();
-    
+    // Проверяем сессию
     if (!empty($_SESSION['admin'])) {
-        return; // Уже авторизован
+        return true;
     }
 
-    // Если нет сессии, пробуем HTTP Basic Auth
+    // Проверяем HTTP Basic Auth
     if (!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])) {
-        global $db;
-        $login = $_SERVER['PHP_AUTH_USER'];
-        $password = $_SERVER['PHP_AUTH_PW'];
-
-        $stmt = $db->prepare("SELECT id FROM admins WHERE login = ? AND password_hash = ?");
-        $stmt->execute([$login, password_hash($password, PASSWORD_DEFAULT)]);
+        $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178');
         
-        if ($stmt->fetch()) {
+        $stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
+        $stmt->execute([$_SERVER['PHP_AUTH_USER']]);
+        $admin = $stmt->fetch();
+        
+        if ($admin && password_verify($_SERVER['PHP_AUTH_PW'], $admin['password_hash'])) {
             $_SESSION['admin'] = true;
-            $_SESSION['admin_login'] = $login;
-            return;
+            return true;
         }
     }
 
-    // Если дошли сюда - не авторизован
-    header('HTTP/1.1 401 Unauthorized');
+    // Если не авторизован
     header('WWW-Authenticate: Basic realm="Admin Panel"');
-    die('<h1>401 Требуется авторизация</h1>');
+    header('HTTP/1.0 401 Unauthorized');
+    die('Требуется авторизация');
 }
 ?>
