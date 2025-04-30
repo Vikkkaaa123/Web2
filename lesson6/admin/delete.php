@@ -1,21 +1,12 @@
 <?php
-require 'auth.php';
+require_once 'auth.php';
 checkAdminAuth();
 
-$id = (int)$_GET['id'];
+$db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178');
+$userId = $_GET['id'];
 
-$db->beginTransaction();
-try {
-    // Удаляем связанные языки
-    $db->prepare("DELETE FROM application_languages WHERE application_id = ?")->execute([$id]);
-    
-    // Удаляем заявку
-    $db->prepare("DELETE FROM applications WHERE id = ?")->execute([$id]);
-    
-    $db->commit();
-} catch (Exception $e) {
-    $db->rollBack();
-    die("Ошибка удаления: " . $e->getMessage());
-}
+$db->exec("DELETE FROM user_languages WHERE user_id = $userId");
+$db->exec("DELETE FROM users WHERE id = $userId");
 
 header('Location: admin.php');
+?>
