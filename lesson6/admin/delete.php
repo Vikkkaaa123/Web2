@@ -3,10 +3,16 @@ require_once 'auth.php';
 checkAdminAuth();
 
 $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178');
-$userId = $_GET['id'];
+$appId = $_GET['id'];
 
-$db->exec("DELETE FROM user_languages WHERE user_id = $userId");
-$db->exec("DELETE FROM users WHERE id = $userId");
+// Удаляем связи с языками
+$db->exec("DELETE FROM application_languages WHERE application_id = $appId");
+
+// Удаляем связь с пользователем
+$db->exec("DELETE FROM user_applications WHERE application_id = $appId");
+
+// Удаляем саму заявку
+$db->exec("DELETE FROM applications WHERE id = $appId");
 
 header('Location: admin.php');
 ?>
