@@ -26,18 +26,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = trim($_POST['pass'] ?? '');
 
     try {
-        // Сначала проверяем, не администратор ли это
+        // Сначала проверяем, не админ ли это
         $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
         $stmt->execute([$login]);
         $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($admin && password_verify($password, $admin['password_hash'])) {
-            // Перенаправляем администратора в админ-панель
+            // Админ - перенаправляем в админ-панель
+            $_SESSION['admin'] = true;
             header('Location: admin/admin.php');
             exit();
         }
 
-        // Если не администратор, проверяем обычного пользователя
+        // Если не админ, проверяем обычного пользователя
         $stmt = $db->prepare("SELECT id, login, password_hash FROM users WHERE login = ?");
         $stmt->execute([$login]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
