@@ -1,58 +1,52 @@
 <?php
-// Включение всех ошибок
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-
 session_start();
+require 'db_connect.php'; // Подключение к БД
 
-// Жестко прописанные тестовые данные для админа
-define('ADMIN_LOGIN', 'admin');
-define('ADMIN_PASS_HASH', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+$error = '';
 
-// Подключение к БД с обработкой ошибок
-try {
-    $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]);
-} catch (PDOException $e) {
-    die("Ошибка подключения к базе: " . $e->getMessage());
+// Если уже авторизован - перенаправляем
+if (!empty($_SESSION['login'])) {
+    header('Location: index.php');
+    exit();
+}
+if (!empty($_SESSION['admin'])) {
+    header('Location: admin/admin.php');
+    exit();
 }
 
 // Обработка формы входа
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_type'])) {
     $login = trim($_POST['login'] ?? '');
     $password = trim($_POST['pass'] ?? '');
 
-    // Проверка администратора
-    if ($login === ADMIN_LOGIN) {
-        if (password_verify($password, ADMIN_PASS_HASH)) {
-            $_SESSION['admin'] = true;
-            $_SESSION['admin_login'] = ADMIN_LOGIN;
-            header('Location: admin/admin.php');
-            exit();
-        } else {
-            $error = 'Неверный пароль администратора';
+    try {
+        // Проверка администратора
+        if ($_POST['login_type'] === 'admin') {
+            $stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
+            $stmt->execute([$login]);
             
-            // Отладочная информация
-            error_log("Admin login failed: " . print_r([
-                'input_login' => $login,
-                'input_pass' => $password,
-                'expected_hash' => ADMIN_PASS_HASH,
-                'verify_result' => password_verify($password, ADMIN_PASS_HASH)
-            ], true));
+            if ($admin = $stmt->fetch()) {
+                if (password_verify($password, $admin['password_hash'])) {
+                    $_SESSION['admin'] = true;
+                    $_SESSION['admin_login'] = $login;
+                    header('Location: admin/admin.php');
+                    exit();
+                } else {
+                    $error = 'Неверный пароль администратора';
+                }
+            } else {
+                $error = 'Администратор с таким логином не найден';
+            }
         }
-    } else {
         // Проверка обычного пользователя
-        try {
+        else {
             $stmt = $db->prepare("SELECT * FROM users WHERE login = ?");
             $stmt->execute([$login]);
             
             if ($user = $stmt->fetch()) {
                 if (password_verify($password, $user['password_hash'])) {
-                    $_SESSION['user'] = true;
                     $_SESSION['login'] = $user['login'];
+                    $_SESSION['uid'] = $user['id'];
                     header('Location: index.php');
                     exit();
                 } else {
@@ -61,10 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $error = 'Пользователь не найден';
             }
-        } catch (PDOException $e) {
-            $error = 'Ошибка базы данных';
-            error_log("DB error: " . $e->getMessage());
         }
+    } catch (PDOException $e) {
+        $error = 'Ошибка базы данных: ' . $e->getMessage();
     }
 }
 ?>
@@ -73,10 +66,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <title>Вход в систему</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 400px; margin: 20px auto; padding: 20px; }
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 20px auto; padding: 20px; }
+        .login-form, .admin-register { background: #f9f9f9; padding: 20px; margin-bottom: 20px; border-radius: 5px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { background: #4CAF50; color: white; border: none; padding: 10px; width: 100%; cursor: pointer; }
+        button:hover { background: #45a049; }
         .error { color: red; margin: 10px 0; }
-        input { width: 100%; padding: 8px; margin: 5px 0 15px; box-sizing: border-box; }
-        button { background: #4CAF50; color: white; border: none; padding: 10px; width: 100%; }
+        .toggle-form { text-align: center; margin-top: 15px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -86,25 +85,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
     
-    <form method="POST">
-        <div>
-            <label>Логин:</label>
-            <input type="text" name="login" required>
+    <!-- Форма входа для пользователей -->
+    <div class="login-form" id="userLoginForm">
+        <h2>Вход для пользователей</h2>
+        <form method="POST">
+            <input type="hidden" name="login_type" value="user">
+            <div class="form-group">
+                <label>Логин:</label>
+                <input type="text" name="login" required>
+            </div>
+            <div class="form-group">
+                <label>Пароль:</label>
+                <input type="password" name="pass" required>
+            </div>
+            <button type="submit">Войти</button>
+        </form>
+        <div class="toggle-form">
+            <a href="#" onclick="showAdminForm()">Вход для администратора</a>
         </div>
-        <div>
-            <label>Пароль:</label>
-            <input type="password" name="pass" required>
-        </div>
-        <button type="submit">Войти</button>
-    </form>
-
-    <div style="margin-top: 30px; padding: 15px; background: #f5f5f5;">
-        <h3>Тестовые данные:</h3>
-        <p><strong>Администратор:</strong> <?= ADMIN_LOGIN ?> / 123</p>
-        <p><strong>Хеш пароля:</strong> <?= ADMIN_PASS_HASH ?></p>
-        <p><strong>Проверка хеша:</strong> 
-            <?= password_verify('123', ADMIN_PASS_HASH) ? 'OK' : 'Ошибка' ?>
-        </p>
     </div>
+    
+    <!-- Форма входа для администратора -->
+    <div class="login-form hidden" id="adminLoginForm">
+        <h2>Вход для администратора</h2>
+        <form method="POST">
+            <input type="hidden" name="login_type" value="admin">
+            <div class="form-group">
+                <label>Логин администратора:</label>
+                <input type="text" name="login" required>
+            </div>
+            <div class="form-group">
+                <label>Пароль:</label>
+                <input type="password" name="pass" required>
+            </div>
+            <button type="submit">Войти</button>
+        </form>
+        <div class="toggle-form">
+            <a href="#" onclick="showUserForm()">Вход для пользователей</a>
+        </div>
+    </div>
+    
+    <!-- Блок регистрации администратора -->
+    <div class="admin-register">
+        <h3>Нет доступа администратора?</h3>
+        <a href="register_admin.php" class="button">Зарегистрировать нового администратора</a>
+    </div>
+
+    <script>
+        function showAdminForm() {
+            document.getElementById('userLoginForm').classList.add('hidden');
+            document.getElementById('adminLoginForm').classList.remove('hidden');
+            return false;
+        }
+        
+        function showUserForm() {
+            document.getElementById('adminLoginForm').classList.add('hidden');
+            document.getElementById('userLoginForm').classList.remove('hidden');
+            return false;
+        }
+    </script>
 </body>
 </html>
