@@ -4,20 +4,28 @@ checkAdminAuth();
 
 $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178');
 
-// Получение всех заявок (applications) с языками
+// Получение всех заявок (исправленный запрос)
 $applications = $db->query("
-    SELECT a.*, 
-    GROUP_CONCAT(p.name SEPARATOR ', ') as languages,
-    u.login as user_login
+    SELECT 
+        a.id,
+        a.full_name,
+        a.phone,
+        a.email,
+        a.birth_date,
+        a.gender,
+        a.biography,
+        a.agreement,
+        u.login as user_login,
+        GROUP_CONCAT(p.name SEPARATOR ', ') as languages
     FROM applications a
+    JOIN user_applications ua ON a.id = ua.application_id
+    JOIN users u ON ua.user_id = u.id
     LEFT JOIN application_languages al ON a.id = al.application_id
     LEFT JOIN programming_languages p ON al.language_id = p.id
-    LEFT JOIN user_applications ua ON a.id = ua.application_id
-    LEFT JOIN users u ON ua.user_id = u.id
-    GROUP BY a.id
+    GROUP BY a.id, a.full_name, a.phone, a.email, a.birth_date, a.gender, a.biography, a.agreement, u.login
 ")->fetchAll();
 
-// Статистика по языкам
+// Статистика по языкам (этот запрос не требует изменений)
 $stats = $db->query("
     SELECT p.name, COUNT(al.application_id) as count
     FROM programming_languages p
