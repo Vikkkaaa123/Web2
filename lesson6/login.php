@@ -25,17 +25,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ADMIN_LOGIN = 'admin';
     $ADMIN_PASS_HASH = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
     
-    // Проверка администратора
-    if ($login === $ADMIN_LOGIN) {
-        if (password_verify($password, $ADMIN_PASS_HASH)) {
+   // Проверка администратора (жестко прописано для теста)
+const ADMIN_DATA = [
+    'login' => 'admin',
+    'hash' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
+];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $login = trim($_POST['login']);
+    $password = trim($_POST['pass']);
+
+    if ($login === ADMIN_DATA['login']) {
+        if (password_verify($password, ADMIN_DATA['hash'])) {
             $_SESSION['admin'] = true;
-            $_SESSION['admin_login'] = $ADMIN_LOGIN;
             header('Location: admin/admin.php');
             exit();
         } else {
-            $error = 'Неверный пароль администратора';
+            die("Ошибка: Неверный пароль. Проверка: " . 
+                (password_verify($password, ADMIN_DATA['hash']) ? 'true' : 'false') .
+                "<br>Ожидаемый хеш: " . ADMIN_DATA['hash']);
         }
-    } else {
+    }
+    else {
         // Проверка обычного пользователя
         try {
             $stmt = $db->prepare("SELECT * FROM users WHERE login = ?");
