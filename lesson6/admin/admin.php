@@ -2,32 +2,39 @@
 require_once 'auth.php';
 checkAdminAuth();
 
-$db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178');
+$db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+]);
 
-// Получение всех заявок (исправленный запрос)
-$applications = $db->query("
-    SELECT 
-        a.id,
-        a.full_name,
-        a.phone,
-        a.email,
-        a.birth_date,
-        a.gender,
-        a.biography,
-        a.agreement,
-        u.login as user_login,
-        GROUP_CONCAT(p.name SEPARATOR ', ') as languages
-    FROM applications a
-    JOIN user_applications ua ON a.id = ua.application_id
-    JOIN users u ON ua.user_id = u.id
-    LEFT JOIN application_languages al ON a.id = al.application_id
-    LEFT JOIN programming_languages p ON al.language_id = p.id
-    GROUP BY a.id, a.full_name, a.phone, a.email, a.birth_date, a.gender, a.biography, a.agreement, u.login
-")->fetchAll();
+// 1. Сначала получаем ВСЕ заявки
+$applications = $db->query("SELECT * FROM applications ORDER BY id")->fetchAll();
 
-// Статистика по языкам (этот запрос не требует изменений)
+// 2. Для каждой заявки получаем дополнительные данные
+foreach ($applications as &$app) {
+    // Получаем логин пользователя
+    $stmt = $db->prepare("
+        SELECT u.login 
+        FROM users u
+        JOIN user_applications ua ON u.id = ua.user_id
+        WHERE ua.application_id = ?
+    ");
+    $stmt->execute([$app['id']]);
+    $app['user_login'] = $stmt->fetchColumn();
+    
+    // Получаем языки программирования
+    $stmt = $db->prepare("
+        SELECT GROUP_CONCAT(p.name SEPARATOR ', ') 
+        FROM programming_languages p
+        JOIN application_languages al ON p.id = al.language_id
+        WHERE al.application_id = ?
+    ");
+    $stmt->execute([$app['id']]);
+    $app['languages'] = $stmt->fetchColumn() ?: 'Не указано';
+}
+
+// 3. Статистика по языкам
 $stats = $db->query("
-    SELECT p.name, COUNT(al.application_id) as count
+    SELECT p.name, COUNT(DISTINCT al.application_id) as count
     FROM programming_languages p
     LEFT JOIN application_languages al ON p.id = al.language_id
     GROUP BY p.id
@@ -59,7 +66,7 @@ $stats = $db->query("
         <?php endforeach; ?>
     </table>
 
-    <h2>Все заявки пользователей</h2>
+    <h2>Все заявки пользователей (всего: <?= count($applications) ?>)</h2>
     <table>
         <tr>
             <th>ID</th>
@@ -72,10 +79,10 @@ $stats = $db->query("
         <?php foreach ($applications as $app): ?>
         <tr>
             <td><?= $app['id'] ?></td>
-            <td><?= htmlspecialchars($app['user_login']) ?></td>
+            <td><?= htmlspecialchars($app['user_login'] ?? 'N/A') ?></td>
             <td><?= htmlspecialchars($app['full_name']) ?></td>
             <td><?= htmlspecialchars($app['email']) ?></td>
-            <td><?= htmlspecialchars($app['languages'] ?? 'Не указано') ?></td>
+            <td><?= htmlspecialchars($app['languages']) ?></td>
             <td>
                 <a href="edit.php?id=<?= $app['id'] ?>">Редактировать</a> |
                 <a href="delete.php?id=<?= $app['id'] ?>" onclick="return confirm('Удалить эту заявку?')">Удалить</a>
