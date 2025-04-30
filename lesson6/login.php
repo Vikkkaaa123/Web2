@@ -29,26 +29,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['pass'] ?? '');
     
     try {
-        // 1. Проверка администратора
-        $stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
-        $stmt->execute([$login]);
-        $admin = $stmt->fetch();
-        
-        if ($admin) {
-            error_log("Admin found: " . print_r($admin, true));
-            
-            if (password_verify($password, $admin['password_hash'])) {
-                $_SESSION['admin'] = true;
-                $_SESSION['admin_login'] = $admin['login'];
-                error_log("Admin auth successful, redirecting to admin panel");
-                header('Location: admin/admin.php');
-                exit();
-            } else {
-                error_log("Admin password verification failed");
-            }
-        }
+        // Проверка администратора
+$stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
+$stmt->execute([$login]);
+$admin = $stmt->fetch();
 
-        // 2. Проверка обычного пользователя
+if ($admin) {
+    error_log("Admin hash: " . $admin['password_hash']);
+    error_log("Verify result: " . (password_verify($password, $admin['password_hash']) ? 'true' : 'false'));
+    
+    if (password_verify($password, $admin['password_hash'])) {
+        $_SESSION['admin'] = true;
+        $_SESSION['admin_login'] = $admin['login'];
+        header('Location: admin/admin.php');
+        exit();
+    } else {
+        error_log("Password verification failed for admin");
+    }
+}
+
+        // Проверка обычного пользователя
         $stmt = $db->prepare("SELECT * FROM users WHERE login = ?");
         $stmt->execute([$login]);
         $user = $stmt->fetch();
