@@ -2,8 +2,13 @@
 session_start();
 header('Content-Type: text/html; charset=UTF-8');
 
+// Если уже авторизован - перенаправляем
 if (!empty($_SESSION['login'])) {
     header('Location: index.php');
+    exit();
+}
+if (!empty($_SESSION['admin'])) {
+    header('Location: admin/admin.php');
     exit();
 }
 
@@ -26,20 +31,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = trim($_POST['pass'] ?? '');
 
     try {
-        // Проверяем, не админ ли это
+        // Сначала проверяем администратора
         $stmt = $db->prepare("SELECT id, login, password_hash FROM admins WHERE login = ?");
         $stmt->execute([$login]);
         $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($admin && password_verify($password, $admin['password_hash'])) {
-            // Админ - перенаправляем в админ-панель
-            $_SESSION['admin'] = true;
-            $_SESSION['admin_login'] = $admin['login'];
-            header('Location: admin/admin.php');
-            exit();
+        if ($admin) {
+            // Отладочный вывод - можно удалить после проверки
+            error_log("Admin login attempt: $login, hash: {$admin['password_hash']}, verify: " . password_verify($password, $admin['password_hash']));
+            
+            if (password_verify($password, $admin['password_hash'])) {
+                $_SESSION['admin'] = true;
+                $_SESSION['admin_login'] = $admin['login'];
+                header('Location: admin/admin.php');
+                exit();
+            }
         }
 
-        // Если не админ, проверяем обычного пользователя
+        // Проверяем обычного пользователя
         $stmt = $db->prepare("SELECT id, login, password_hash FROM users WHERE login = ?");
         $stmt->execute([$login]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -49,14 +58,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['uid'] = $user['id'];
             header('Location: index.php');
             exit();
-        } else {
-            $messages[] = 'Неверный логин или пароль';
         }
+
+        $messages[] = 'Неверный логин или пароль';
+        
     } catch (PDOException $e) {
-        error_log('Login error: ' . $e->getMessage());
+        error_log("Login error: " . $e->getMessage());
         $messages[] = 'Ошибка при входе в систему';
     }
 }
+
+// Отладочный вывод - можно удалить после проверки
+error_log("Login form rendered, messages: " . print_r($messages, true));
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -73,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php if (!empty($messages)): ?>
             <div class="error-message">
                 <?php foreach ($messages as $message): ?>
-                    <p><?php echo $message; ?></p>
+                    <p><?= htmlspecialchars($message) ?></p>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
