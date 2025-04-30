@@ -3,26 +3,108 @@ require_once 'auth.php';
 checkAdminAuth();
 
 $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178');
-$userId = $_GET['id'];
+$appId = $_GET['id'];
 
-// Логика сохранения
+// Получаем все языки для select
+$allLangs = $db->query("SELECT * FROM programming_languages")->fetchAll();
+
+// Получаем текущую заявку
+$app = $db->query("SELECT * FROM applications WHERE id = $appId")->fetch();
+
+// Получаем выбранные языки для этой заявки
+$selectedLangs = $db->query("
+    SELECT language_id 
+    FROM application_languages 
+    WHERE application_id = $appId
+")->fetchAll(PDO::FETCH_COLUMN);
+
+// Обработка формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $stmt = $db->prepare("UPDATE users SET login = ?, email = ? WHERE id = ?");
-    $stmt->execute([$_POST['login'], $_POST['email'], $userId]);
+    // Обновляем основную информацию
+    $stmt = $db->prepare("
+        UPDATE applications 
+        SET full_name = ?, email = ?, phone = ?, gender = ?, biography = ?
+        WHERE id = ?
+    ");
+    $stmt->execute([
+        $_POST['full_name'],
+        $_POST['email'],
+        $_POST['phone'],
+        $_POST['gender'],
+        $_POST['biography'],
+        $appId
+    ]);
+    
+    // Обновляем языки
+    $db->exec("DELETE FROM application_languages WHERE application_id = $appId");
+    if (!empty($_POST['languages'])) {
+        $stmt = $db->prepare("
+            INSERT INTO application_languages (application_id, language_id)
+            VALUES (?, ?)
+        ");
+        foreach ($_POST['languages'] as $langId) {
+            $stmt->execute([$appId, $langId]);
+        }
+    }
+    
     header('Location: admin.php');
     exit();
 }
-
-// Получение данных пользователя
-$user = $db->query("SELECT * FROM users WHERE id = $userId")->fetch();
 ?>
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Редактирование заявки</title>
+    <style>
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, textarea, select { width: 100%; padding: 8px; }
+        button { padding: 10px 15px; background: #4CAF50; color: white; border: none; }
+    </style>
+</head>
 <body>
-    <h1>Редактирование пользователя</h1>
+    <h1>Редактирование заявки #<?= $appId ?></h1>
     <form method="POST">
-        <input type="text" name="login" value="<?= htmlspecialchars($user['login']) ?>">
-        <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>">
+        <div class="form-group">
+            <label>ФИО:</label>
+            <input type="text" name="full_name" value="<?= htmlspecialchars($app['full_name']) ?>" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" name="email" value="<?= htmlspecialchars($app['email']) ?>" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Телефон:</label>
+            <input type="text" name="phone" value="<?= htmlspecialchars($app['phone']) ?>">
+        </div>
+        
+        <div class="form-group">
+            <label>Пол:</label>
+            <select name="gender">
+                <option value="male" <?= $app['gender'] == 'male' ? 'selected' : '' ?>>Мужской</option>
+                <option value="female" <?= $app['gender'] == 'female' ? 'selected' : '' ?>>Женский</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Биография:</label>
+            <textarea name="biography"><?= htmlspecialchars($app['biography']) ?></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Языки программирования:</label>
+            <select name="languages[]" multiple style="height: 100px;">
+                <?php foreach ($allLangs as $lang): ?>
+                <option value="<?= $lang['id'] ?>" 
+                    <?= in_array($lang['id'], $selectedLangs) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($lang['name']) ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        
         <button type="submit">Сохранить</button>
     </form>
 </body>
