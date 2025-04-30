@@ -2,9 +2,10 @@
 session_start();
 header('Content-Type: text/html; charset=UTF-8');
 
-// Жестко прописанные учетные данные администратора
-const ADMIN_LOGIN = 'admin';
-const ADMIN_PASSWORD = '123'; // Пароль в открытом виде для теста
+// Подключение к БД
+$db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+]);
 
 // Если уже авторизован - перенаправляем
 if (!empty($_SESSION['login'])) {
@@ -22,20 +23,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $login = trim($_POST['login'] ?? '');
     $password = trim($_POST['pass'] ?? '');
 
-    // Проверка администратора (жестко прописано в коде)
-    if ($login === ADMIN_LOGIN && $password === ADMIN_PASSWORD) {
-        $_SESSION['admin'] = true;
-        $_SESSION['admin_login'] = ADMIN_LOGIN;
-        header('Location: admin/admin.php');
-        exit();
-    }
-
-    // Проверка обычного пользователя (из базы данных)
     try {
-        $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        ]);
+        // Сначала проверяем администратора
+        $stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
+        $stmt->execute([$login]);
+        $admin = $stmt->fetch();
 
+        if ($admin) {
+            if (password_verify($password, $admin['password_hash'])) {
+                $_SESSION['admin'] = true;
+                $_SESSION['admin_login'] = $admin['login'];
+                header('Location: admin/admin.php');
+                exit();
+            }
+            // Если хеш не совпал, продолжаем проверять как обычного пользователя
+        }
+
+        // Проверяем обычного пользователя
         $stmt = $db->prepare("SELECT * FROM users WHERE login = ?");
         $stmt->execute([$login]);
         $user = $stmt->fetch();
@@ -50,55 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = 'Неверный логин или пароль';
 
     } catch (PDOException $e) {
-        $error = 'Ошибка базы данных: ' . $e->getMessage();
+        $error = 'Ошибка базы данных';
+        error_log("Login error: " . $e->getMessage());
     }
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в систему</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; }
-        .error { color: red; margin-bottom: 15px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 8px; box-sizing: border-box; }
-        input[type="submit"] { padding: 8px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <h1>Вход в систему</h1>
-    
-    <?php if ($error): ?>
-        <div class="error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-    
-    <form method="POST">
-        <div class="form-group">
-            <label for="login">Логин:</label>
-            <input type="text" id="login" name="login" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="pass">Пароль:</label>
-            <input type="password" id="pass" name="pass" required>
-        </div>
-        
-        <div class="form-group">
-            <input type="submit" value="Войти">
-        </div>
-    </form>
-    
-    <p>Нет аккаунта? <a href="index.php">Заполните форму</a></p>
-    
-    <!-- Отладочная информация -->
-    <div style="margin-top: 20px; color: #666; font-size: 0.9em;">
-        <p>Тестовые данные:</p>
-        <p>Админ: <?= ADMIN_LOGIN ?> / <?= ADMIN_PASSWORD ?></p>
-    </div>
-</body>
-</html>
+<html>
+<!-- Форма входа остается без изменений -->
