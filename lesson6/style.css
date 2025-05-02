@@ -208,7 +208,7 @@ button[type="submit"]:hover {
 }
 
 .admin-container {
-    max-width: 1200px;
+    max-width: 1400px; 
     margin: 20px auto;
     padding: 20px;
     background: rgba(255, 243, 224, 0.95);
@@ -226,12 +226,14 @@ button[type="submit"]:hover {
     border-collapse: collapse;
     margin: 20px 0;
     font-size: 14px;
+    table-layout: auto; 
 }
 
 .admin-table th, .admin-table td {
     border: 1px solid #ddd;
     padding: 12px;
     text-align: left;
+    white-space: nowrap; 
 }
 
 .admin-table th {
