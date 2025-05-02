@@ -55,8 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Вход в систему</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="login-page">
- <h1>Вход в систему</h1>   
+<body class="login-page">  
     <div class="form-container">
         
         <?php if ($error): ?>
