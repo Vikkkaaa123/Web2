@@ -1,38 +1,42 @@
-body {
-    background-color: #ffcc80;
-    font-family: Arial, sans-serif;
-    color: #333;
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #ffcc80 !important;
+    font-family: Arial, sans-serif;
+    color: #333;
+    min-height: 100vh;
 }
 
 body.index-page, body.login-page {
-    background-image: url('fon.PNG');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    min-height: 100vh;
+    background-image: url('fon.PNG') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
 }
 
 form {
     max-width: 700px;
     margin: 20px auto;
-    background: #ffe0b2;
+    background: #ffe0b2 !important;
     padding: 25px;
     border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
-    background: #ffe0b2;
+    background: #ffe0b2 !important;
 }
 
 th {
-    background: #ffb74d; 
-    color: white;
+    background: #ffb74d !important;
+    color: white !important;
     padding: 12px;
     text-align: left;
 }
@@ -42,47 +46,53 @@ td {
     border-bottom: 1px solid #ffb74d;
 }
 
+tr:nth-child(even) {
+    background: rgba(255, 183, 77, 0.1);
+}
+
 button, input[type="submit"], input[type="button"], 
-.auth-btn, .button, .admin-logout {
-    background: #ffb74d !important; 
+.button, .auth-btn, .admin-logout {
+    background: #ffb74d !important;
     color: white !important;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 4px !important;
     cursor: pointer;
     font-size: 14px;
-    transition: background 0.3s;
+    text-decoration: none !important;
+    display: inline-block;
+    transition: all 0.3s !important;
 }
 
 button:hover, input[type="submit"]:hover, 
 input[type="button"]:hover, .button:hover {
-    background: #ffa726 !important; 
-}
-
-.admin-logout {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+    background: #ffa726 !important;
+    transform: translateY(-1px);
 }
 
 .admin-container {
     max-width: 1200px;
     margin: 40px auto;
     padding: 30px;
-    background: #ffe0b2; 
+    background: #ffe0b2 !important;
     border-radius: 8px;
-    position: relative; 
+    position: relative;
 }
 
-input, select, textarea {
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid #ffb74d;
+.admin-logout {
+    position: absolute !important;
+    top: 20px !important;
+    right: 20px !important;
+    left: auto !important;
 }
 
-@media (max-width: 768px) {
-    .admin-logout {
-        position: static;
-        display: block;
-        margin: 0 auto 20px;
-    }
+div[style*="background"], 
+table[style*="background"], 
+form[style*="background"] {
+    background: #ffe0b2 !important;
+}
+
+input[style*="background"], 
+button[style*="background"] {
+    background: #ffb74d !important;
 }
