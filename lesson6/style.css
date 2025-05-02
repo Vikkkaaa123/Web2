@@ -16,47 +16,22 @@ body.index-page, body.login-page {
     background-image: url('fon.PNG');
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
     background-attachment: fixed;
 }
 
-form {
+form, .login-form, .edit-form, .credentials {
     max-width: 700px;
     margin: 20px auto;
-    background: rgba(255, 224, 178, 0.85) !important; /* #ffe0b2 с прозрачностью */
+    background: rgba(255, 224, 178, 0.9) !important; /* #ffe0b2 с прозрачностью */
     padding: 25px;
     border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px);
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    background: #fff3e0 !important;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-th {
-    background: #ffcc80 !important; /* Цвет шапки */
-    color: #333 !important;
-    padding: 15px;
-    text-align: left;
-    font-weight: bold;
-}
-
-td {
-    padding: 12px;
-    border-bottom: 1px solid #ffcc80;
-    background: #fff3e0 !important;
-}
-
-tr:hover td {
-    background: rgba(255, 204, 128, 0.2) !important;
-}
-
 button, input[type="submit"], input[type="button"], 
-.button, .auth-btn, .admin-logout {
+.auth-btn, .button, .admin-logout,
+.action-buttons .button, .form-actions input {
     background: #ffcc80 !important;
     color: #333 !important;
     border: none !important;
@@ -64,12 +39,10 @@ button, input[type="submit"], input[type="button"],
     border-radius: 4px !important;
     cursor: pointer;
     font-size: 16px;
-    font-weight: bold;
     transition: all 0.3s !important;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    display: inline-block;
     text-decoration: none !important;
-    text-align: center;
+    display: inline-block;
 }
 
 button:hover, input[type="submit"]:hover, 
@@ -79,14 +52,39 @@ input[type="button"]:hover, .button:hover {
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
+table, .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: #fff3e0 !important;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+th, .admin-table th {
+    background: #ffcc80 !important;
+    color: #333 !important;
+    padding: 15px;
+    text-align: left;
+    font-weight: bold;
+}
+
+td, .admin-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ffcc80;
+    background: #fff3e0 !important;
+}
+
+tr:hover td, .admin-table tr:hover td {
+    background: rgba(255, 204, 128, 0.3) !important;
+}
+
 .admin-container {
     max-width: 1200px;
     margin: 40px auto;
     padding: 30px;
-    background: rgba(255, 224, 178, 0.85) !important;
+    background: rgba(255, 224, 178, 0.9) !important;
     border-radius: 8px;
     position: relative;
-    backdrop-filter: blur(5px);
 }
 
 .admin-logout {
@@ -96,11 +94,21 @@ input[type="button"]:hover, .button:hover {
     z-index: 1000;
 }
 
-div, form, table, td, th, input, button {
-    background: transparent !important;
+input, select, textarea {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid #ffcc80 !important;
 }
 
-/* ===== Адаптивность ===== */
+.error {
+    border: 2px solid #d32f2f !important;
+}
+
+.error-message {
+    color: #d32f2f;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
 @media (max-width: 768px) {
     body {
         padding: 15px;
@@ -111,5 +119,9 @@ div, form, table, td, th, input, button {
         margin-bottom: 20px;
         display: block;
         width: 100%;
+    }
+    
+    .form-row {
+        flex-direction: column;
     }
 }
