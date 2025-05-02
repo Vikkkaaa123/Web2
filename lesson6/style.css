@@ -1,4 +1,3 @@
-/* Основные стили страницы */
 body {
     background-color: #80d8ff;
     background-image: url('fon.PNG');
@@ -12,7 +11,6 @@ body {
     color: #333;
 }
 
-/* Стили для кнопок авторизации (правый верхний угол) */
 .auth-buttons {
     position: fixed;
     top: 20px;
@@ -21,8 +19,8 @@ body {
 }
 
 .auth-btn {
-    background-color: #0288d1;
-    color: white;
+    background-color: #ffcc80;
+    color: #333;
     border: none;
     padding: 8px 16px;
     border-radius: 4px;
@@ -33,14 +31,13 @@ body {
 }
 
 .auth-btn:hover {
-    background-color: #01579b;
+    background-color: #ffb74d;
 }
 
-/* Стили основной формы */
 form {
     max-width: 700px;
     margin: 0 auto;
-    background: rgba(179, 229, 252, 0.9);
+    background: rgba(255, 224, 178, 0.9);
     padding: 25px;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
@@ -48,11 +45,10 @@ form {
 
 form h1 {
     text-align: center;
-    color: #01579b;
+    color: #333;
     margin-bottom: 25px;
 }
 
-/* Стили для групп полей */
 .form-group {
     margin-bottom: 20px;
 }
@@ -61,10 +57,9 @@ form h1 {
     display: block;
     margin-bottom: 8px;
     font-weight: bold;
-    color: #0277bd;
+    color: #333;
 }
 
-/* Стили полей ввода */
 input[type="text"],
 input[type="tel"],
 input[type="email"],
@@ -74,9 +69,9 @@ select,
 textarea {
     width: 100%;
     padding: 10px;
-    border: 1px solid #81d4fa;
+    border: 1px solid #ffcc80;
     border-radius: 4px;
-    background-color: #e1f5fe;
+    background-color: #fff3e0;
     box-sizing: border-box;
     font-size: 16px;
 }
@@ -86,7 +81,6 @@ textarea {
     resize: vertical;
 }
 
-/* Стили для radio и checkbox */
 input[type="radio"],
 input[type="checkbox"] {
     margin-right: 10px;
@@ -104,7 +98,6 @@ input[type="checkbox"] {
     align-items: center;
 }
 
-/* Стили для полей даты */
 .date-fields {
     display: flex;
     gap: 10px;
@@ -114,17 +107,15 @@ input[type="checkbox"] {
     flex: 1;
 }
 
-/* Стили для select multiple */
 select[multiple] {
     height: auto;
     min-height: 100px;
 }
 
-/* Стили кнопки отправки */
 input[type="submit"],
 button[type="submit"] {
-    background-color: #0288d1;
-    color: white;
+    background-color: #ffcc80;
+    color: #333;
     border: none;
     padding: 12px 25px;
     cursor: pointer;
@@ -136,14 +127,13 @@ button[type="submit"] {
 
 input[type="submit"]:hover,
 button[type="submit"]:hover {
-    background-color: #01579b;
+    background-color: #ffb74d;
 }
 
 .form-actions {
     margin-top: 25px;
 }
 
-/* Стили для ошибок */
 .error {
     border: 2px solid #d32f2f !important;
 }
@@ -154,11 +144,10 @@ button[type="submit"]:hover {
     margin-top: 5px;
 }
 
-/* Стили для блока с учетными данными */
 .credentials {
     max-width: 700px;
     margin: 0 auto 25px;
-    background: rgba(225, 245, 254, 0.9);
+    background: rgba(255, 243, 224, 0.9);
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -166,14 +155,13 @@ button[type="submit"]:hover {
 
 .credentials h3 {
     margin-top: 0;
-    color: #01579b;
+    color: #333;
 }
 
-/* Стили для формы входа (login.php) */
 .login-form {
     max-width: 400px;
     margin: 50px auto;
-    background: rgba(179, 229, 252, 0.9);
+    background: rgba(255, 224, 178, 0.9);
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
@@ -181,7 +169,7 @@ button[type="submit"]:hover {
 
 .login-form h1 {
     text-align: center;
-    color: #01579b;
+    color: #333;
     margin-bottom: 20px;
 }
 
@@ -199,7 +187,7 @@ button[type="submit"]:hover {
 }
 
 .register-link a {
-    color: #0277bd;
+    color: #333;
     text-decoration: none;
 }
 
@@ -207,7 +195,6 @@ button[type="submit"]:hover {
     text-decoration: underline;
 }
 
-/* Стили для поля соглашения */
 .agreement-field {
     display: flex;
     align-items: center;
@@ -220,18 +207,17 @@ button[type="submit"]:hover {
     margin-bottom: 0;
 }
 
-/* Стили админ-панели */
 .admin-container {
     max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 243, 224, 0.95);
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .admin-container h1 {
-    color: #01579b;
+    color: #333;
     margin-top: 0;
 }
 
@@ -249,36 +235,36 @@ button[type="submit"]:hover {
 }
 
 .admin-table th {
-    background-color: #0288d1;
-    color: white;
+    background-color: #ffcc80;
+    color: #333;
 }
 
 .admin-table tr:nth-child(even) {
-    background-color: #f2f9ff;
+    background-color: #fff3e0;
 }
 
 .admin-table tr:hover {
-    background-color: #e1f5fe;
+    background-color: #ffe0b2;
 }
 
 .stats {
     margin-bottom: 30px;
     padding: 20px;
-    background: #e1f5fe;
+    background: #fff3e0;
     border-radius: 5px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .stats h2 {
     margin-top: 0;
-    color: #01579b;
+    color: #333;
 }
 
 .button {
     display: inline-block;
     padding: 8px 16px;
-    background: #4CAF50;
-    color: white;
+    background: #ffcc80;
+    color: #333;
     text-decoration: none;
     border-radius: 4px;
     border: none;
@@ -290,21 +276,22 @@ button[type="submit"]:hover {
 
 .button.delete {
     background: #f44336;
+    color: white;
 }
 
 .button.edit {
     background: #ff9800;
+    color: white;
 }
 
 .button:hover {
     opacity: 0.8;
 }
 
-/* Стили для формы редактирования в админке */
 .edit-form {
     max-width: 800px;
     margin: 0 auto;
-    background: #e1f5fe;
+    background: rgba(255, 224, 178, 0.9);
     padding: 25px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -312,7 +299,7 @@ button[type="submit"]:hover {
 
 .edit-form h1 {
     margin-top: 0;
-    color: #01579b;
+    color: #333;
 }
 
 .form-row {
@@ -325,7 +312,6 @@ button[type="submit"]:hover {
     flex: 1;
 }
 
-/* Адаптивные стили */
 @media (max-width: 768px) {
     .form-row {
         flex-direction: column;
@@ -351,7 +337,6 @@ button[type="submit"]:hover {
     }
 }
 
-/* Стили для сообщений */
 .message {
     padding: 15px;
     margin-bottom: 20px;
@@ -368,7 +353,6 @@ button[type="submit"]:hover {
     background-color: #f44336;
 }
 
-/* Стили для кнопок действий */
 .action-buttons {
     display: flex;
     gap: 10px;
@@ -378,4 +362,24 @@ button[type="submit"]:hover {
 .action-buttons .button {
     flex: 1;
     text-align: center;
+}
+
+.logout-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #ffcc80;
+    color: #333;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.logout-btn:hover {
+    background-color: #ffb74d;
 }
