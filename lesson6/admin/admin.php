@@ -11,35 +11,19 @@ $applications = $db->query("SELECT * FROM applications ORDER BY id")->fetchAll()
 
 // Для каждой заявки получаем дополнительные данные
 foreach ($applications as &$app) {
-    // Получаем логин пользователя
-    $stmt = $db->prepare("
-        SELECT u.login 
-        FROM users u
-        JOIN user_applications ua ON u.id = ua.user_id
-        WHERE ua.application_id = ?
-    ");
+    // Логин пользователя
+    $stmt = $db->prepare("SELECT u.login FROM users u JOIN user_applications ua ON u.id = ua.user_id WHERE ua.application_id = ?");
     $stmt->execute([$app['id']]);
     $app['user_login'] = $stmt->fetchColumn();
     
-    // Получаем языки программирования
-    $stmt = $db->prepare("
-        SELECT COALESCE(GROUP_CONCAT(p.name SEPARATOR ', '), 'Не указано') 
-        FROM programming_languages p
-        JOIN application_languages al ON p.id = al.language_id
-        WHERE al.application_id = ?
-    ");
+    // Языки программирования
+    $stmt = $db->prepare("SELECT GROUP_CONCAT(p.name SEPARATOR ', ') FROM programming_languages p JOIN application_languages al ON p.id = al.language_id WHERE al.application_id = ?");
     $stmt->execute([$app['id']]);
-    $app['languages'] = $stmt->fetchColumn();
+    $app['languages'] = $stmt->fetchColumn() ?: 'Не указано';
 }
 
 // Статистика по языкам
-$stats = $db->query("
-    SELECT p.name, COUNT(DISTINCT al.application_id) as count
-    FROM programming_languages p
-    LEFT JOIN application_languages al ON p.id = al.language_id
-    GROUP BY p.id
-    ORDER BY count DESC
-")->fetchAll();
+$stats = $db->query("SELECT p.name, COUNT(DISTINCT al.application_id) as count FROM programming_languages p LEFT JOIN application_languages al ON p.id = al.language_id GROUP BY p.id ORDER BY count DESC")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html>
@@ -49,11 +33,13 @@ $stats = $db->query("
 </head>
 <body>
     <div class="admin-container">
+        <a href="logout.php" class="admin-logout button">Выйти</a>
+        
         <h1>Админ-панель</h1>
         
         <div class="stats">
             <h2>Статистика по языкам программирования</h2>
-            <table class="admin-table">
+            <table>
                 <tr><th>Язык</th><th>Количество выборов</th></tr>
                 <?php foreach ($stats as $stat): ?>
                 <tr>
@@ -65,7 +51,7 @@ $stats = $db->query("
         </div>
 
         <h2>Все заявки пользователей (всего: <?= count($applications) ?>)</h2>
-        <table class="admin-table">
+        <table>
             <tr>
                 <th>ID</th>
                 <th>Пользователь</th>
@@ -82,18 +68,12 @@ $stats = $db->query("
                 <td><?= htmlspecialchars($app['email']) ?></td>
                 <td><?= htmlspecialchars($app['languages']) ?></td>
                 <td>
-                    <a href="edit.php?id=<?= $app['id'] ?>" class="button edit">Редактировать</a>
-                    <a href="delete.php?id=<?= $app['id'] ?>" class="button delete" onclick="return confirm('Удалить эту заявку?')">Удалить</a>
+                    <a href="edit.php?id=<?= $app['id'] ?>" class="button">Редактировать</a>
+                    <a href="delete.php?id=<?= $app['id'] ?>" class="button" onclick="return confirm('Удалить эту заявку?')">Удалить</a>
                 </td>
             </tr>
             <?php endforeach; ?>
         </table>
-        
-        <div class="action-buttons">
-            <form action="logout.php" method="post">
-                <button type="submit" class="button delete">Выйти из админ-панели</button>
-            </form>
-        </div>
     </div>
 </body>
 </html>
