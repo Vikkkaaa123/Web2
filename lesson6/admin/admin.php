@@ -6,24 +6,38 @@ $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 ]);
 
-// Получаем все заявки
-$applications = $db->query("SELECT * FROM applications ORDER BY id")->fetchAll();
+// Получаем все заявки 
+$applications = $db->query("SELECT * FROM applications ORDER BY id")->fetchAll(PDO::FETCH_ASSOC);
 
-// Для каждой заявки получаем дополнительные данные
-foreach ($applications as &$app) {
+$processedApplications = [];
+
+foreach ($applications as $app) {
+    
     // Логин пользователя
-    $stmt = $db->prepare("SELECT u.login FROM users u JOIN user_applications ua ON u.id = ua.user_id WHERE ua.application_id = ?");
+    $stmt = $db->prepare("SELECT u.login FROM users u 
+                         JOIN user_applications ua ON u.id = ua.user_id 
+                         WHERE ua.application_id = ?");
     $stmt->execute([$app['id']]);
     $app['user_login'] = $stmt->fetchColumn();
     
     // Языки программирования
-    $stmt = $db->prepare("SELECT GROUP_CONCAT(p.name SEPARATOR ', ') FROM programming_languages p JOIN application_languages al ON p.id = al.language_id WHERE al.application_id = ?");
+    $stmt = $db->prepare("SELECT GROUP_CONCAT(p.name SEPARATOR ', ') 
+                         FROM programming_languages p 
+                         JOIN application_languages al ON p.id = al.language_id 
+                         WHERE al.application_id = ?");
     $stmt->execute([$app['id']]);
     $app['languages'] = $stmt->fetchColumn() ?: 'Не указано';
+    
+    // Добавляем в новый массив
+    $processedApplications[] = $app;
 }
 
 // Статистика по языкам
-$stats = $db->query("SELECT p.name, COUNT(DISTINCT al.application_id) as count FROM programming_languages p LEFT JOIN application_languages al ON p.id = al.language_id GROUP BY p.id ORDER BY count DESC")->fetchAll();
+$stats = $db->query("SELECT p.name, COUNT(DISTINCT al.application_id) as count 
+                    FROM programming_languages p 
+                    LEFT JOIN application_languages al ON p.id = al.language_id 
+                    GROUP BY p.id 
+                    ORDER BY count DESC")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html>
@@ -33,7 +47,7 @@ $stats = $db->query("SELECT p.name, COUNT(DISTINCT al.application_id) as count F
 </head>
 <body>
     <div class="admin-container">
-        <a href="logout.php" class="admin-logout button">Выйти</a>
+        <a href="logout.php" class="button admin-logout">Выйти</a>
         
         <h1>Админ-панель</h1>
         
@@ -50,7 +64,7 @@ $stats = $db->query("SELECT p.name, COUNT(DISTINCT al.application_id) as count F
             </table>
         </div>
 
-        <h2>Все заявки пользователей (всего: <?= count($applications) ?>)</h2>
+        <h2>Все заявки пользователей (всего: <?= count($processedApplications) ?>)</h2>
         <table>
             <tr>
                 <th>ID</th>
@@ -60,7 +74,7 @@ $stats = $db->query("SELECT p.name, COUNT(DISTINCT al.application_id) as count F
                 <th>Языки</th>
                 <th>Действия</th>
             </tr>
-            <?php foreach ($applications as $app): ?>
+            <?php foreach ($processedApplications as $app): ?>
             <tr>
                 <td><?= $app['id'] ?></td>
                 <td><?= htmlspecialchars($app['user_login'] ?? 'N/A') ?></td>
