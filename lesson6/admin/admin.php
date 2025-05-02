@@ -28,6 +28,9 @@ foreach ($applications as $app) {
     $stmt->execute([$app['id']]);
     $app['languages'] = $stmt->fetchColumn() ?: 'Не указано';
     
+    // Преобразуем пол в сокращенный формат
+    $app['gender_short'] = ($app['gender'] == 'male') ? 'м' : 'ж';
+    
     // Добавляем в новый массив
     $processedApplications[] = $app;
 }
@@ -85,7 +88,7 @@ $stats = $db->query("SELECT p.name, COUNT(DISTINCT al.application_id) as count
                 <td><?= htmlspecialchars($app['email']) ?></td>
                 <td><?= htmlspecialchars($app['phone']) ?></td>
                 <td><?= htmlspecialchars($app['birth_date']) ?></td>
-                <td><?= htmlspecialchars($app['gender']) ?></td>
+                <td><?= $app['gender_short'] ?></td>
                 <td><?= htmlspecialchars($app['languages']) ?></td>
                 <td><?= htmlspecialchars(substr($app['biography'], 0, 50)) . (strlen($app['biography']) > 50 ? '...' : '') ?></td>
                 <td><?= $app['agreement'] ? 'Да' : 'Нет' ?></td>
