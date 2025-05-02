@@ -5,94 +5,111 @@
 }
 
 body {
-    background-color: #ffcc80 !important;
+    background-color: #ffcc80;
     font-family: Arial, sans-serif;
     color: #333;
     min-height: 100vh;
+    padding: 20px;
 }
 
 body.index-page, body.login-page {
-    background-image: url('fon.PNG') !important;
-    background-size: cover !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
+    background-image: url('fon.PNG');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
 form {
     max-width: 700px;
     margin: 20px auto;
-    background: #ffe0b2 !important;
+    background: rgba(255, 224, 178, 0.85) !important; /* #ffe0b2 с прозрачностью */
     padding: 25px;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
-    background: #ffe0b2 !important;
+    background: #fff3e0 !important;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 th {
-    background: #ffb74d !important;
-    color: white !important;
-    padding: 12px;
+    background: #ffcc80 !important; /* Цвет шапки */
+    color: #333 !important;
+    padding: 15px;
     text-align: left;
+    font-weight: bold;
 }
 
 td {
-    padding: 10px;
-    border-bottom: 1px solid #ffb74d;
+    padding: 12px;
+    border-bottom: 1px solid #ffcc80;
+    background: #fff3e0 !important;
 }
 
-tr:nth-child(even) {
-    background: rgba(255, 183, 77, 0.1);
+tr:hover td {
+    background: rgba(255, 204, 128, 0.2) !important;
 }
 
 button, input[type="submit"], input[type="button"], 
 .button, .auth-btn, .admin-logout {
-    background: #ffb74d !important;
-    color: white !important;
+    background: #ffcc80 !important;
+    color: #333 !important;
     border: none !important;
-    padding: 10px 20px !important;
+    padding: 12px 25px !important;
     border-radius: 4px !important;
     cursor: pointer;
-    font-size: 14px;
-    text-decoration: none !important;
-    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
     transition: all 0.3s !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: inline-block;
+    text-decoration: none !important;
+    text-align: center;
 }
 
 button:hover, input[type="submit"]:hover, 
 input[type="button"]:hover, .button:hover {
-    background: #ffa726 !important;
-    transform: translateY(-1px);
+    background: #ffb74d !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .admin-container {
     max-width: 1200px;
     margin: 40px auto;
     padding: 30px;
-    background: #ffe0b2 !important;
+    background: rgba(255, 224, 178, 0.85) !important;
     border-radius: 8px;
     position: relative;
+    backdrop-filter: blur(5px);
 }
 
 .admin-logout {
-    position: absolute !important;
+    position: fixed !important;
     top: 20px !important;
     right: 20px !important;
-    left: auto !important;
+    z-index: 1000;
 }
 
-div[style*="background"], 
-table[style*="background"], 
-form[style*="background"] {
-    background: #ffe0b2 !important;
+div, form, table, td, th, input, button {
+    background: transparent !important;
 }
 
-input[style*="background"], 
-button[style*="background"] {
-    background: #ffb74d !important;
+/* ===== Адаптивность ===== */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
+    
+    .admin-logout {
+        position: static !important;
+        margin-bottom: 20px;
+        display: block;
+        width: 100%;
+    }
 }
