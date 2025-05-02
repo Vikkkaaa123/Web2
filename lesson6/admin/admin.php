@@ -47,10 +47,8 @@ $stats = $db->query("SELECT p.name, COUNT(DISTINCT al.application_id) as count
 </head>
 <body>
     <div class="admin-container">
-        <a href="logout.php" class="button admin-logout">Выйти</a>
-        
         <h1>Админ-панель</h1>
-        
+        <a href="logout.php" class="button admin-logout">Выйти</a>
         <div class="stats">
             <h2>Статистика по языкам программирования</h2>
             <table>
