@@ -384,8 +384,6 @@ button[type="submit"]:hover {
     background-color: #ffb74d;
 }
 
-
-
 .stats {
     margin-bottom: 30px;
     padding: 20px;
@@ -403,7 +401,7 @@ button[type="submit"]:hover {
     width: 100%;
     border-collapse: collapse;
     margin: 15px 0;
-    background-color: #fff8e1;
+    background-color: #fff3e0;
 }
 
 .stats table th {
@@ -415,10 +413,10 @@ button[type="submit"]:hover {
 
 .stats table td {
     padding: 8px 10px;
-    border-bottom: 1px solid #ffe0b2;
-    background-color: #fff8e1;
+    border-bottom: 1px solid #ffd699; 
+    background-color: #fff3e0; 
 }
 
 .stats table tr:hover td {
-    background-color: #ffecb3;
+    background-color: #ffe0b2;
 }
