@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Задание 5</title>
+    <title>Задание 6</title>
 </head>
 <body>
-    <!-- Кнопки авторизации в правом верхнем углу -->
     <div class="auth-buttons">
         <?php if (!empty($_SESSION['login'])): ?>
             <input type="button" value="Выйти" onclick="location.href='logout.php'" class="auth-btn">
@@ -16,7 +15,7 @@
         <?php endif; ?>
     </div>
 
-    <!-- Блок сгенерированных учетных данных (показывается один раз после регистрации) -->
+    <!-- Блок сгенерированных учетных данных -->
     <?php if (!empty($_SESSION['generated_login']) && !empty($_SESSION['generated_password']) && empty($_SESSION['login'])): ?>
         <div class="credentials">
             <h3>Ваши учетные данные:</h3>
@@ -64,7 +63,7 @@
         <div class="form-group">
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" 
-                   placeholder="example@domain.com" 
+                   placeholder="example@mail.com" 
                    required
                    value="<?php echo htmlspecialchars($values['email'] ?? ''); ?>"
                    <?php if (!empty($errors['email'])) echo 'class="error"'; ?>>
