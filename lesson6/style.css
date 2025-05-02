@@ -383,3 +383,42 @@ button[type="submit"]:hover {
 .logout-btn:hover {
     background-color: #ffb74d;
 }
+
+
+
+.stats {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #fff3e0;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.stats h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.stats table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    background-color: #fff8e1;
+}
+
+.stats table th {
+    background-color: #ffcc80;
+    color: #333;
+    padding: 10px;
+    text-align: left;
+}
+
+.stats table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #ffe0b2;
+    background-color: #fff8e1;
+}
+
+.stats table tr:hover td {
+    background-color: #ffecb3;
+}
