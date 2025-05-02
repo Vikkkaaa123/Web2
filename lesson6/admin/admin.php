@@ -69,7 +69,12 @@ $stats = $db->query("SELECT p.name, COUNT(DISTINCT al.application_id) as count
                 <th>Пользователь</th>
                 <th>ФИО</th>
                 <th>Email</th>
+                <th>Телефон</th>
+                <th>Дата рождения</th>
+                <th>Пол</th>
                 <th>Языки</th>
+                <th>Биография</th>
+                <th>Согласие</th>
                 <th>Действия</th>
             </tr>
             <?php foreach ($processedApplications as $app): ?>
@@ -78,7 +83,12 @@ $stats = $db->query("SELECT p.name, COUNT(DISTINCT al.application_id) as count
                 <td><?= htmlspecialchars($app['user_login'] ?? 'N/A') ?></td>
                 <td><?= htmlspecialchars($app['full_name']) ?></td>
                 <td><?= htmlspecialchars($app['email']) ?></td>
+                <td><?= htmlspecialchars($app['phone']) ?></td>
+                <td><?= htmlspecialchars($app['birth_date']) ?></td>
+                <td><?= htmlspecialchars($app['gender']) ?></td>
                 <td><?= htmlspecialchars($app['languages']) ?></td>
+                <td><?= htmlspecialchars(substr($app['biography'], 0, 50)) . (strlen($app['biography']) > 50 ? '...' : '') ?></td>
+                <td><?= $app['agreement'] ? 'Да' : 'Нет' ?></td>
                 <td>
                     <a href="edit.php?id=<?= $app['id'] ?>" class="button">Редактировать</a>
                     <a href="delete.php?id=<?= $app['id'] ?>" class="button" onclick="return confirm('Удалить эту заявку?')">Удалить</a>
