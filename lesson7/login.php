@@ -18,7 +18,6 @@ if (!isset($_SESSION['csrf_token'])) {
 }
 
 $db = connectDB();
-
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -33,13 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Логин и пароль обязательны для заполнения';
         } else {
             try {
-                // Проверка администратора
+                // Проверка администратора (без проверки длины пароля)
                 $stmt = $db->prepare("SELECT * FROM admins WHERE login = ? LIMIT 1");
                 $stmt->execute([$login]);
                 $admin = $stmt->fetch(PDO::FETCH_ASSOC);
                 
                 if ($admin) {
-                    if (password_verify($password, $admin['password_hash'])) {
+                    if ($password === $admin['password_hash'] || password_verify($password, $admin['password_hash'])) {
                         session_regenerate_id(true);
                         
                         $_SESSION['admin'] = true;
@@ -62,10 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             session_regenerate_id(true);
                             
                             $_SESSION['user'] = true;
+                            $_SESSION['user_id'] = $user['id']; // Добавляем ID пользователя
                             $_SESSION['login'] = $user['login'];
                             $_SESSION['last_activity'] = time();
                             
-                            header('Location: index.php');
+                            // Перенаправляем на страницу редактирования профиля
+                            header('Location: profile.php');
                             exit();
                         } else {
                             $error = 'Неверный пароль пользователя';
@@ -105,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="form-group">
                 <label>Пароль:</label>
-                <input type="password" name="pass" required minlength="8" maxlength="64">
+                <input type="password" name="pass" required minlength="3">
             </div>
             <div class="form-actions">
                 <input type="submit" value="Войти">
