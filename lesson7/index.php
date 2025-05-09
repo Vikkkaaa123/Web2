@@ -1,25 +1,25 @@
 <?php
+ini_set('session.cookie_lifetime', 0);
+ini_set('session.cookie_secure', 1);
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_samesite', 'Strict');
+
 session_start();
+
 header('Content-Type: text/html; charset=UTF-8');
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
 header("X-XSS-Protection: 1; mode=block");
 header("Referrer-Policy: strict-origin-when-cross-origin");
 
-// Настройка сессии
-ini_set('session.cookie_lifetime', 0);
-ini_set('session.cookie_secure', 1);
-ini_set('session.cookie_httponly', 1);
-ini_set('session.cookie_samesite', 'Strict');
-
 // CSRF-защита
 if (!isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-// Подключение к БД 
+// Подключение к БД
 require_once __DIR__ . '/db.php';
-$db = connectDB(); 
+$db = connectDB();
 
 // Получение списка языков
 function getLangs($db) {
