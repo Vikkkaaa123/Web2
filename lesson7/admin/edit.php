@@ -1,55 +1,40 @@
 <?php
-// Настройки безопасности
-header('Content-Type: text/html; charset=UTF-8');
-header("X-Frame-Options: DENY");
-
+session_start();
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../db.php';
 
 checkAdminAuth();
 
+// Генерация CSRF-токена
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 $db = connectDB();
 $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
-// Валидация ID
-$appId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-if ($appId <= 0) {
-    header('Location: admin.php');
-    exit();
-}
+$appId = (int)$_GET['id'];
 
-// Получаем все языки
+// Получаем данные
 $allLangs = $db->query("SELECT * FROM programming_languages")->fetchAll();
 
-// Получаем текущую заявку с подготовленным запросом
 $stmt = $db->prepare("SELECT * FROM applications WHERE id = ?");
 $stmt->execute([$appId]);
 $app = $stmt->fetch();
 
-if (!$app) {
-    header('Location: admin.php');
-    exit();
-}
-
-// Получаем выбранные языки
 $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
 $stmt->execute([$appId]);
 $selectedLangs = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 // Обработка формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // CSRF-защита
     if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         die('Неверный CSRF-токен');
     }
 
     try {
-        // Обновляем основную информацию
-        $stmt = $db->prepare("
-            UPDATE applications 
-            SET full_name = ?, email = ?, phone = ?, gender = ?, biography = ?
-            WHERE id = ?
-        ");
+        // Обновление данных
+        $stmt = $db->prepare("UPDATE applications SET full_name=?, email=?, phone=?, gender=?, biography=? WHERE id=?");
         $stmt->execute([
             $_POST['full_name'],
             $_POST['email'],
@@ -59,21 +44,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $appId
         ]);
         
+        // Обновление языков
         $db->beginTransaction();
-        
         $stmt = $db->prepare("DELETE FROM application_languages WHERE application_id = ?");
         $stmt->execute([$appId]);
         
         if (!empty($_POST['languages'])) {
-            $stmt = $db->prepare("
-                INSERT INTO application_languages (application_id, language_id)
-                VALUES (?, ?)
-            ");
+            $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
             foreach ($_POST['languages'] as $langId) {
                 $stmt->execute([$appId, (int)$langId]);
             }
         }
-        
         $db->commit();
         
         header('Location: admin.php');
@@ -81,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (PDOException $e) {
         $db->rollBack();
         error_log("Update error: " . $e->getMessage());
-        die('Ошибка обновления');
+        die('Ошибка обновления данных');
     }
 }
 ?>
