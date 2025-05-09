@@ -42,7 +42,7 @@ function getLangs($db) {
         error_log("Database error in getLangs: " . $e->getMessage());
         die('Произошла ошибка при загрузке данных.');
     }  
-}  
+}
 
 $allowed_lang = getLangs($db);
 
@@ -185,7 +185,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
         die('Недействительный CSRF токен');
     }
-   }
     
     $errors = FALSE;
     $fields = [
@@ -579,9 +578,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Форма</title>
+    <title>Задание 7</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="index-page">
+    <?php if (file_exists('form.php')) include('form.php'); ?>
 </body>
 </html>
