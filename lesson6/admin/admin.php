@@ -1,10 +1,9 @@
 <?php
-require_once 'auth.php';
-checkAdminAuth();
+require_once __DIR__ . '/../auth.php';
+require_once __DIR__ . '/../db.php';
 
-$db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-]);
+checkAdminAuth();
+$db = connectDB();
 
 // Получаем все заявки 
 $applications = $db->query("SELECT * FROM applications ORDER BY id")->fetchAll(PDO::FETCH_ASSOC);
