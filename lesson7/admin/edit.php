@@ -75,7 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="admin-container">
         <h1>Редактирование заявки #<?= $appId ?></h1>
-        <form method="POST" class="edit-form">
+        <form method="POST">
+         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
             <div class="form-group">
                 <label>ФИО:</label>
                 <input type="text" name="full_name" value="<?= htmlspecialchars($app['full_name']) ?>" required>
