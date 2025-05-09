@@ -1,9 +1,8 @@
 <?php
 session_start();
+require_once __DIR__ . '/db.php';
 
-$db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-]);
+$db = connectDB();
 
 $error = '';
 
