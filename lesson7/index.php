@@ -26,7 +26,6 @@ $db = connectDB();
 
 // Получение списка языков
 function getLangs($db) {
-function getLangs($db) {
     try {
         $allowed_lang = [];
         $stmt = $db->prepare("SELECT id, name FROM programming_languages");
