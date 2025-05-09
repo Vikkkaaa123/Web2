@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $_SESSION['last_activity'] = time();
                             
                             // Перенаправление на страницу пользователя
-                            header('Location: profile.php');
+                            header('Location: index.php');
                             exit();
                         } else {
                             $error = 'Неверный пароль пользователя';
