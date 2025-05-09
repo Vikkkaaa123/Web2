@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/../db.php';
+$db = connectDB();
+
 session_start();
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
@@ -27,10 +30,7 @@ function checkAdminAuth() {
     // Проверка HTTP Basic аутентификации
     if (!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])) {
         try {
-            $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_EMULATE_PREPARES => false
-            ]);
+            $db = connectDB();
             
             $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ? LIMIT 1");
             $stmt->execute([$_SERVER['PHP_AUTH_USER']]);
