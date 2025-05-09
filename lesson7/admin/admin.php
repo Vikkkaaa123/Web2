@@ -1,5 +1,7 @@
 <?php
-require_once 'auth.php';
+require_once __DIR__ . '/../auth.php'; 
+require_once __DIR__ . '/../db.php';
+
 checkAdminAuth();
 
 header("X-Frame-Options: DENY");
@@ -8,10 +10,7 @@ header("X-XSS-Protection: 1; mode=block");
 header("Referrer-Policy: strict-origin-when-cross-origin");
 
 try {
-    $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_EMULATE_PREPARES => false
-    ]);
+    $db = connectDB(); 
 
     // Получаем все заявки с защитой от SQL-инъекций
     $stmt = $db->prepare("SELECT * FROM applications ORDER BY id");
