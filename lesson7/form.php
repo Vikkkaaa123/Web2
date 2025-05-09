@@ -1,16 +1,10 @@
-<?php
-header("X-Frame-Options: DENY");
-header("X-Content-Type-Options: nosniff");
-header("X-XSS-Protection: 1; mode=block");
-?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
-    <title>Форма заявки</title>
     <link rel="stylesheet" href="style.css">
+    <title>Задание 7</title>
 </head>
 <body>
     <div class="auth-buttons">
@@ -21,6 +15,7 @@ header("X-XSS-Protection: 1; mode=block");
         <?php endif; ?>
     </div>
 
+    <!-- Блок сгенерированных учетных данных -->
     <?php if (!empty($_SESSION['generated_login']) && !empty($_SESSION['generated_password']) && empty($_SESSION['login'])): ?>
         <div class="credentials">
             <h3>Ваши учетные данные:</h3>
@@ -34,10 +29,12 @@ header("X-XSS-Protection: 1; mode=block");
         ?>
     <?php endif; ?>
 
-    <form action="index.php" method="POST" id="applicationForm">
-        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
-        <h1>Форма заявки</h1>
+    <!-- Основная форма -->
+    <form action="index.php" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+        <h1>Форма</h1>
 
+        <!-- Поле ФИО -->
         <div class="form-group">
             <label for="full_name">ФИО:</label>
             <input type="text" id="full_name" name="full_name" 
@@ -50,11 +47,12 @@ header("X-XSS-Protection: 1; mode=block");
             <?php endif; ?>
         </div>
 
+        <!-- Поле Телефон -->
         <div class="form-group">
             <label for="phone">Телефон:</label>
             <input type="tel" id="phone" name="phone" 
                    placeholder="+7XXXXXXXXXX" 
-                   required pattern="\+7\d{10}"
+                   required
                    value="<?php echo htmlspecialchars($values['phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                    <?php if (!empty($errors['phone'])) echo 'class="error"'; ?>>
             <?php if (!empty($messages['phone'])): ?>
@@ -62,6 +60,7 @@ header("X-XSS-Protection: 1; mode=block");
             <?php endif; ?>
         </div>
 
+        <!-- Поле Email -->
         <div class="form-group">
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" 
@@ -74,6 +73,7 @@ header("X-XSS-Protection: 1; mode=block");
             <?php endif; ?>
         </div>
 
+        <!-- Поле Дата рождения -->
         <div class="form-group">
             <label>Дата рождения:</label>
             <div class="date-fields">
@@ -98,6 +98,7 @@ header("X-XSS-Protection: 1; mode=block");
             <?php endif; ?>
         </div>
 
+        <!-- Поле Пол -->
         <div class="form-group">
             <label>Пол:</label>
             <div class="gender-options">
@@ -119,12 +120,13 @@ header("X-XSS-Protection: 1; mode=block");
             <?php endif; ?>
         </div>
 
+        <!-- Поле Языки программирования -->
         <div class="form-group">
             <label for="languages">Любимые языки программирования:</label>
             <select id="languages" name="languages[]" multiple 
                     <?php if (!empty($errors['languages'])) echo 'class="error"'; ?>>
                 <?php foreach ($allowed_lang as $id => $name): ?>
-                    <option value="<?php echo (int)$id; ?>"
+                    <option value="<?php echo htmlspecialchars($id, ENT_QUOTES, 'UTF-8'); ?>"
                         <?php if (in_array($id, explode(',', $values['languages'] ?? ''))) echo 'selected'; ?>>
                         <?php echo htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>
                     </option>
@@ -135,10 +137,11 @@ header("X-XSS-Protection: 1; mode=block");
             <?php endif; ?>
         </div>
 
+        <!-- Поле Биография -->
         <div class="form-group">
             <label for="biography">Биография:</label>
             <textarea id="biography" name="biography" 
-                      placeholder="Расскажите о себе..." maxlength="512"
+                      placeholder="Расскажите о себе..."
                       <?php if (!empty($errors['biography'])) echo 'class="error"'; ?>><?php 
                 echo htmlspecialchars($values['biography'] ?? '', ENT_QUOTES, 'UTF-8'); 
             ?></textarea>
@@ -147,6 +150,7 @@ header("X-XSS-Protection: 1; mode=block");
             <?php endif; ?>
         </div>
 
+        <!-- Поле Согласие -->
         <div class="form-group agreement-field">
             <label>
                 <input type="checkbox" name="agreement" 
@@ -159,30 +163,12 @@ header("X-XSS-Protection: 1; mode=block");
             <?php endif; ?>
         </div>
 
+        <!-- Кнопка отправки формы -->
         <div class="form-actions">
             <input type="submit" value="<?php 
                 echo !empty($_SESSION['login']) ? 'Обновить данные' : 'Сохранить'; 
             ?>">
         </div>
     </form>
-
-    <script>
-        // CSRF защита для AJAX запросов
-        document.getElementById('applicationForm').addEventListener('submit', function(e) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'index.php', true);
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            xhr.setRequestHeader('X-CSRF-Token', '<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>');
-            
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    window.location.reload();
-                }
-            };
-            
-            xhr.send(new FormData(this));
-            e.preventDefault();
-        });
-    </script>
 </body>
 </html>
