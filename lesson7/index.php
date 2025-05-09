@@ -23,6 +23,7 @@ $db = connectDB();
 
 // Получение списка языков
 function getLangs($db) {
+function getLangs($db) {
     try {
         $allowed_lang = [];
         $stmt = $db->prepare("SELECT id, name FROM programming_languages");
@@ -30,16 +31,16 @@ function getLangs($db) {
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($data as $lang) {
-            if (is_numeric($lang['id']) {
+            if (is_numeric($lang['id'])) { 
                 $allowed_lang[(int)$lang['id']] = htmlspecialchars($lang['name'], ENT_QUOTES, 'UTF-8');
-            }
-        }
+            } 
+        } 
         return $allowed_lang;
     } catch(PDOException $e) {
         error_log("Database error in getLangs: " . $e->getMessage());
         die('Произошла ошибка при загрузке данных.');
-    }
-}
+    }  
+}  
 
 $allowed_lang = getLangs($db);
 
