@@ -1,5 +1,7 @@
 <?php
-require_once 'auth.php';
+require_once __DIR__ . '/../auth.php'; 
+require_once __DIR__ . '/../db.php'; 
+
 checkAdminAuth();
 
 header("X-Frame-Options: DENY");
@@ -12,10 +14,7 @@ if (!isset($_SESSION['csrf_token'])) {
 }
 
 try {
-    $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178', [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_EMULATE_PREPARES => false
-    ]);
+    $db = connectDB();
 
     $appId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
     if ($appId === false || $appId === null) {
