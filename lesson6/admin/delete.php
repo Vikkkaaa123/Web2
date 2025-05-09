@@ -1,8 +1,9 @@
 <?php
-require_once 'auth.php';
+require_once __DIR__ . '/../auth.php';
+require_once __DIR__ . '/../db.php';
 checkAdminAuth();
 
-$db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178');
+$db = connectDB();
 $appId = $_GET['id'];
 
 // Удаляем связи с языками
