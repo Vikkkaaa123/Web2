@@ -1,88 +1,67 @@
 <?php
-// Настройки безопасности сессии 
-ini_set('session.cookie_lifetime', 0);
-ini_set('session.cookie_secure', 1);
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_samesite', 'Strict');
-
-require_once __DIR__ . '/db.php';
 session_start();
 
-// Заголовки безопасности
+header('Content-Type: text/html; charset=UTF-8');
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
-header("X-XSS-Protection: 1; mode=block");
-header("Referrer-Policy: strict-origin-when-cross-origin");
 
-// Подключение к БД 
-$db = connectDB();
-
-// CSRF защита
-if (!isset($_SESSION['csrf_token'])) {
+if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+
+require_once __DIR__ . '/db.php';
+$db = connectDB();
+$db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Проверка CSRF токена
-    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        $error = 'Ошибка безопасности. Пожалуйста, обновите страницу.';
-    } else {
-        $login = trim($_POST['login'] ?? '');
-        $password = trim($_POST['pass'] ?? '');
+    // Проверка CSRF-токена
+    if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Неверный CSRF-токен");
+    }
+
+    $login = trim($_POST['login'] ?? '');
+    $password = trim($_POST['pass'] ?? '');
+    
+    try {
+        // Проверка администратора
+        $stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
+        $stmt->execute([$login]);
         
-        if (empty($login) || empty($password)) {
-            $error = 'Логин и пароль обязательны для заполнения';
-        } else {
-            try {
-                // Проверка администратора (с поддержкой простого пароля)
-                $stmt = $db->prepare("SELECT * FROM admins WHERE login = ? LIMIT 1");
-                $stmt->execute([$login]);
-                
-                if ($admin = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    if ($password === '123' || password_verify($password, $admin['password_hash'])) {
-                        session_regenerate_id(true);
-                        
-                        $_SESSION['admin'] = true;
-                        $_SESSION['login'] = $admin['login'];
-                        $_SESSION['last_activity'] = time();
-                        
-                        header('Location: admin/admin.php');
-                        exit();
-                    } else {
-                        $error = 'Неверный пароль администратора';
-                    }
-                }
-                // Проверка обычного пользователя
-                else {
-                    $stmt = $db->prepare("SELECT * FROM users WHERE login = ? LIMIT 1");
-                    $stmt->execute([$login]);
-                    
-                    if ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                        if (password_verify($password, $user['password_hash'])) {
-                            session_regenerate_id(true);
-                            
-                            $_SESSION['user'] = true;
-                            $_SESSION['user_id'] = $user['id'];
-                            $_SESSION['login'] = $user['login'];
-                            $_SESSION['last_activity'] = time();
-                            
-                            // Перенаправление на страницу пользователя
-                            header('Location: index.php');
-                            exit();
-                        } else {
-                            $error = 'Неверный пароль пользователя';
-                        }
-                    } else {
-                        $error = 'Пользователь не найден';
-                    }
-                }
-            } catch (PDOException $e) {
-                error_log("Database error during login: " . $e->getMessage());
-                $error = 'Ошибка базы данных';
+        if ($admin = $stmt->fetch()) {
+            if (password_verify($password, $admin['password_hash'])) {
+                $_SESSION['admin'] = true;
+                $_SESSION['login'] = htmlspecialchars($admin['login'], ENT_QUOTES, 'UTF-8');
+                header('Location: admin/admin.php');
+                exit();
+            } else {
+                $error = 'Неверный пароль администратора';
             }
         }
+        // Проверка обычного пользователя
+        else {
+            $stmt = $db->prepare("SELECT * FROM users WHERE login = ?");
+            $stmt->execute([$login]);
+            
+            if ($user = $stmt->fetch()) {
+                if (password_verify($password, $user['password_hash'])) {
+                    $_SESSION['user'] = true;
+                    $_SESSION['login'] = htmlspecialchars($user['login'], ENT_QUOTES, 'UTF-8');
+                    header('Location: index.php');
+                    exit();
+                } else {
+                    $error = 'Неверный пароль пользователя';
+                }
+            } else {
+                $error = 'Пользователь не найден';
+            }
+        }
+    } catch (PDOException $e) {
+        error_log("Login error: " . $e->getMessage());
+        $error = 'Ошибка авторизации';
     }
 }
 ?>
@@ -90,26 +69,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html>
 <head>
     <title>Вход в систему</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="login-page">  
     <div class="form-container">
         <?php if ($error): ?>
-            <div class="error-message"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
+            <div class="error-message"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
         <?php endif; ?>
         
         <form method="POST">
-            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
             <div class="form-group">
                 <label>Логин:</label>
-                <input type="text" name="login" required maxlength="50" pattern="[a-zA-Z0-9_]+" value="<?php echo htmlspecialchars($_POST['login'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="text" name="login" required value="<?= isset($_POST['login']) ? htmlspecialchars($_POST['login'], ENT_QUOTES, 'UTF-8') : '' ?>">
             </div>
             <div class="form-group">
                 <label>Пароль:</label>
-                <input type="password" name="pass" required minlength="3">
+                <input type="password" name="pass" required>
             </div>
             <div class="form-actions">
                 <input type="submit" value="Войти">
