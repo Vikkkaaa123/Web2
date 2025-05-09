@@ -1,84 +1,53 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-ini_set('session.cookie_lifetime', 0);
-ini_set('session.cookie_secure', 1);
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_samesite', 'Strict');
-
 session_start();
 
 header('Content-Type: text/html; charset=UTF-8');
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
-header("X-XSS-Protection: 1; mode=block");
-header("Referrer-Policy: strict-origin-when-cross-origin");
 
-// CSRF-защита
-if (!isset($_SESSION['csrf_token'])) {
+if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-// Подключение к БД
 require_once __DIR__ . '/db.php';
 $db = connectDB();
+$db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
-// Получение списка языков
 function getLangs($db) {
     try {
         $allowed_lang = [];
-        $stmt = $db->prepare("SELECT id, name FROM programming_languages");
-        $stmt->execute();
-        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        foreach ($data as $lang) {
-            if (is_numeric($lang['id'])) { 
-                $allowed_lang[(int)$lang['id']] = htmlspecialchars($lang['name'], ENT_QUOTES, 'UTF-8');
-            } 
-        } 
+        $stmt = $db->query("SELECT id, name FROM programming_languages");
+        foreach ($stmt->fetchAll() as $lang) {
+            $allowed_lang[$lang['id']] = htmlspecialchars($lang['name'], ENT_QUOTES, 'UTF-8');
+        }
         return $allowed_lang;
     } catch(PDOException $e) {
-        error_log("Database error in getLangs: " . $e->getMessage());
-        die('Произошла ошибка при загрузке данных.');
-    }  
+        error_log("DB Error in getLangs: ".$e->getMessage());
+        die("Ошибка загрузки языков");
+    }
 }
 
 $allowed_lang = getLangs($db);
 
-// Обработка GET запроса
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $messages = [];
     $errors = [];
     $values = [];
     $fields = ['full_name', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year', 'gender', 'biography', 'languages', 'agreement'];
-    
-    // Защищенная обработка куки
+
+    // Инициализация значений с защитой XSS
     foreach ($fields as $field) {
-        $errors[$field] = !empty($_COOKIE[$field . '_error']);
-        if (empty($_COOKIE[$field . '_value'])) {
-            $values[$field] = '';
-        } else {
-            $values[$field] = htmlspecialchars($_COOKIE[$field . '_value'], ENT_QUOTES, 'UTF-8');
-        }
+        $errors[$field] = !empty($_COOKIE[$field.'_error']);
+        $values[$field] = empty($_COOKIE[$field.'_value']) ? '' : 
+            htmlspecialchars($_COOKIE[$field.'_value'], ENT_QUOTES, 'UTF-8');
+        setcookie($field.'_error', '', time() - 3600);
     }
 
-    // Очистка куки ошибок
-    foreach ($fields as $field) {
-        setcookie($field . '_error', '', [
-            'expires' => time() - 3600,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-    }
-
-    // Защищенные сообщения об ошибках
+    // Сообщения об ошибках
     if ($errors['full_name']) {
-        $error_code = $_COOKIE['full_name_error'] ?? '';
-        $messages['full_name'] = match($error_code) {
+        $messages['full_name'] = match($_COOKIE['full_name_error']) {
             '1' => 'Имя не указано.',
             '2' => 'Имя не должно превышать 128 символов.',
             '3' => 'Имя должно содержать только буквы и пробелы.',
@@ -87,8 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
     
     if ($errors['phone']) {
-        $error_code = $_COOKIE['phone_error'] ?? '';
-        $messages['phone'] = match($error_code) {
+        $messages['phone'] = match($_COOKIE['phone_error']) {
             '1' => 'Телефон не указан.',
             '2' => 'Телефон должен быть в формате +7XXXXXXXXXX.',
             default => 'Некорректный телефон.'
@@ -96,10 +64,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
     
     if ($errors['email']) {
-        $error_code = $_COOKIE['email_error'] ?? '';
-        $messages['email'] = match($error_code) {
+        $messages['email'] = match($_COOKIE['email_error']) {
             '1' => 'Email не указан.',
-            '2' => 'Email должен быть в формате example@mail.com.',
+            '2' => 'Email должен быть в формате example@domain.com.',
             default => 'Некорректный email.'
         };
     }
@@ -109,8 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
     
     if ($errors['gender']) {
-        $error_code = $_COOKIE['gender_error'] ?? '';
-        $messages['gender'] = match($error_code) {
+        $messages['gender'] = match($_COOKIE['gender_error']) {
             '1' => 'Пол не указан.',
             '2' => 'Недопустимое значение пола.',
             default => 'Некорректный пол.'
@@ -118,8 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
     
     if ($errors['biography']) {
-        $error_code = $_COOKIE['biography_error'] ?? '';
-        $messages['biography'] = match($error_code) {
+        $messages['biography'] = match($_COOKIE['biography_error']) {
             '1' => 'Биография не указана.',
             '2' => 'Биография не должна превышать 512 символов.',
             '3' => 'Биография содержит недопустимые символы.',
@@ -128,8 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
     
     if ($errors['languages']) {
-        $error_code = $_COOKIE['languages_error'] ?? '';
-        $messages['languages'] = match($error_code) {
+        $messages['languages'] = match($_COOKIE['languages_error']) {
             '1' => 'Не выбран язык программирования.',
             '2' => 'Выбран недопустимый язык программирования.',
             default => 'Некорректные языки программирования.'
@@ -140,435 +104,238 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $messages['agreement'] = 'Необходимо согласие с контрактом.';
     }
 
-    // Защищенная загрузка данных пользователя
+    // Загрузка данных пользователя
     if (!empty($_SESSION['login'])) {
         try {
-            $stmt = $db->prepare("SELECT a.* FROM applications a JOIN user_applications ua ON a.id = ua.application_id JOIN users u ON ua.user_id = u.id WHERE u.login = ?");
+            $stmt = $db->prepare("SELECT a.* FROM applications a 
+                                JOIN user_applications ua ON a.id = ua.application_id 
+                                JOIN users u ON ua.user_id = u.id 
+                                WHERE u.login = ?");
             $stmt->execute([$_SESSION['login']]);
-            $application = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($application) {
-                $values['full_name'] = htmlspecialchars($application['full_name'] ?? '', ENT_QUOTES, 'UTF-8');
-                $values['phone'] = htmlspecialchars($application['phone'] ?? '', ENT_QUOTES, 'UTF-8');
-                $values['email'] = htmlspecialchars($application['email'] ?? '', ENT_QUOTES, 'UTF-8');
+            
+            if ($application = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                foreach ([
+                    'full_name', 'phone', 'email', 'gender', 'biography'
+                ] as $field) {
+                    $values[$field] = htmlspecialchars($application[$field], ENT_QUOTES, 'UTF-8');
+                }
                 
-                $birth_date = strtotime($application['birth_date'] ?? '');
-                $values['birth_day'] = $birth_date ? date('d', $birth_date) : '';
-                $values['birth_month'] = $birth_date ? date('m', $birth_date) : '';
-                $values['birth_year'] = $birth_date ? date('Y', $birth_date) : '';
-                
-                $values['gender'] = htmlspecialchars($application['gender'] ?? '', ENT_QUOTES, 'UTF-8');
-                $values['biography'] = htmlspecialchars($application['biography'] ?? '', ENT_QUOTES, 'UTF-8');
-                $values['agreement'] = (int)($application['agreement'] ?? 0);
+                $values['birth_day'] = date('d', strtotime($application['birth_date']));
+                $values['birth_month'] = date('m', strtotime($application['birth_date']));
+                $values['birth_year'] = date('Y', strtotime($application['birth_date']));
+                $values['agreement'] = $application['agreement'];
 
                 $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
                 $stmt->execute([$application['id']]);
-                $selected_langs = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                $values['languages'] = implode(',', array_map('intval', $selected_langs));
+                $values['languages'] = implode(',', $stmt->fetchAll(PDO::FETCH_COLUMN));
             }
         } catch (PDOException $e) {
-            error_log("Error loading user data: " . $e->getMessage());
-            die('Ошибка загрузки данных. Пожалуйста, попробуйте позже.');
+            error_log("DB Error loading user data: ".$e->getMessage());
+            die("Ошибка загрузки данных");
         }
     }
 
-    include('form.php');
+    // Безопасное подключение шаблона
+    $template = __DIR__.'/form.php';
+    if (!file_exists($template) || !is_file($template)) {
+        die("Файл формы не найден");
+    }
+    include($template);
     exit();
 }
 
-// Обработка POST запроса
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Проверка CSRF токена
-    if (!isset($_POST['csrf_token'])) {
-        die('CSRF токен отсутствует');
+    // Проверка CSRF
+    if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        http_response_code(403);
+        die("Неверный CSRF-токен");
     }
-    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        die('Недействительный CSRF токен');
-    }
-    
-    $errors = FALSE;
+
+    $errors = false;
     $fields = [
-        'full_name' => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-        'phone' => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-        'email' => FILTER_SANITIZE_EMAIL,
-        'birth_day' => FILTER_SANITIZE_NUMBER_INT,
-        'birth_month' => FILTER_SANITIZE_NUMBER_INT,
-        'birth_year' => FILTER_SANITIZE_NUMBER_INT,
-        'gender' => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-        'biography' => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-        'agreement' => FILTER_SANITIZE_NUMBER_INT
+        'full_name' => trim($_POST['full_name'] ?? ''),
+        'phone' => trim($_POST['phone'] ?? ''),
+        'email' => trim($_POST['email'] ?? ''),
+        'birth_day' => trim($_POST['birth_day'] ?? ''),
+        'birth_month' => trim($_POST['birth_month'] ?? ''),
+        'birth_year' => trim($_POST['birth_year'] ?? ''),
+        'gender' => $_POST['gender'] ?? '',
+        'biography' => trim($_POST['biography'] ?? ''),
+        'languages' => isset($_POST['languages']) && is_array($_POST['languages']) ? $_POST['languages'] : [],
+        'agreement' => isset($_POST['agreement']) && $_POST['agreement'] === 'on' ? 1 : 0
     ];
 
-    // Фильтрация входных данных
-    $filtered = filter_input_array(INPUT_POST, $fields);
-    if ($filtered === null) {
-        die('Некорректные входные данные');
+    //Валидации
+    // ФИО
+   if (empty($fields['full_name'])) {
+    setcookie('full_name_error', '1', time() + 86400);
+    $errors = true;
+} elseif (strlen($fields['full_name']) > 128) {
+    setcookie('full_name_error', '2', time() + 86400);
+    $errors = true;
+} elseif (!preg_match('/^[a-zA-Zа-яА-ЯёЁ\s]+$/u', $fields['full_name'])) {
+    setcookie('full_name_error', '3', time() + 86400);
+    $errors = true;
+}
+setcookie('full_name_value', $fields['full_name'], time() + 31536000);
+
+// Телефон
+if (empty($fields['phone'])) {
+    setcookie('phone_error', '1', time() + 86400);
+    $errors = true;
+} elseif (!preg_match('/^\+7\d{10}$/', $fields['phone'])) {
+    setcookie('phone_error', '2', time() + 86400);
+    $errors = true;
+}
+setcookie('phone_value', $fields['phone'], time() + 31536000);
+
+// Email
+if (empty($fields['email'])) {
+    setcookie('email_error', '1', time() + 86400);
+    $errors = true;
+} elseif (!filter_var($fields['email'], FILTER_VALIDATE_EMAIL)) {
+    setcookie('email_error', '2', time() + 86400);
+    $errors = true;
+}
+setcookie('email_value', $fields['email'], time() + 31536000);
+
+// Дата рождения
+if (!checkdate($fields['birth_month'], $fields['birth_day'], $fields['birth_year'])) {
+    setcookie('birth_day_error', '1', time() + 86400);
+    setcookie('birth_month_error', '1', time() + 86400);
+    setcookie('birth_year_error', '1', time() + 86400);
+    $errors = true;
+}
+setcookie('birth_day_value', $fields['birth_day'], time() + 31536000);
+setcookie('birth_month_value', $fields['birth_month'], time() + 31536000);
+setcookie('birth_year_value', $fields['birth_year'], time() + 31536000);
+
+// Пол
+if (empty($fields['gender'])) {
+    setcookie('gender_error', '1', time() + 86400);
+    $errors = true;
+} elseif (!in_array($fields['gender'], ['male', 'female'])) {
+    setcookie('gender_error', '2', time() + 86400);
+    $errors = true;
+}
+setcookie('gender_value', $fields['gender'], time() + 31536000);
+
+// Биография
+if (empty($fields['biography'])) {
+    setcookie('biography_error', '1', time() + 86400);
+    $errors = true;
+} elseif (strlen($fields['biography']) > 512) {
+    setcookie('biography_error', '2', time() + 86400);
+    $errors = true;
+} elseif (preg_match('/[<>{}\[\]]|<script|<\?php/i', $fields['biography'])) {
+    setcookie('biography_error', '3', time() + 86400);
+    $errors = true;
+}
+setcookie('biography_value', $fields['biography'], time() + 31536000);
+
+// Языки программирования
+if (empty($fields['languages'])) {
+    setcookie('languages_error', '1', time() + 86400);
+    $errors = true;
+} else {
+    $invalid_langs = array_diff($fields['languages'], array_keys($allowed_lang));
+    if (!empty($invalid_langs)) {
+        setcookie('languages_error', '2', time() + 86400);
+        $errors = true;
     }
+}
+setcookie('languages_value', implode(',', $fields['languages']), time() + 31536000);
 
-    $fio = trim($filtered['full_name'] ?? '');
-    $num = trim($filtered['phone'] ?? '');
-    $email = trim($filtered['email'] ?? '');
-    $day = (int)($filtered['birth_day'] ?? 0);
-    $month = (int)($filtered['birth_month'] ?? 0);
-    $year = (int)($filtered['birth_year'] ?? 0);
-    $biography = trim($filtered['biography'] ?? '');
-    $gen = $filtered['gender'] ?? '';
-    $agreement = (int)($filtered['agreement'] ?? 0);
+// Согласие с контрактом
+if (!$fields['agreement']) {
+    setcookie('agreement_error', '1', time() + 86400);
+    $errors = true;
+}
+setcookie('agreement_value', $fields['agreement'], time() + 31536000);
 
-    // Валидация языков программирования
-    $languages = [];
-    if (isset($_POST['languages']) && is_array($_POST['languages'])) {
-        foreach ($_POST['languages'] as $lang_id) {
-            $lang_id = (int)$lang_id;
-            if (array_key_exists($lang_id, $allowed_lang)) {
-                $languages[] = $lang_id;
-            }
-        }
-    }
+if ($errors) {
+    header('Location: index.php');
+    exit();
+}
 
-    // Валидация ФИО
-    if (empty($fio)) {
-        setcookie('full_name_error', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    } elseif (strlen($fio) > 128) {
-        setcookie('full_name_error', '2', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    } elseif (!preg_match('/^[\p{L}\s]+$/u', $fio)) {
-        setcookie('full_name_error', '3', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    }
-    setcookie('full_name_value', $fio, [
-        'expires' => time() + 365 * 24 * 60 * 60,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-
-    // Валидация телефона
-    if (empty($num)) {
-        setcookie('phone_error', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    } elseif (!preg_match('/^\+7\d{10}$/', $num)) {
-        setcookie('phone_error', '2', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    }
-    setcookie('phone_value', $num, [
-        'expires' => time() + 365 * 24 * 60 * 60,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-
-    // Валидация email
-    if (empty($email)) {
-        setcookie('email_error', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        setcookie('email_error', '2', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    }
-    setcookie('email_value', $email, [
-        'expires' => time() + 365 * 24 * 60 * 60,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-
-    // Валидация пола
-    if (empty($gen)) {
-        setcookie('gender_error', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    } elseif (!in_array($gen, ["male", "female"])) {
-        setcookie('gender_error', '2', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    }
-    setcookie('gender_value', $gen, [
-        'expires' => time() + 365 * 24 * 60 * 60,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-
-    // Валидация биографии
-    if (empty($biography)) {
-        setcookie('biography_error', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    } elseif (strlen($biography) > 512) {
-        setcookie('biography_error', '2', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    } elseif (preg_match('/[<>{}\[\]]|<script|<\?php/i', $biography)) {
-        setcookie('biography_error', '3', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    }
-    setcookie('biography_value', $biography, [
-        'expires' => time() + 365 * 24 * 60 * 60,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-
-    // Валидация языков программирования
-    if (empty($languages)) {
-        setcookie('languages_error', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    }
-    setcookie('languages_value', implode(',', $languages), [
-        'expires' => time() + 365 * 24 * 60 * 60,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-
-    // Валидация даты рождения
-    if (!checkdate($month, $day, $year)) {
-        setcookie('birth_day_error', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        setcookie('birth_month_error', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        setcookie('birth_year_error', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    }
-    setcookie('birth_day_value', $day, [
-        'expires' => time() + 365 * 24 * 60 * 60,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-    setcookie('birth_month_value', $month, [
-        'expires' => time() + 365 * 24 * 60 * 60,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-    setcookie('birth_year_value', $year, [
-        'expires' => time() + 365 * 24 * 60 * 60,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-
-    // Валидация согласия
-    if (!$agreement) {
-        setcookie('agreement_error', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        $errors = TRUE;
-    }
-    setcookie('agreement_value', $agreement, [
-        'expires' => time() + 365 * 24 * 60 * 60,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-
-    if ($errors) {
-        header('Location: index.php');
-        exit();
-    }
-
+    // Сохранение в БД
     try {
-        $birth_date = sprintf("%04d-%02d-%02d", $year, $month, $day);
+        $birth_date = sprintf("%04d-%02d-%02d", 
+            $fields['birth_year'], 
+            $fields['birth_month'], 
+            $fields['birth_day']
+        );
 
         if (!empty($_SESSION['login'])) {
-            // Обновление существующей заявки
-            $stmt = $db->prepare("UPDATE applications SET full_name = ?, phone = ?, email = ?, birth_date = ?, gender = ?, biography = ?, agreement = ? WHERE id = (SELECT application_id FROM user_applications WHERE user_id = (SELECT id FROM users WHERE login = ?))");
-            $stmt->execute([$fio, $num, $email, $birth_date, $gen, $biography, $agreement, $_SESSION['login']]);
+            // Обновление данных
+            $stmt = $db->prepare("UPDATE applications SET 
+                full_name = ?, phone = ?, email = ?, birth_date = ?, 
+                gender = ?, biography = ?, agreement = ? 
+                WHERE id = (SELECT application_id FROM user_applications 
+                           WHERE user_id = (SELECT id FROM users WHERE login = ?))");
+            $stmt->execute([
+                $fields['full_name'], $fields['phone'], $fields['email'],
+                $birth_date, $fields['gender'], $fields['biography'],
+                $fields['agreement'], $_SESSION['login']
+            ]);
 
-            $stmt = $db->prepare("SELECT application_id FROM user_applications WHERE user_id = (SELECT id FROM users WHERE login = ?)");
+            // Обновление языков
+            $stmt = $db->prepare("SELECT application_id FROM user_applications 
+                                 WHERE user_id = (SELECT id FROM users WHERE login = ?)");
             $stmt->execute([$_SESSION['login']]);
-            $application_id = $stmt->fetchColumn();
+            $app_id = $stmt->fetchColumn();
 
-            $stmt = $db->prepare("DELETE FROM application_languages WHERE application_id = ?");
-            $stmt->execute([$application_id]);
+            $db->prepare("DELETE FROM application_languages WHERE application_id = ?")
+               ->execute([$app_id]);
 
-            $stmt_insert = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
-            foreach ($languages as $language_id) {
-                $stmt_insert->execute([$application_id, $language_id]);
+            $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
+            foreach ($fields['languages'] as $lang_id) {
+                $stmt->execute([$app_id, $lang_id]);
             }
         } else {
-            // Создание новой заявки
+            // Новая заявка
             $db->beginTransaction();
 
-            $stmt = $db->prepare("INSERT INTO applications (full_name, phone, email, birth_date, gender, biography, agreement) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$fio, $num, $email, $birth_date, $gen, $biography, $agreement]);
-            $application_id = $db->lastInsertId();
+            $stmt = $db->prepare("INSERT INTO applications 
+                (full_name, phone, email, birth_date, gender, biography, agreement) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $fields['full_name'], $fields['phone'], $fields['email'],
+                $birth_date, $fields['gender'], $fields['biography'],
+                $fields['agreement']
+            ]);
+            $app_id = $db->lastInsertId();
 
-            $stmt_insert = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
-            foreach ($languages as $language_id) {
-                $stmt_insert->execute([$application_id, $language_id]);
+            // Добавление языков
+            $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
+            foreach ($fields['languages'] as $lang_id) {
+                $stmt->execute([$app_id, $lang_id]);
             }
 
+            // Создание пользователя
             $login = uniqid('user_');
             $pass = bin2hex(random_bytes(8));
-            $pass_hash = password_hash($pass, PASSWORD_BCRYPT, ['cost' => 12]);
+            $pass_hash = password_hash($pass, PASSWORD_DEFAULT);
 
-            $stmt = $db->prepare("INSERT INTO users (login, password_hash) VALUES (?, ?)");
-            $stmt->execute([$login, $pass_hash]);
+            $db->prepare("INSERT INTO users (login, password_hash) VALUES (?, ?)")
+               ->execute([$login, $pass_hash]);
             $user_id = $db->lastInsertId();
 
-            $stmt = $db->prepare("INSERT INTO user_applications (user_id, application_id) VALUES (?, ?)");
-            $stmt->execute([$user_id, $application_id]);
-
-            $db->commit();
+            $db->prepare("INSERT INTO user_applications (user_id, application_id) VALUES (?, ?)")
+               ->execute([$user_id, $app_id]);
 
             $_SESSION['generated_login'] = $login;
             $_SESSION['generated_password'] = $pass;
+            $db->commit();
         }
 
-        setcookie('save', '1', [
-            'expires' => time() + 24 * 60 * 60,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
+        setcookie('save', '1', time() + 86400);
         header('Location: index.php');
         exit();
     } catch (PDOException $e) {
-        if (isset($db) && $db->inTransaction()) {
-            $db->rollBack();
-        }
-        error_log("Database save error: " . $e->getMessage());
-        die('Ошибка сохранения данных. Пожалуйста, попробуйте позже.');
-    } catch (Exception $e) {
-        error_log("General error: " . $e->getMessage());
-        die('Произошла ошибка. Пожалуйста, попробуйте позже.');
+        $db->rollBack();
+        error_log("DB Save Error: ".$e->getMessage());
+        die("Ошибка сохранения данных");
     }
 }
 ?>
@@ -577,11 +344,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Задание 7</title>
+    <title>Форма</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="index-page">
-    <?php if (file_exists('form.php')) include('form.php'); ?>
-</body>
-</html>
