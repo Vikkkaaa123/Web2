@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/db.php';
 session_start();
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
