@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/../db.php';
 
 function checkAdminAuth() {
     if (!empty($_SESSION['admin'])) {
@@ -7,7 +8,7 @@ function checkAdminAuth() {
     }
 
     if (!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])) {
-        $db = new PDO('mysql:host=localhost;dbname=u68606', 'u68606', '9347178');
+        $db = connectDB();
         $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
         $stmt->execute([$_SERVER['PHP_AUTH_USER']]);
         $admin = $stmt->fetch();
