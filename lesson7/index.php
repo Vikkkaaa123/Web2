@@ -19,20 +19,8 @@ ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_samesite', 'Strict');
 
 // Защищенное подключение к БД
-$user = 'u68606';
-$pass = '9347178';
-try {
-    $db = new PDO('mysql:host=localhost;dbname=u68606', $user, $pass, [
-        PDO::ATTR_PERSISTENT => true,
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_EMULATE_PREPARES => false,
-        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4",
-        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false
-    ]);
-} catch (PDOException $e) {
-    error_log("Database connection error: " . $e->getMessage());
-    die("Ошибка подключения к базе данных. Пожалуйста, попробуйте позже.");
-}
+require_once __DIR__ . '/db.php';
+$db = connectDB();
 
 // Защищенная функция получения языков программирования
 function getLangs($db) {
