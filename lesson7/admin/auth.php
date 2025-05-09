@@ -1,8 +1,9 @@
 <?php
-// Настройки безопасности сессии
-ini_set('session.cookie_httponly', 1);
-ini_set('session.cookie_samesite', 'Strict');
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.cookie_samesite', 'Strict');
+    session_start();
+}
 
 header('Content-Type: text/html; charset=UTF-8');
 header("X-Frame-Options: DENY");
