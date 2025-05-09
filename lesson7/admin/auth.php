@@ -11,7 +11,7 @@ header("X-Content-Type-Options: nosniff");
 require_once __DIR__ . '/../db.php';
 
 function checkAdminAuth() {
-    if (!empty($_SESSION['admin']) {
+    if (!empty($_SESSION['admin'])) {
         return true;
     }
 
