@@ -1,5 +1,5 @@
 <?php
-// Настройки безопасности сессии ДО session_start()
+// Настройки безопасности сессии 
 ini_set('session.cookie_lifetime', 0);
 ini_set('session.cookie_secure', 1);
 ini_set('session.cookie_httponly', 1);
