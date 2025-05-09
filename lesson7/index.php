@@ -177,13 +177,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 // Обработка POST запроса
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Проверка CSRF токена
-    if (!isset($_POST['csrf_token']) {
+    if (!isset($_POST['csrf_token'])) {
         die('CSRF токен отсутствует');
     }
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
         die('Недействительный CSRF токен');
     }
-
+   }
+    
     $errors = FALSE;
     $fields = [
         'full_name' => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
