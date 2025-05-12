@@ -111,35 +111,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
    if (!empty($_SESSION['login'])) {
     try {
-            $stmt = $db->prepare("SELECT a.* FROM applications a 
-                                JOIN user_applications ua ON a.id = ua.application_id 
-                                JOIN users u ON ua.user_id = u.id 
-                                WHERE u.login = ?");
-            $stmt->execute([$_SESSION['login']]);
+        $stmt = $db->prepare("SELECT a.* FROM applications a 
+                            JOIN user_applications ua ON a.id = ua.application_id 
+                            JOIN users u ON ua.user_id = u.id 
+                            WHERE u.login = ?");
+        $stmt->execute([$_SESSION['login']]);
+        
+        if ($application = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            foreach (['full_name', 'phone', 'email', 'gender', 'biography'] as $field) {
+                $values[$field] = htmlspecialchars($application[$field], ENT_QUOTES, 'UTF-8');
+            }
             
-            if ($application = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                foreach (['full_name', 'phone', 'email', 'gender', 'biography'] as $field) {
-                    $values[$field] = htmlspecialchars($application[$field], ENT_QUOTES, 'UTF-8');
-                }
-                
-                $values['birth_day'] = date('d', strtotime($application['birth_date']));
-                $values['birth_month'] = date('m', strtotime($application['birth_date']));
-                $values['birth_year'] = date('Y', strtotime($application['birth_date']));
-                $values['agreement'] = $application['agreement'];
+            $values['birth_day'] = date('d', strtotime($application['birth_date']));
+            $values['birth_month'] = date('m', strtotime($application['birth_date']));
+            $values['birth_year'] = date('Y', strtotime($application['birth_date']));
+            $values['agreement'] = $application['agreement'];
 
-                $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
-                $stmt->execute([$application['id']]);
-                $lang_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
+            $stmt->execute([$application['id']]);
+            $lang_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-        $values['languages'] = $lang_ids; 
-        setcookie('languages_value', implode(',', $lang_ids), time() + 31536000); 
+            $values['languages'] = $lang_ids; 
+            setcookie('languages_value', implode(',', $lang_ids), time() + 31536000, '/');
+        }
     } catch (PDOException $e) {
         error_log("DB Error loading user data: ".$e->getMessage());
         die("Ошибка загрузки данных");
     }
 }
 
-    $fields['languages'] = isset($_POST['languages']) && is_array($_POST['languages']) ? $_POST['languages'] : [];
+$fields['languages'] = isset($_POST['languages']) && is_array($_POST['languages']) ? $_POST['languages'] : [];
     
     include __DIR__.'/form.php';
     exit();
