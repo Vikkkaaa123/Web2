@@ -40,8 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     foreach ($fields as $field) {
         $errors[$field] = !empty($_COOKIE[$field.'_error']);
-        $values[$field] = empty($_COOKIE[$field.'_value']) ? '' : 
-            htmlspecialchars($_COOKIE[$field.'_value'], ENT_QUOTES, 'UTF-8');
+        if ($field == 'languages') {
+            $values[$field] = empty($_COOKIE[$field.'_value']) ? [] : json_decode($_COOKIE[$field.'_value'], true);
+        } else {
+            $values[$field] = empty($_COOKIE[$field.'_value']) ? '' : 
+                htmlspecialchars($_COOKIE[$field.'_value'], ENT_QUOTES, 'UTF-8');
+        }
         setcookie($field.'_error', '', time() - 3600, '/');
     }
 
@@ -125,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
                 $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
                 $stmt->execute([$application['id']]);
-                $values['languages'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                $values['languages'] = $stmt->fetchAll(PDO::FETCH_COLUMN); // Получаем массив языков
             }
         } catch (PDOException $e) {
             error_log("DB Error loading user data: ".$e->getMessage());
@@ -133,7 +137,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         }
     }
 
-    // Подключение шаблона
     include __DIR__.'/form.php';
     exit();
 }
@@ -158,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'languages' => isset($_POST['languages']) && is_array($_POST['languages']) ? $_POST['languages'] : [],
         'agreement' => isset($_POST['agreement']) && $_POST['agreement'] === 'on' ? 1 : 0
     ];
+
 
     // Валидация полей
     if (empty($fields['full_name'])) {
@@ -221,6 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     setcookie('biography_value', $fields['biography'], time() + 31536000, '/');
 
+    // Для языков программирования:
     if (empty($fields['languages'])) {
         setcookie('languages_error', '1', time() + 86400, '/');
         $errors = true;
@@ -231,13 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $errors = true;
         }
     }
-    setcookie('languages_value', implode(',', $fields['languages']), time() + 31536000, '/');
-
-    if (!$fields['agreement']) {
-        setcookie('agreement_error', '1', time() + 86400, '/');
-        $errors = true;
-    }
-    setcookie('agreement_value', $fields['agreement'], time() + 31536000, '/');
+    setcookie('languages_value', json_encode($fields['languages']), time() + 31536000, '/');
 
     if ($errors) {
         header('Location: index.php');
