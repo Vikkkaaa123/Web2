@@ -220,17 +220,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     setcookie('biography_value', $fields['biography'], time() + 31536000, '/');
 
-    if (empty($fields['languages'])) {
-        setcookie('languages_error', '1', time() + 86400, '/');
-        $errors = true;
-    } else {
-        $invalid_langs = array_diff($fields['languages'], array_keys($allowed_lang));
-        if (!empty($invalid_langs)) {
+    if (empty($fields['languages']) || !is_array($fields['languages'])) {
+    setcookie('languages_error', '1', time() + 86400, '/');
+    $errors = true;
+} else {
+    foreach ($fields['languages'] as $lang_id) {
+        if (!array_key_exists($lang_id, $allowed_lang)) {
             setcookie('languages_error', '2', time() + 86400, '/');
             $errors = true;
+            break;
         }
     }
-    setcookie('languages_value', implode(',', $fields['languages']), time() + 31536000, '/');
+}
+setcookie('languages_value', implode(',', $fields['languages']), time() + 31536000, '/');
 
     if (!$fields['agreement']) {
         setcookie('agreement_error', '1', time() + 86400, '/');
