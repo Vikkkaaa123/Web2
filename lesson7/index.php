@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_samesite', 'Strict');
 session_start();
@@ -107,8 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $messages['agreement'] = 'Необходимо согласие с контрактом.';
     }
 
-    if (!empty($_SESSION['login'])) {
-        try {
+   if (!empty($_SESSION['login'])) {
+    try {
             $stmt = $db->prepare("SELECT a.* FROM applications a 
                                 JOIN user_applications ua ON a.id = ua.application_id 
                                 JOIN users u ON ua.user_id = u.id 
@@ -127,14 +129,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
                 $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
                 $stmt->execute([$application['id']]);
-                $values['languages'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            }
-        } catch (PDOException $e) {
-            error_log("DB Error loading user data: ".$e->getMessage());
-            die("Ошибка загрузки данных");
-        }
-    }
+                $lang_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
+        $values['languages'] = $lang_ids; 
+        setcookie('languages_value', implode(',', $lang_ids), time() + 31536000); 
+    } catch (PDOException $e) {
+        error_log("DB Error loading user data: ".$e->getMessage());
+        die("Ошибка загрузки данных");
+    }
+}
+
+    $fields['languages'] = isset($_POST['languages']) && is_array($_POST['languages']) ? $_POST['languages'] : [];
+    
     include __DIR__.'/form.php';
     exit();
 }
