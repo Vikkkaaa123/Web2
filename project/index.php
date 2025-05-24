@@ -3,15 +3,12 @@ include('./settings.php');
 
 // Выключаем отображение ошибок после отладки.
 ini_set('display_errors', DISPLAY_ERRORS);
-//error_reporting(E_ALL & E_STRICT);
-//ini_set("mysql.trace_mode","On");
 
 // Папки со скриптами и модулями.
 ini_set('include_path', INCLUDE_PATH);
 
-
-
-include('init.php');
+include('./scripts/db.php');
+include('./scripts/init.php');
 
 $request = array(
   'url' => isset($_GET['q']) ? $_GET['q'] : '',
@@ -19,7 +16,7 @@ $request = array(
   'get' => !empty($_GET) ? $_GET : array(),
   'post' => !empty($_POST) ? $_POST : array(),
   'put' => !empty($_POST) && !empty($_POST['method']) && $_POST['method'] == 'put' ? $_POST : array(),
-  'delete' => !empty($_POST) && !empty($_POST['method']) && $_POST['method'] == 'put' ? $_POST : array(),
+  'delete' => !empty($_POST) && !empty($_POST['method']) && $_POST['method'] == 'delete' ? $_POST : array(),
   'Content-Type' => 'text/html',
 );
 
