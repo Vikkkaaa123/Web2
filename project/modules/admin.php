@@ -1,21 +1,38 @@
 <?php
+require_once __DIR__ . '/../scripts/db.php';
 
-// Обработчик запросов методом GET.
-function admin_get($request) {
-  // Достаем данные из БД, форматируем, санитизуем, складываем в массив, передаем в шаблон для вывода в HTML.
-  $params = [
-    0 => ['Колонка 1', 'Колонка 2'],
-    1 => ['Колонка 1', 'Колонка 2'],
-    2 => ['Колонка 1', 'Колонка 2']];
-  // Пример возврата html из шаблона с передачей параметров.
-  return theme('admin', ['admin' => $params]);
+function admin_get($request, $db) {
+    $user_log = $_SERVER['PHP_AUTH_USER'] ?? '';
+    $user_pass = $_SERVER['PHP_AUTH_PW'] ?? '';
+    
+    if (empty($user_log) || empty($user_pass) || 
+        !admin_login_check($user_log) || 
+        !admin_password_check($user_log, $user_pass)) {
+        
+        header('HTTP/1.1 401 Unauthorized');
+        header('WWW-Authenticate: Basic realm="My site"');
+        return theme('401'); 
+    }
+
+    $language_table = language_stats($db);
+    $user_table = users_table($db);
+
+    return theme('admin', [
+        'language_stats' => $language_table,
+        'users' => $user_table
+    ]);
 }
 
-// Обработчик запросов методом POST.
-function admin_post($request, $url_param_1) {
-  // Санитизуем параметр в URL и удаляем строку в БД.
-  $id = intval($url_param_1);
-  
-  // Пример возврата редиректа после обработки формы для реализации принципа Post-redirect-Get.
-  return redirect('admin');
+function admin_post($request, $db) {
+    if (!empty($request['del_by_uid']) && !empty($_SERVER['PHP_AUTH_USER'])) {
+        del_by_uid($db, $request['del_by_uid']);
+    }
+    return redirect('admin');
 }
+
+$db = db_connect();
+$response = ($_SERVER['REQUEST_METHOD'] === 'POST') 
+    ? admin_post($_POST, $db) 
+    : admin_get($_GET, $db);
+
+echo $response;
