@@ -19,7 +19,6 @@ function init($request = array(), $urlconf = array()) {
         continue;
       }
     }
-
     if (isset($r['auth'])) {
       require_once($r['auth'] . '.php');
       $auth = auth($request, $r);
@@ -27,6 +26,7 @@ function init($request = array(), $urlconf = array()) {
         return $auth;
       }
     }
+
     if (isset($r['tpl'])) {
       $template = $r['tpl'];
     }
@@ -39,13 +39,11 @@ function init($request = array(), $urlconf = array()) {
     if (!function_exists($func)) {
       continue;
     }
-
-    $params = array('request' => $request);
+    $params = array('request' => $request, 'db' => $db);
     array_shift($matches);
     foreach ($matches as $key => $match) {
       $params[$key] = $match[0];
     }
-
     if ($result = call_user_func_array($func, $params)) {
       if (is_array($result)) {
         $response = array_merge($response, $result);
@@ -58,7 +56,6 @@ function init($request = array(), $urlconf = array()) {
       }
     }
   }
-
   if (!empty($c)) {
     $c['#request'] = $request;
     $response['entity'] = theme($template, $c);
@@ -66,7 +63,6 @@ function init($request = array(), $urlconf = array()) {
   else {
     $response = not_found();
   }
-
   $response['headers']['Content-Type'] = 'text/html; charset=' . conf('charset');
 
   return $response;
@@ -79,12 +75,14 @@ function conf($key) {
 
 function url($addr = '', $params = array()) {
   global $conf;
+
   if ($addr == '' && isset($_GET['q'])) {
     $addr = strip_tags($_GET['q']);
   }
   $clean = conf('clean_urls');
   $r = $clean ? '/' : '?q=';
-  $r .= strip_tags($addr);
+  $r = conf('basedir') . ltrim($r . strip_tags($addr), '/'); 
+
   if (count($params) > 0) {
     $r .= $clean ? '?' : '&';
     $r .= implode('&', $params);
@@ -92,15 +90,17 @@ function url($addr = '', $params = array()) {
   return $r;
 }
 
-function redirect($l = NULL) {
+function redirect($l = NULL, $statusCode = 302) {
   if (is_null($l)) {
-    $location = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    $location = $_SERVER['REQUEST_URI']; 
   }
   else {
-    $location = 'http://' . $_SERVER['HTTP_HOST'] . conf('basedir') . url($l);
+    $location = conf('basedir') . $l; 
   }
-  return array('headers' => array('Location' => $location));
+    return array('headers' => array('Location' => $location),
+                 'statusCode' => $statusCode);
 }
+
 
 function access_denied() {
   return array(
@@ -116,16 +116,17 @@ function not_found() {
   );
 }
 
+
 function theme($t, $c = array()) {
   $template = conf('theme') . '/' . str_replace('/', '_', $t) . '.tpl.php';
-
   if (!file_exists($template)) {
     return implode('', $c);
   }
-
   ob_start();
+  extract($c);
   include $template;
   $contents = ob_get_contents();
   ob_end_clean();
   return $contents;
 }
+
