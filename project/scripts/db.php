@@ -39,7 +39,7 @@ function db_query($query) {
     $stmt->execute($args);
     $result = [];
     while ($row = $stmt->fetch()) {
-        if (isset($row['id']) {
+        if (isset($row['id'])) {
             $result[$row['id']] = $row;
         } else {
             $result[] = $row;
