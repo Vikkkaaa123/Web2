@@ -66,5 +66,18 @@ function db_result($query) {
     return $result ? reset($result[0]) : false;
 }
 
-// Автоматическое подключение при первом вызове
+function admin_login_check($db, $login) {
+    $stmt = $db->prepare("SELECT COUNT(*) FROM admins WHERE login = ?");
+    $stmt->execute([$login]);
+    return $stmt->fetchColumn() > 0;
+}
+
+function admin_password_check($db, $login, $password) {
+    $stmt = $db->prepare("SELECT password FROM admins WHERE login = ?");
+    $stmt->execute([$login]);
+    $storedPassword = $stmt->fetchColumn();
+
+    return password_verify($password, $storedPassword);
+}
+
 db_connect();
