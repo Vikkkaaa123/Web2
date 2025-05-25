@@ -8,8 +8,8 @@
 
 // Диспатчер. Делает запрос $request в соответствии со структурой $urlconf.
 function init($request = array(), $urlconf = array()) {
-  // Массив HTTP-ответа.
-  $response = array();
+   // Массив HTTP-ответа.
+  global $db;
 
   // Шаблон страницы по умолчанию.
   $template = 'page';
