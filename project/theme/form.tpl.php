@@ -112,12 +112,6 @@
                         <div class="block-main-wrapper">
                           <a href="#myform" class="block-main-btn flowing-scroll">РЕГИСТРАЦИЯ</a>
                         </div>
-                          <div class="button-tariff col-md-5 my-4 px-0">
-                        <div class="block-main-wrapper">
-                          <a href="#tariffs" class="block-main-btn flowing-scroll">ТАРИФЫ</a>
-                        </div>
-
-                      </div>
 
                     </div>
                     
