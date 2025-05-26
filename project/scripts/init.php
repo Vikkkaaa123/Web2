@@ -1,71 +1,64 @@
 <?php
-
 function init($request = array(), $urlconf = array()) {
-  global $db;
-  $response = array();
-  $template = 'page';
-  $c = array();
-  $q = isset($request['url']) ? $request['url'] : '';
-  $method = isset($request['method']) ? $request['method'] : 'get';
-  foreach ($urlconf as $url => $r) {
-    $matches = array();
-    if ($url == '' || $url[0] != '/') {
-      if ($url != $q) {
-        continue;
-      }
-    }
-    else {
-      if (!preg_match_all($url, $q, $matches)) {
-        continue;
-      }
-    }
-    if (isset($r['auth'])) {
-      require_once($r['auth'] . '.php');
-      $auth = auth($request, $r);
-      if ($auth) {
-        return $auth;
-      }
-    }
+    global $conf;
+    
+    $response = array();
+    $template = 'page';
+    $c = array();
 
-    if (isset($r['tpl'])) {
-      $template = $r['tpl'];
-    }
+    $q = $request['url'] ?? '';
+    $method = strtolower($request['method'] ?? 'get');
 
-    if (!isset($r['module'])) {
-      continue;
-    }
-    require_once($r['module'] . '.php');
-    $func = sprintf('%s_%s', $r['module'], $method);
-    if (!function_exists($func)) {
-      continue;
-    }
-    $params = array('request' => $request, 'db' => $db);
-    array_shift($matches);
-    foreach ($matches as $key => $match) {
-      $params[$key] = $match[0];
-    }
-    if ($result = call_user_func_array($func, $params)) {
-      if (is_array($result)) {
-        $response = array_merge($response, $result);
-        if (!empty($response['headers'])) {
-          return $response;
+    foreach ($urlconf as $url => $r) {
+        $matches = array();
+
+        if ($url == '' || $url[0] != '/') {
+            if ($url != $q) continue;
+        } else {
+            if (!preg_match($url, $q, $matches)) continue;
         }
-      }
-      else {
-        $c['#content'][$r['module']] = $result;
-      }
-    }
-  }
-  if (!empty($c)) {
-    $c['#request'] = $request;
-    $response['entity'] = theme($template, $c);
-  }
-  else {
-    $response = not_found();
-  }
-  $response['headers']['Content-Type'] = 'text/html; charset=' . conf('charset');
 
-  return $response;
+        if (!empty($r['auth'])) {
+            require_once "./modules/{$r['auth']}.php";
+            if (function_exists('auth')) {
+                $auth_response = auth($request, $r);
+                if ($auth_response) return $auth_response;
+            }
+        }
+
+        // Загрузка модуля
+        if (empty($r['module'])) continue;
+        require_once "./modules/{$r['module']}.php";
+
+        $func = "{$r['module']}_{$method}";
+        if (!function_exists($func)) continue;
+
+        $params = array('request' => $request);
+        if (isset($matches[1])) {
+            $params['url_param'] = $matches[1];
+        }
+
+        $result = call_user_func_array($func, $params);
+        
+        if (is_array($result)) {
+            if (!empty($result['headers'])) {
+                return $result;
+            }
+            $response = array_merge($response, $result);
+        } else {
+            $c['#content'][$r['module']] = $result;
+        }
+    }
+
+    if (!empty($c)) {
+        $c['#request'] = $request;
+        $response['entity'] = theme($template, $c);
+    } else {
+        $response = not_found();
+    }
+
+    $response['headers']['Content-Type'] = 'text/html; charset=' . conf('charset');
+    return $response;
 }
 
 function conf($key) {
