@@ -588,7 +588,7 @@
                 </div>
                   
                <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-2" src="./styles/img/logo_2.png">
+                  <img class="mb-4" alt="rev-logo-2" src="./styles/img/logo.png">
                   <div class="slide-body">
                     Сергей — профессиональный, высококвалифицированый программист
                     с огромным опытом в ИТ. Я долгое время общался с топ-фрилансерами
@@ -603,7 +603,7 @@
                 </div>
 
                 <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-3" src="./styles/img/logo.png">
+                  <img class="mb-4" alt="rev-logo-3" src="./styles/img/farbors_ru.jpg">
                   <div class="slide-body">
                     Выражаю глубочайшую благодарность команде специалистов компании "Инитлаб"
                     и лично Дмитрию Купянскому и Алексею Синице. Сайт был первоклассно перевёрстан
@@ -650,7 +650,7 @@
                 </div>
 
                 <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-6" src="style/img/cableman_ru.png">
+                  <img class="mb-4" alt="rev-logo-6" src="./styles/img/cableman_ru.png">
                   <div class="slide-body">
                     Наша компания за несколько лет сменила несколько команд программистов и специалистов техподдержки,
                     и почти отчаялась найти на российском рынке адекватное профессиональное предложение по разумной цене.
@@ -666,7 +666,7 @@
                 </div>
 
                 <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-7" src="./styles/img/farbors_ru.jpg">
+                  <img class="mb-4" alt="rev-logo-7" src="./styles/img/logo_2.png">
                   <div class="slide-body">
                     За довольно продолжительный срок (2014 - 2016 годы) весьма плотной работы 
                     (интернет-магазин на безумно замороченном Drupal 6: устраняли косяки разработчиков,
