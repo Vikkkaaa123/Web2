@@ -26,7 +26,6 @@ function init($request = array(), $urlconf = array()) {
             }
         }
 
-        // Загрузка модуля
         if (empty($r['module'])) continue;
         require_once "./modules/{$r['module']}.php";
 
