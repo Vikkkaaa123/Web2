@@ -586,7 +586,7 @@
                   </div>
                 </div>
                   
-                <div class="slide p-2 col-12 col-md-8">
+               <div class="slide p-2 col-12 col-md-8">
                   <img class="mb-4" alt="rev-logo-2" src="style/img/logo_2.png">
                   <div class="slide-body">
                     Сергей — профессиональный, высококвалифицированый программист
