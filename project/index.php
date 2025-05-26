@@ -8,18 +8,18 @@ include('./scripts/db.php');
 include('./scripts/init.php');
 
 $request = [
-  'url' => $_GET['q'] ?? '',
-  'method' => in_array($_POST['method'] ?? '', ['get', 'post', 'put', 'delete']) 
-              ? $_POST['method'] 
-              : strtolower($_SERVER['REQUEST_METHOD']),
-  'get' => $_GET,
-  'post' => $_POST,
-  'put' => ($_POST['method'] ?? '') == 'put' ? $_POST : [],
-  'delete' => ($_POST['method'] ?? '') == 'delete' ? $_POST : [],
-  'Content-Type' => 'text/html'
+    'url' => $_GET['q'] ?? '',
+    'method' => in_array($_POST['method'] ?? '', ['get', 'post', 'put', 'delete'])
+        ? $_POST['method']
+        : strtolower($_SERVER['REQUEST_METHOD']),
+    'get' => $_GET,
+    'post' => $_POST,
+    'put' => ($_POST['method'] ?? '') == 'put' ? $_POST : [],
+    'delete' => ($_POST['method'] ?? '') == 'delete' ? $_POST : [],
+    'Content-Type' => 'text/html'
 ];
 
-$response = init($request);
+$response = init($request, $urlconf);
 
 foreach ($response['headers'] ?? [] as $key => $value) {
     header(is_string($key) ? "$key: $value" : $value);
