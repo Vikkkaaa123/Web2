@@ -23,13 +23,6 @@
 
 
 <body>
-<script>
-  window.onload = function() {
-    const element = document.getElementById('myform');
-    element.scrollIntoView({ behavior: 'smooth' }); // Плавная прокрутка
-  };
-</script>
-
     <div class="container-fluid page">
       <div class="b-header row d-flex mb-2">
         <header> 
@@ -39,7 +32,6 @@
               
               </video>
            </div>
-          
           
                 <div class="navigation row d-flex mt-5 ">
                   <div class="nav-cont container">
@@ -51,8 +43,6 @@
                             </a>
                               <label class="" for="menu" id="menu1" style="background-image: url(../style/image/менюю.png);">≡</label>
                           </div>
-                        
-                        
 
                         <div class="col-md-12 col-lg-10 px-0 justify-content-around">
                             <input type="checkbox" name="menu" id="menu">
@@ -90,12 +80,9 @@
                                   <li class="li-menu py-2 px-3 float-md-left"> <a  href="form.tpl.php" class="nav-link p-0 text-md-center"> КОНТАКТЫ </a></li>
                               </ul>
                         </div>
-                        
-                        
-                        
+                             
                     </nav>
                   </div>
-                  
 
                 <div class="container"> 
                 <div class="header-cont container d-flex col-md-12 py-md-5 px-md-0 mx-md-0 my-4 ">
@@ -112,6 +99,8 @@
                         <div class="block-main-wrapper">
                           <a href="#myform" class="block-main-btn flowing-scroll">РЕГИСТРАЦИЯ</a>
                         </div>
+
+                      </div>
 
                     </div>
                     
@@ -145,13 +134,10 @@
               </div>
           </div>
           
-
         </header>
       </div>
     </div>
 
-
-  <!--main-->
   <div class="b-main">
 
     <div class="b-info-1 container">
