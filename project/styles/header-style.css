@@ -41,6 +41,7 @@
     position: fixed;
     bottom: 0;
     z-index: 9999;
+    /*margin-left: -15px ;*/
 }
 .logo-menu{
     
@@ -57,7 +58,6 @@ header a{
     position: relative;
 }
 
-
 .dropbtn {
     background-color: transparent;
     color: white;
@@ -67,12 +67,10 @@ header a{
     padding: 0px;
 }
 
-
 .dropdown {
     position: relative;
     display: inline-block;
 }
-
 
 .dropdown-content {
     display: flex;
@@ -84,20 +82,16 @@ header a{
     z-index: 1;
 }
 
-
 .dropdown-content a {
     padding-left: 14px;
     text-decoration: none;
     display: block;
 }
 
-
 .dropdown-content a:hover {background-color: transparent;
     color: #f14d34; }
 
-
 .dropdown:hover .dropdown-content {display: block;}
-
 
 .nav-link:hover{
     color: #f14d34;
@@ -137,8 +131,7 @@ header a{
 }
 header input, header ul { 
     display: none;
-    
- }
+     }
 :checked ~ ul {
     background-color: black;
     
@@ -234,8 +227,6 @@ header nav{
     float: right;
 }
 
-
-
 .header-title{
     font-size: 50px;
     font-weight: bold;
@@ -282,7 +273,6 @@ header nav{
 
     }
 
-
     header nav ul li{
         margin-left: 0px;
     }
@@ -314,7 +304,6 @@ header nav{
         flex-direction: row-reverse;
     }
 
-
     .dropdown-content {
         display: none;
         position: absolute;
@@ -325,6 +314,7 @@ header nav{
     }
 
     .check-menu{ display: none;}
+    
     .button-menu{
         display: none;
     }
@@ -360,7 +350,7 @@ header nav{
     .nav-link:focus:after {
         width: 100%; 
     }
-
+    
     .dropdown-content a:hover {background-color: #d83016;
         color: aliceblue;}
     .dropdown-content a:before{
