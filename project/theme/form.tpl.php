@@ -22,12 +22,19 @@
 
 
 <body>
-     <div class="container-fluid page">
-      <div class="b-header row d-flex mb-5">
+<script>
+  window.onload = function() {
+    const element = document.getElementById('myform');
+    element.scrollIntoView({ behavior: 'smooth' }); // Плавная прокрутка
+  };
+</script>
+
+    <div class="container-fluid page">
+      <div class="b-header row d-flex mb-2">
         <header> 
            <div class="header__video">
               <video class="h-vid"  loop autoplay muted>
-                  <source src="./style/img/video.mp4" type="video/mp4">
+                  <source src="./styles/img/video.mp4" type="video/mp4">
               
               </video>
            </div>
@@ -39,9 +46,9 @@
                         
                           <div class="logo-menu col-md-2 float-md-left order-1 order-md-0">
                             <a href="form.tpl.php">
-                              <img id="logo" src="style/img/drupal-coder.svg" alt="" width="250" height="25">
+                              <img id="logo" src="./styles/img/drupal-coder.svg" alt="" width="140" height="20">
                             </a>
-                              <label class="" for="menu" id="menu1" style="background-image: url(../style/image/меню.png);">≡</label>
+                              <label class="" for="menu" id="menu1" style="background-image: url(../style/image/менюю.png);">≡</label>
                           </div>
                         
                         
@@ -49,37 +56,37 @@
                         <div class="col-md-12 col-lg-10 px-0 justify-content-around">
                             <input type="checkbox" name="menu" id="menu">
                             <ul class="menu-none p-0 py-md-0 m-md-0 w-md-auto">
-                                <li class="li-menu"> <a  href="index.html" class="nav-link"> ПОДДЕРЖКА DRUPAL </a></li>
+                                <li class="li-menu py-2 px-3 float-md-left"> <a  href="index.html" class="nav-link p-0 text-md-center"> ПОДДЕРЖКА DRUPAL </a></li>
 
                                 <li class="pt-2 pt-md-0 py-md-2 px-md-3 float-md-left">  
                                     <div class="dropdown">
-                                        <form action="./index.html" class="li-menu">
-                                            <button class="dropbtn"> АДМИНИСТРИРОВАНИЕ <img src="style/img/arrow-lang.svg" alt=""> </button>
+                                        <form action="form.tpl.php" class="li-menu">
+                                            <button class="dropbtn pb-2 pb-md-0 px-md-0 px-3"> АДМИНИСТРИРОВАНИЕ <img src="./styles/img/arrow-lang.svg" alt=""> </button>
                                         </form>
                                         <div class="dropdown-content">
-                                            <a class="down-links" href="./index.html">МИГРАЦИЯ</a>
-                                            <a class="down-links" href="./index.html">БЭКАПЫ</a>
-                                            <a class="down-links" href="./index.html">АУДИТ БЕЗОПАСНОСТИ</a>
-                                            <a class="down-links" href="./index.html">ОПТИМИЗАЦИЯ СКОРОСТИ</a>
-                                            <a class="down-links" href="./index.html">ПЕРЕЕЗД НА HTTPS</a>
+                                            <a class="down-links li-menu py-2 px-5 px-md-3" href="form.tpl.php">МИГРАЦИЯ</a>
+                                            <a class="down-links li-menu py-2 px-5 px-md-3" href="form.tpl.php">БЭКАПЫ</a>
+                                            <a class="down-links li-menu py-2 px-5 px-md-3" href="form.tpl.php">АУДИТ БЕЗОПАСНОСТИ</a>
+                                            <a class="down-links li-menu py-2 px-5 px-md-3" href="form.tpl.php">ОПТИМИЗАЦИЯ СКОРОСТИ</a>
+                                            <a class="down-links li-menu py-2 px-5 px-md-3" href="form.tpl.php">ПЕРЕЕЗД НА HTTPS</a>
                                         </div>
                                     </div>
                                   </li>
-                                  <li class="li-menu"> <a  href="index.html" class="nav-link"> ПРОДВИЖЕНИЕ</a></li>
+                                  <li class="li-menu py-2 px-3 float-md-left"> <a  href="index.php" class="nav-link p-0 text-md-center"> ПРОДВИЖЕНИЕ</a></li>
                                   <li class="pt-2 py-md-2 px-md-3 float-md-left">  
                                         <div class="dropdown">
-                                          <form action="./index.html" class="li-menu">
-                                              <button class="dropbtn"> О НАС <img src="style/img/arrow-lang.svg" alt=""> </button>
+                                          <form action="form.tpl.php" class="li-menu">
+                                              <button class="dropbtn pb-2 pb-md-0 px-md-0 px-3 pt-md-0"> О НАС <img src="./styles/img/arrow-lang.svg" alt=""> </button>
                                           </form>
                                         <div class="dropdown-content">
-                                            <a class="down-links" href="index.html">КОМАНДА</a>
-                                            <a class="down-links" href="index.html">ВАКАНСИИ</a>
+                                            <a class="down-links li-menu py-2 px-5 px-md-3" href="form.tpl.php">КОМАНДА</a>
+                                            <a class="down-links li-menu py-2 px-5 px-md-3" href="form.tpl.php">ВАКАНСИИ</a>
                                         </div>
                                       </div> 
                                   </li>
                                   
-                                  <li class="li-menu"> <a  href="index.html" class="nav-link"> ПРОЕКТЫ </a></li>
-                                  <li class="li-menu"> <a  href="index.html" class="nav-link"> КОНТАКТЫ </a></li>
+                                  <li class="li-menu py-2 px-3 float-md-left"> <a  href="form.tpl.php" class="nav-link p-0 text-md-center"> ПРОЕКТЫ </a></li>
+                                  <li class="li-menu py-2 px-3 float-md-left"> <a  href="form.tpl.php" class="nav-link p-0 text-md-center"> КОНТАКТЫ </a></li>
                               </ul>
                         </div>
                         
@@ -96,13 +103,13 @@
                         Поддержка сайтов на Drupal
                       </div>
                         
-                      <div class="header-text-info">
+                      <div class="header-text-info py-md-2">
                           Сопровождение и поддержка сайтов на CMS Drupal любых версий и запущенности
                       </div>
                         
                       <div class="button-tariff col-md-5 my-4 px-0">
                         <div class="block-main-wrapper">
-                          <a href="#tariffs" class="block-main-btn flowing-scroll">ТАРИФЫ</a>
+                          <a href="#myform" class="block-main-btn flowing-scroll">РЕГИСТРАЦИЯ</a>
                         </div>
 
                       </div>
@@ -112,7 +119,7 @@
                     <div class="row pl-2 ml-md-2">
                         <div class="advantages-header col-6 col-lg-4 my-3">
                           
-                          <h1>#1 <img src="style/img/cup.png" alt=""></h1> 
+                          <h1>#1 <img src="./styles/img/cup.png" alt=""></h1> 
                           <p class="">  Drupal-разрабочтик в России по версии Рейтинга Рунета </p>
                         </div>
                         <div class="advantages-header col-6 col-lg-4 my-3">
@@ -124,7 +131,7 @@
                           
                         </div>
                         <div class="advantages-header col-6 col-lg-4 my-3">
-                          <h2>50+</h2><p class=""> модулей и тем в формате DrupalGive</p>
+                          <h2>50+</h2><p class=""> модулей и тем в формает DrupalGive</p>
                         </div>
                         <div class="advantages-header col-6 col-lg-4 my-3">
                           <h2>90 000+</h2><p class=""> часов поддержки на Drupal </p>
@@ -138,23 +145,26 @@
                 </div>
               </div>
           </div>
+          
+
         </header>
       </div>
     </div>
 
 
+  <!--main-->
   <div class="b-main">
 
     <div class="b-info-1 container">
       <h2 class="mb-3 px-3"> 13 лет совершенствуем <br> компетенции в Друпал <br> поддержке! </h2>
-      <p class="mb-3 px-3"> Разрабатываем и оптимизируем модули, расширяем <br> функциональность сайтов, обновляем дизайн </p>
+      <p class="mb-5 px-3"> Разрабатываем и оптимизируем модули, расширяем <br> функциональность сайтов, обновляем дизайн </p>
 
       <div class="row d-flex">
 
         <div class="col-md-3 col-6 mx-0 px-2">
-          <div class="inf-1-block row d-flex justify-content-around m-3 p-2">
+          <div class="inf-1-block row d-flex justify-content-around m-2 p-2">
             <div class="inf-1-img col-12 d-flex justify-content-around">
-              <img alt="comp-1" src="style/img/competency-1.svg">
+              <img alt="comp-1" src="./styles/img/competency-1.svg">
             </div>
             <p class="col-12 my-0 p-3"> Добавление информации на сайт, создание новых разделов</p>
           </div>
@@ -162,7 +172,7 @@
         <div class="col-md-3 col-6 mx-0 px-2">
           <div class="inf-1-block row d-flex justify-content-around m-1 p-2">
             <div class="inf-1-img col-12 d-flex justify-content-around">
-              <img alt="comp-2" src="style/img/competency-2.svg">
+              <img alt="comp-2" src="./styles/img/competency-2.svg">
             </div>
             <p class="col-12 my-0 p-3"> Разработка и оптимизация модулей сайта</p>
           </div>
@@ -170,7 +180,7 @@
         <div class="col-md-3 col-6 mx-0 px-2">
           <div class="inf-1-block row d-flex justify-content-around m-1 p-2">
             <div class="inf-1-img col-12 d-flex justify-content-around">
-              <img alt="comp-3" src="style/img/competency-3.svg">
+              <img alt="comp-3" src="./styles/img/competency-3.svg">
             </div>
             <p class=" col-12 my-0 p-3"> Интеграция с CRM, 1C, платежными системами, любыми веб-сервисами</p>
           </div>
@@ -178,7 +188,7 @@
         <div class="col-md-3 col-6 mx-0 px-2">
           <div class="inf-1-block row d-flex justify-content-around m-1 p-2">
             <div class="inf-1-img col-12 d-flex justify-content-around">
-              <img alt="comp-4" src="style/img/competency-4.svg">
+              <img alt="comp-4" src="./styles/img/competency-4.svg">
             </div>
             <p class="col-12 my-0 p-3"> Любые доработки функционала и дизайна</p>
           </div>
@@ -186,7 +196,7 @@
         <div class="col-md-3 col-6 mx-0 px-2">
           <div class="inf-1-block row d-flex justify-content-around m-1 p-2">
             <div class="inf-1-img col-12 d-flex justify-content-around">
-              <img alt="comp-5" src="style/img/competency-5.svg">
+              <img alt="comp-5" src="./styles/img/competency-5.svg">
             </div>
             <p class="col-12 my-0 p-3"> Аудит и мониторинг безопасности Drupal сайтов</p>
           </div>
@@ -194,7 +204,7 @@
         <div class="col-md-3 col-6 mx-0 px-2">
           <div class="inf-1-block row d-flex justify-content-around m-1 p-2">
             <div class="inf-1-img col-12 d-flex justify-content-around">
-              <img alt="comp-6" src="style/img/competency-6.svg">
+              <img alt="comp-6" src="./styles/img/competency-6.svg">
             </div>
             <p class="col-12 my-0 p-3"> Миграция, импорт контента и апгрейд Drupal</p>
           </div>
@@ -202,7 +212,7 @@
         <div class="col-md-3 col-6 mx-0 px-2">
           <div class="inf-1-block row d-flex justify-content-around m-1 p-2">
             <div class="inf-1-img col-12 d-flex justify-content-around">
-              <img alt="comp-7" src="style/img/competency-7.svg">
+              <img alt="comp-7" src="./styles/img/competency-7.svg">
             </div>
             <p class="col-12 my-0 p-3"> Оптимизация и ускорение Drupal-сайтов</p>
           </div>
@@ -210,7 +220,7 @@
         <div class="col-md-3 col-6 mx-0 px-2">
           <div class="inf-1-block row d-flex justify-content-around m-1 p-2">
             <div class="inf-1-img col-12 d-flex justify-content-around">
-              <img alt="comp-8" src="style/img/competency-8.svg">
+              <img alt="comp-8" src="./styles/img/competency-8.svg">
             </div>
             <p class="col-12 my-0 p-3"> Веб-маркетинг, консультации и работы по SEO</p>
           </div>
@@ -335,7 +345,7 @@
         </div>
         
         <div class="side-image">
-          <img alt="side-laptop" src="style/img/laptop.png">
+          <img alt="side-laptop" src="./styles/img/laptop.png">
         </div>
     </div>
 
@@ -411,7 +421,7 @@
         <div class="col-md-4 col-12 mx-0 px-2 d-flex justify-content-around">
           <div class="inf-4-block row d-flex justify-content-around m-2 p-2">
             <div class="inf-4-img col-12 d-flex justify-content-around">
-              <img alt="c-1" src="style/img/competency-20.svg">
+              <img alt="c-1" src="./styles/img/competency-20.svg">
             </div>
             <h3 class="col-12"> от 1ч </h3>
             <p class="col-12"> Настройка события GA в интернет-магазине </p>
@@ -420,7 +430,7 @@
         <div class="col-md-4 col-12 mx-0 px-2 d-flex justify-content-around">
           <div class="inf-4-block row d-flex justify-content-around m-2 p-2">
             <div class="inf-4-img col-12 d-flex justify-content-around">
-              <img alt="c-2" src="style/img/competency-21.svg">
+              <img alt="c-2" src="./styles/img/competency-21.svg">
             </div>
             <h3 class="col-12"> от 20ч </h3>
             <p class="col-12"> Разработка мобильной версии сайта </p>
@@ -429,7 +439,7 @@
         <div class="col-md-4 col-12 mx-0 px-2 d-flex justify-content-around">
           <div class="inf-4-block row d-flex justify-content-around m-2 p-2">
             <div class="inf-4-img col-12 d-flex justify-content-around">
-              <img alt="c-3" src="style/img/competency-22.svg">
+              <img alt="c-3" src="./styles/img/competency-22.svg">
             </div>
             <h3 class="col-12"> от 8ч </h3>
             <p class="col-12"> Интеграция модуля оплаты </p>
@@ -446,27 +456,27 @@
         <h2 class="block-name my-3 col-12 order-0"> Команда</h2>
 
         <div class="team-block col-6 col-md-4 row d-flex justify-content-around m-0">
-          <img class="col-12 mb-3" alt="c-1" src="style/img/IMG_2472_0.jpg">
+          <img class="col-12 mb-3" alt="c-1" src="./styles/img/IMG_2472_0.jpg">
           <h3 class="col-12"> Сергей Синица </h3>
           <p class="col-12"> Руководитель отдела веб- разработки, канд. техн. наук, заместитель директора</p>
         </div>
         <div class="team-block col-6 col-md-4 row d-flex justify-content-around m-0">
-          <img class="col-12 mb-3" alt="c-2" src="style/img/IMG_2539_0.jpg">
+          <img class="col-12 mb-3" alt="c-2" src="./styles/img/IMG_2539_0.jpg">
           <h3 class="col-12"> Роман Агабеков</h3>
           <p class="col-12"> Руководитель отдела DevOPS, директор</p>
         </div>
         <div class="team-block col-6 col-md-4 row d-flex justify-content-around m-0">
-          <img class="col-12 mb-3" alt="c-3" src="style/img/IMG_2474_1.jpg">
+          <img class="col-12 mb-3" alt="c-3" src="./styles/img/IMG_2474_1.jpg">
           <h3 class="col-12"> Алексей Синица </h3> 
           <p class="col-12"> Руководитель отдела поддержки сайтов</p>
         </div>
         <div class="team-block col-6 col-md-4 row d-flex justify-content-around m-0">
-          <img class="col-12 mb-3" alt="c-4" src="style/img/IMG_2522_0.jpg">
+          <img class="col-12 mb-3" alt="c-4" src="./styles/img/IMG_2522_0.jpg">
           <h3 class="col-12"> Дарья Бочкарёва</h3>
           <p class="col-12"> Руководитель отдела продвижения, контекстной рекламы и контент-поддержки сайтов</p>
         </div>
         <div class="team-block col-6 col-md-4 row d-flex justify-content-around m-0">
-          <img class="col-12 mb-3"  alt="c-5" src="style/img/IMG_9971_16.jpg">
+          <img class="col-12 mb-3"  alt="c-5" src="./styles/img/IMG_9971_16.jpg">
           <h3 class="col-12"> Ирина Торкунова</h3>
           <p class="col-12"> Менеджер по работе с клиентами</p>
         </div>
@@ -484,7 +494,7 @@
         <article class="case-block col-12 col-md-4 p-0 m-0">
           <div class="case-wrapper m-2 px-3 pb-3 pt-0">
             <div class="case-img-wrapper">
-              <a href="index.html"><img alt="case-1" src="style/img/case-1.png"></a>
+              <a href="index.html"><img alt="case-1" src="./styles/img/case-1.png"></a>
             </div>
             <div class="p-3">
               <div class="mb-3">
@@ -498,7 +508,7 @@
         <article class="case-block col-12 col-md-8 p-0 m-0 d-flex">
           <div class="case-wrapper-2 my-2 mx-4 mx-md-2 px-0">
               <div class="case-img-wrapper-2 m-0 p-0">
-                <a href="index.html"><img alt="case-2" src="style/img/case-2.png"></a>
+                <a href="index.html"><img alt="case-2" src="./styles/img/case-2.png"></a>
               </div>
               <div class="case-2-text px-4 px-md-3 py-5">
                 <h3 class="m-0"><a  class="case-2-title" href="index.html">Использование отчетов Ecommerce в Яндекс.Метрике</a></h3>
@@ -508,7 +518,7 @@
         <article class="case-block col-12 col-md-4 p-0 m-0 d-flex">
           <div class="case-wrapper-2 my-2 mx-4 mx-md-2 px-0">
               <div class="case-img-wrapper-2 m-0 p-0">
-                <a href="index.html"><img alt="case-3" src="style/img/case-3.png"></a>
+                <a href="index.html"><img alt="case-3" src="./styles/img/case-3.png"></a>
               </div>
               <div class="case-2-text px-4 px-md-3 py-4">
                 <h3 class="m-0"><a  class="case-2-title" href="index.html">Повышение конверсии страницы с формой заявки с применением AB-тестирования</a></h3>
@@ -519,7 +529,7 @@
         <article class="case-block col-12 col-md-4 p-0 m-0 d-flex">
           <div class="case-wrapper-2 my-2 mx-4 mx-md-2 px-0">
               <div class="case-img-wrapper-2 m-0 p-0">
-                <a href="index.html"><img alt="case-4" src="style/img/case-4.png"></a>
+                <a href="index.html"><img alt="case-4" src="./styles/img/case-4.png"></a>
               </div>
               <div class="case-2-text px-4 px-md-3 py-4">
                 <h3 class="m-0"><a  class="case-2-title" href="index.html">Drupal 7: ускорение времени генерации страниц интернет-магазина на 32%</a></h3>
@@ -530,7 +540,7 @@
         <article class="case-block col-12 col-md-4 p-0 m-0">
           <div class="case-wrapper m-2 px-3 pb-3 pt-0">
             <div class="case-img-wrapper">
-              <a href="index.html"><img alt="case-5" src="style/img/case-5.png"></a>
+              <a href="index.html"><img alt="case-5" src="./styles/img/case-5.png"></a>
             </div>
             <div class="p-3">
               <div class="mb-3">
@@ -555,7 +565,7 @@
               <div class="single-item col-12 col-md-8">
 
                 <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-1" src="style/img/logo_0.png">
+                  <img class="mb-4" alt="rev-logo-1" src="./styles/img/logo_0.png">
                   <div class="slide-body">
                     Долгие поиски единственного и неповторимого мастера на многострадальный сайт www.cielparfum.com, 
                     который был собран крайне некомпетентным программистом и раз в месяц стабильно грозил погибнуть,
@@ -575,7 +585,7 @@
                     <a href="http://www.cielparfum.com/" tabindex="0">http://www.cielparfum.com/</a>
                   </div>
                 </div>
-
+                  
                 <div class="slide p-2 col-12 col-md-8">
                   <img class="mb-4" alt="rev-logo-2" src="style/img/logo_2.png">
                   <div class="slide-body">
@@ -705,7 +715,7 @@
     </div>
       
 
-    <div class="b-slider-2">
+     <div class="b-slider-2">
       <div class="slider-2-head container">
         <h2 class="block-name px-5"> С нами работают </h2>
         <p class="px-2"> Десятки компаний доверяют нам самое ценное, что у них есть в интернете - 
@@ -718,28 +728,28 @@
           <div class="slider-1">
 
             <div class="slide-2-1 d-flex justify-content-around">
-              <img alt="slide-2-logo-1" src="style/img/kubs.jpg">
+              <img alt="slide-2-logo-1" src="./styles/img/logo-2-1.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-2" src="style/img/logo-estee.png">
+              <img alt="slide-2-logo-2" src="./styles/img/logo-2-2.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-3" src="style/img/serebro.png">
+              <img alt="slide-2-logo-3" src="./styles/img/logo-2-3.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-4" src="style/img/cvetleto.png">
+              <img alt="slide-2-logo-4" src="./styles/img/logo-2-4.png">
             </div>
             <div class="slide-2-1 d-flex justify-content-around">
-              <img alt="slide-2-logo-1" src="style/img/cableman_ru.png">
+              <img alt="slide-2-logo-1" src="./styles/img/logo-2-1.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-2" src="style/img/opticlab.png">
+              <img alt="slide-2-logo-2" src="./styles/img/logo-2-2.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-3" src="style/img/logo_2.png">
+              <img alt="slide-2-logo-3" src="./styles/img/logo-2-3.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-4" src="style/img/lab.jpg">
+              <img alt="slide-2-logo-4" src="./styles/img/logo-2-4.png">
             </div>
 
           </div>
@@ -751,28 +761,28 @@
           <div class="slider-2">
 
             <div class="slide-2-1 d-flex justify-content-around">
-              <img alt="slide-2-logo-1" src="style/img/konsi.png">
+              <img alt="slide-2-logo-1" src="./styles/img/logo-2-1.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-2" src="style/img/cvetleto.png">
+              <img alt="slide-2-logo-2" src="./styles/img/logo-2-2.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-3" src="style/img/logo_0.png">
+              <img alt="slide-2-logo-3" src="./styles/img/logo-2-3.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-4" src="style/img/nashagazeta_ch.png">
+              <img alt="slide-2-logo-4" src="./styles/img/logo-2-4.png">
             </div>
             <div class="slide-2-1 d-flex justify-content-around">
-              <img alt="slide-2-logo-1" src="style/img/kubs.jpg">
+              <img alt="slide-2-logo-1" src="./styles/img/logo-2-1.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-2" src="style/img/konsi.png">
+              <img alt="slide-2-logo-2" src="./styles/img/logo-2-2.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-3" src="style/img/logo-estee.png">
+              <img alt="slide-2-logo-3" src="./styles/img/logo-2-3.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-4" src="style/img/opticlab.png">
+              <img alt="slide-2-logo-4" src="./styles/img/logo-2-4.png">
             </div>
 
           </div>
@@ -1034,15 +1044,15 @@
   </div>
 </div>
 
-    <div class="ftr col-12 order-3 order-md-3">
+     <div class="ftr col-12 order-3 order-md-3">
       <div class="footer-body p-0">
         <ul class="sns-wrapper row d-flex px-3">
-          <li class="sns"><a title="Facebook" href="index.html"><img alt="logo-fb" src="style/img/logo-facebook.svg"></a></li>
-          <li class="sns"><a title="Вконтакте" href="index.html"><img alt="logo-vk" src="style/img/logo-vk.svg"></a></li>
-          <li class="sns"><a title="Telegram" href="index.html"><img alt="logo-tg" src="style/img/logo-telegram.svg"></a></li>
-          <li class="sns"><a title="YouTube" href="index.html"><img alt="logo-yt" src="style/img/logo-youtube.svg"></a></li>
+          <li class="sns"><a title="Facebook" href="index.html"><img alt="logo-fb" src="./styles/img/logo-facebook.png"></a></li>
+          <li class="sns"><a title="Вконтакте" href="index.html"><img alt="logo-vk" src="./styles/img/logo-vk.png"></a></li>
+          <li class="sns"><a title="Telegram" href="index.html"><img alt="logo-tg" src="./styles/img/logo-telegram.png"></a></li>
+          <li class="sns"><a title="YouTube" href="index.html"><img alt="logo-yt" src="./styles/img/logo-youtube.png"></a></li>
         </ul>
-        Проект ООО «Инитлаб», Краснодар, Россия. <br>
+        ООО «Инитлаб», Краснодар, Россия. <br>
         Drupal является зарегистрированной торговой маркой Dries Buytaert.
       </div>
     </div>
