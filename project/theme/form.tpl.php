@@ -9,14 +9,15 @@
     <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+     <link rel="stylesheet"  href="./styles/style.css">
+    <link rel="stylesheet"  href="./styles/slick.css"> 
+    <link rel="stylesheet"  href="./styles/header-style.css"> 
     <script src="./scripts/form.js" defer></script>
     <script src="./scripts/buttons.js" defer></script>
     <script src="./scripts/slider.js" defer></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet"  href="./styles/style.css">
-    <link rel="stylesheet"  href="./styles/header-style.css"> 
     <title>Web-project</title>
 </head>
 
