@@ -1,200 +1,194 @@
 <?php
 require_once __DIR__ . '/../scripts/db.php';
 
+
+
 function front_get($request) {
     $db = db_connect();
     
     $data = [
-        'messages' => [],
         'errors' => [],
         'values' => [
-            'uid' => '',
-            'fio' => '',
-            'email' => '',
-            'phone' => '',
-            'birth_date' => '',
-            'gender' => '',
-            'biography' => '',
-            'languages' => [],
-            'agreement' => false
+            'fio' => $_COOKIE['fio_value'] ?? '',
+            'email' => $_COOKIE['email_value'] ?? '',
+            'phone' => $_COOKIE['phone_value'] ?? '',
+            'birth_date' => $_COOKIE['birth_date_value'] ?? '',
+            'gender' => $_COOKIE['gender_value'] ?? '',
+            'biography' => $_COOKIE['biography_value'] ?? '',
+            'languages' => isset($_COOKIE['languages_value']) ? explode(',', $_COOKIE['languages_value']) : [],
+            'agreement' => isset($_COOKIE['agreement_value'])
         ],
-        'language_options' => get_languages($db)
+        'language_options' => $db->query("SELECT id, name FROM programming_languages")->fetchAll(),
+        'messages' => []
     ];
 
-    check_form_errors($data);
+    $fields = [
+        'fio' => [
+            '1' => 'ФИО обязательно для заполнения',
+            '2' => 'ФИО должно быть короче 150 символов',
+            '3' => 'ФИО содержит недопустимые символы'
+        ],
+        'email' => [
+            '1' => 'Email обязателен для заполнения',
+            '2' => 'Некорректный формат email'
+        ],
+        'phone' => [
+            '1' => 'Телефон обязателен для заполнения',
+            '2' => 'Формат: +7XXXXXXXXXX'
+        ],
+        'birth_date' => [
+            '1' => 'Дата рождения обязательна',
+            '2' => 'Некорректная дата (требуется формат YYYY-MM-DD)'
+        ],
+        'gender' => [
+            '1' => 'Укажите пол',
+            '2' => 'Недопустимое значение пола'
+        ],
+        'biography' => [
+            '1' => 'Биография слишком длинная (макс. 500 символов)',
+            '2' => 'Биография содержит запрещенные символы'
+        ],
+        'languages' => [
+            '1' => 'Выберите хотя бы один язык',
+            '2' => 'Выбран недопустимый язык'
+        ],
+        'agreement' => [
+            '1' => 'Необходимо принять соглашение'
+        ]
+    ];
 
-    if (is_admin() && !empty($request['uid'])) {
-        load_user_data($db, $request['uid'], $data);
+    foreach ($fields as $field => $messages) {
+        if (!empty($_COOKIE["{$field}_error"])) {
+            $error_code = $_COOKIE["{$field}_error"];
+            $data['errors'][$field] = $messages[$error_code] ?? 'Ошибка';
+            setcookie("{$field}_error", '', time() - 3600);
+        }
     }
 
-    if (has_user_session()) {
-        load_session_user_data($db, $data);
+    if (!empty($_COOKIE['save_success'])) {
+        $data['messages'][] = 'Данные успешно сохранены!';
+        setcookie('save_success', '', time() - 3600);
     }
 
     return theme('form', $data);
 }
 
+
+
+
 function front_post($request) {
     $db = db_connect();
-    
-    $errors = validate_form_data($request);
-    
-    if (!empty($errors)) {
-        save_errors_to_cookies($errors, $request);
-        return redirect('form');
-    }
-
-    try {
-        $db->beginTransaction();
-        
-        if (is_admin() && !empty($request['uid'])) {
-            update_application($db, $request);
-        } elseif (has_user_session()) {
-            update_user_application($db, $request);
-        } else {
-            create_new_application($db, $request);
-        }
-        
-        $db->commit();
-        set_success_cookies();
-        return redirect('form?success=1');
-        
-    } catch (PDOException $e) {
-        $db->rollBack();
-        error_log("Database error: " . $e->getMessage());
-        setcookie('save_error', '1', time() + 3600);
-        return redirect('form');
-    }
-}
-
-/*** Вспомогательные функции ***/
-
-// Получение списка языков из БД
-function get_languages($db) {
-    return $db->query("SELECT id, name FROM programming_languages")->fetchAll();
-}
-
-// Проверка ошибок в куках
-function check_form_errors(&$data) {
-    $fields = ['fio', 'email', 'phone', 'birth_date', 'gender', 'biography', 'languages', 'agreement'];
-    
-    foreach ($fields as $field) {
-        if (!empty($_COOKIE["{$field}_error"])) {
-            $data['errors'][$field] = true;
-            setcookie("{$field}_error", '', time() - 3600);
-        }
-        if (!empty($_COOKIE["{$field}_value"])) {
-            $data['values'][$field] = $_COOKIE["{$field}_value"];
-            setcookie("{$field}_value", '', time() - 3600);
-        }
-    }
-}
-
-function validate_form_data($request) {
     $errors = [];
-    
+
     if (empty($request['fio'])) {
-        $errors['fio'] = 'Поле обязательно для заполнения';
+        $errors['fio'] = '1';
     } elseif (strlen($request['fio']) > 150) {
-        $errors['fio'] = 'Максимум 150 символов';
+        $errors['fio'] = '2';
     } elseif (!preg_match('/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/u', $request['fio'])) {
-        $errors['fio'] = 'Допустимы только буквы, пробелы и дефисы';
+        $errors['fio'] = '3';
     }
-    
+    setcookie('fio_value', $request['fio'] ?? '', time() + 3600);
+
     if (empty($request['email'])) {
-        $errors['email'] = 'Поле обязательно для заполнения';
+        $errors['email'] = '1';
     } elseif (!filter_var($request['email'], FILTER_VALIDATE_EMAIL)) {
-        $errors['email'] = 'Некорректный email';
-    } elseif (strlen($request['email']) > 100) {
-        $errors['email'] = 'Максимум 100 символов';
+        $errors['email'] = '2';
     }
-    
+    setcookie('email_value', $request['email'] ?? '', time() + 3600);
+
     if (empty($request['phone'])) {
-        $errors['phone'] = 'Поле обязательно для заполнения';
+        $errors['phone'] = '1';
     } elseif (!preg_match('/^\+7\d{10}$/', $request['phone'])) {
-        $errors['phone'] = 'Формат: +7XXXXXXXXXX';
+        $errors['phone'] = '2';
     }
-    
+    setcookie('phone_value', $request['phone'] ?? '', time() + 3600);
+
     if (empty($request['birth_date'])) {
-        $errors['birth_date'] = 'Поле обязательно для заполнения';
-    } else {
-        $date = DateTime::createFromFormat('Y-m-d', $request['birth_date']);
-        if (!$date || $date->format('Y-m-d') !== $request['birth_date']) {
-            $errors['birth_date'] = 'Некорректная дата';
-        }
+        $errors['birth_date'] = '1';
+    } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $request['birth_date'])) {
+        $errors['birth_date'] = '2';
     }
-    
+    setcookie('birth_date_value', $request['birth_date'] ?? '', time() + 3600);
+
     $allowed_genders = ['male', 'female'];
     if (empty($request['gender'])) {
-        $errors['gender'] = 'Укажите пол';
+        $errors['gender'] = '1';
     } elseif (!in_array($request['gender'], $allowed_genders)) {
-        $errors['gender'] = 'Недопустимое значение';
+        $errors['gender'] = '2';
     }
-    
+    setcookie('gender_value', $request['gender'] ?? '', time() + 3600);
+
     if (!empty($request['biography'])) {
         if (strlen($request['biography']) > 500) {
-            $errors['biography'] = 'Максимум 500 символов';
+            $errors['biography'] = '1';
         } elseif (preg_match('/[<>{}]/', $request['biography'])) {
-            $errors['biography'] = 'Запрещенные символы: < > { }';
+            $errors['biography'] = '2';
         }
     }
-    
-    $allowed_languages = [1, 2, 3]; // ID допустимых языков из БД
+    setcookie('biography_value', $request['biography'] ?? '', time() + 3600);
+
+    $allowed_languages = $db->query("SELECT id FROM programming_languages")->fetchAll(PDO::FETCH_COLUMN);
     if (empty($request['languages'])) {
-        $errors['languages'] = 'Выберите хотя бы один язык';
+        $errors['languages'] = '1';
     } else {
-        foreach ($request['languages'] as $lang) {
-            if (!in_array($lang, $allowed_languages)) {
-                $errors['languages'] = 'Выбран недопустимый язык';
+        foreach ($request['languages'] as $lang_id) {
+            if (!in_array($lang_id, $allowed_languages)) {
+                $errors['languages'] = '2';
                 break;
             }
         }
     }
-    
+    setcookie('languages_value', implode(',', $request['languages'] ?? []), time() + 3600);
+
     if (empty($request['agreement'])) {
-        $errors['agreement'] = 'Необходимо дать согласие';
+        $errors['agreement'] = '1';
     }
-    
-    return $errors;
-}
+    setcookie('agreement_value', $request['agreement'] ?? '', time() + 3600);
 
-function update_application($db, $data) {
-    $stmt = $db->prepare("UPDATE applications SET 
-        full_name = ?, email = ?, phone = ?, birth_date = ?,
-        gender = ?, biography = ?, agreement = ?
-        WHERE id = ?");
-    $stmt->execute([
-        $data['fio'], $data['email'], $data['phone'],
-        $data['birth_date'], $data['gender'], $data['biography'],
-        !empty($data['agreement']) ? 1 : 0, $data['uid']
-    ]);
-    
-    update_languages($db, $data['uid'], $data['languages']);
-}
+    foreach ($errors as $field => $error_code) {
+        setcookie("{$field}_error", $error_code, time() + 3600);
+    }
 
-function create_new_application($db, $data) {
-    $stmt = $db->prepare("INSERT INTO applications 
-        (full_name, email, phone, birth_date, gender, biography, agreement)
-        VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([
-        $data['fio'], $data['email'], $data['phone'],
-        $data['birth_date'], $data['gender'], $data['biography'],
-        !empty($data['agreement']) ? 1 : 0
-    ]);
-    
-    $app_id = $db->lastInsertId();
-    update_languages($db, $app_id, $data['languages']);
-}
+    if (!empty($errors)) {
+        return redirect('form');
+    }
 
-function update_languages($db, $app_id, $languages) {
-    $db->prepare("DELETE FROM application_languages WHERE application_id = ?")
-       ->execute([$app_id]);
-    
-    if (!empty($languages)) {
-        $stmt = $db->prepare("INSERT INTO application_languages 
-            (application_id, language_id) VALUES (?, ?)");
-        foreach ($languages as $lang_id) {
-            $stmt->execute([$app_id, $lang_id]);
+    try {
+        $stmt = $db->prepare("
+            INSERT INTO applications 
+            (full_name, email, phone, birth_date, gender, biography, agreement)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            $request['fio'],
+            $request['email'],
+            $request['phone'],
+            $request['birth_date'],
+            $request['gender'],
+            $request['biography'],
+            !empty($request['agreement']) ? 1 : 0
+        ]);
+
+        $app_id = $db->lastInsertId();
+        foreach ($request['languages'] as $lang_id) {
+            $db->prepare("
+                INSERT INTO application_languages (application_id, language_id)
+                VALUES (?, ?)
+            ")->execute([$app_id, $lang_id]);
         }
+
+        $fields = ['fio', 'email', 'phone', 'birth_date', 'gender', 'biography', 'languages', 'agreement'];
+        foreach ($fields as $field) {
+            setcookie("{$field}_error", '', time() - 3600);
+            setcookie("{$field}_value", '', time() - 3600);
+        }
+
+        setcookie('save_success', '1', time() + 3600);
+        return redirect('form');
+
+    } catch (PDOException $e) {
+        error_log("Ошибка сохранения: " . $e->getMessage());
+        setcookie('save_error', '1', time() + 3600);
+        return redirect('form');
     }
 }
