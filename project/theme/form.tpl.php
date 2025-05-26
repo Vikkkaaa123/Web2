@@ -1045,7 +1045,7 @@
   </div>
 </div>
 
-     <div class="ftr col-12 order-3 order-md-3">
+    <div class="ftr col-12 order-3 order-md-3">
       <div class="footer-body p-0">
         <ul class="sns-wrapper row d-flex px-3">
           <li class="sns"><a title="Facebook" href="index.html"><img alt="logo-fb" src="./styles/img/logo-facebook.png"></a></li>
