@@ -46,7 +46,7 @@ body{
     position: absolute;
     width: 100%;
     height: 100%;
-    background: url("img/icon-bg.svg") no-repeat left;
+    background: url("./img/icon-bg.svg") no-repeat left;
     background-size: 115px 80px;
     background-position: 0% 100%; 
 }
@@ -94,28 +94,28 @@ body{
     font-weight: 600;
 }
 #sq-1{
-    background-image: url(img/support1.svg);
+    background-image: url(./img/support1.svg);
 }
 #sq-2{
-    background-image: url(img/support2.svg);
+    background-image: url(./img/support2.svg);
 }
 #sq-3{
-    background-image: url(img/support3.svg);
+    background-image: url(./img/support3.svg);
 }
 #sq-4{
-    background-image: url(img/support4.svg);
+    background-image: url(./img/support4.svg);
 }
 #sq-5{
-    background-image: url(img/support5.svg);
+    background-image: url(./img/support5.svg);
 }
 #sq-6{
-    background-image: url(img/support6.svg);
+    background-image: url(./img/support6.svg);
 }
 #sq-7{
-    background-image: url(img/support7.svg);
+    background-image: url(./img/support7.svg);
 }
 #sq-8{
-    background-image: url(img/support8.svg);
+    background-image: url(./img/support8.svg);
 }
 .square-wrapper img{
     display: block;
@@ -125,7 +125,7 @@ body{
     padding:0;
     margin:0;
 }
-
+  
 .b-info-3 {
     position: relative;
     background: 
@@ -147,7 +147,7 @@ body{
     right: 0;
     bottom: 0;
     left: 0;
-    background: url(img/drupal-logo-2.svg) no-repeat right bottom;
+    background: url(./img/drupal-logo-2.svg) no-repeat right bottom;
     background-size: contain;
     z-index: 5;
 }
@@ -188,7 +188,7 @@ body{
 .inf-3-item>p>a:hover{
     text-decoration: none;
 }
-
+  
 .b-tarif{
     position: relative;
     background-color: #ffffff;
@@ -208,7 +208,7 @@ body{
     right: 0;
     bottom: 0;
     left: 0;
-    background: url(img/tariff-bg.png) no-repeat right;
+    background: url(./img/tariff-bg.png) no-repeat right;
     z-index: 1;
     background-size: auto 100%;
 }
@@ -287,7 +287,7 @@ body{
     text-align: center;
     font-weight: 700;
 }
-
+  
 .b-info-4 h2{
     text-align: start;
     color:#050C33;
@@ -313,7 +313,7 @@ body{
     position: absolute;
     width: 115px;
     height: 70px;
-    background: url("img/icon-bg.svg") no-repeat center;
+    background: url("./img/icon-bg.svg") no-repeat center;
     background-size: contain;
     left: 0;
     top: 15px;
@@ -328,7 +328,7 @@ body{
     font-size: 16px;
     font-weight: 500;
 }
-
+  
 .team-block img{
     max-height: 280px;
     max-width: 280px;
@@ -448,9 +448,9 @@ body{
     color:#5a85e2;
     font-weight: 500;
 }
-
+  
 .rev-wrapper{
-    background: url(img/right-quote-sign.svg) no-repeat left top;
+    background: url(./img/right-quote-sign.svg) no-repeat left top;
     background-size: 25%;
     padding-bottom: 60px;
 }
@@ -503,7 +503,7 @@ body{
     border-bottom: 2px solid #dfdede;
 }
 .b-slider .slick-arrow.slick-prev {
-    background: url('img/arrow-left.svg') no-repeat center;
+    background: url('./img/arrow-left.svg') no-repeat center;
     background-size: contain;
     width: 16px;
     height: 50px;
@@ -513,7 +513,7 @@ body{
     outline: none;
 }
 .b-slider .slick-arrow.slick-next {
-    background: url('img/arrow-right.svg') no-repeat center;
+    background: url('./img/arrow-right.svg') no-repeat center;
     background-size: contain;
     width: 16px;
     height: 50px;
@@ -615,7 +615,7 @@ body{
     font-size: 18px;
     font-weight: 500;
 }
-
+  
 .b-accordion .block-name{
     text-align: center;
     color:#050C33;
@@ -647,16 +647,14 @@ body{
     color: #f14d34;
 }
 
-
-
 footer {
     font-family:'Montserrat';
     background: 
     linear-gradient(270deg,
      rgba(255, 255, 255, .276) -114.85%, 
      rgba(255, 255, 255, 0) 69.04%), 
-     url(img/footer-D-1.svg) no-repeat top center, 
-     url(img/footer-D-2.png) no-repeat bottom right, 
+     url(./img/footer-D-1.svg) no-repeat top center, 
+     url(./img/footer-D-2.png) no-repeat bottom right, 
      #040613;
     background-repeat: no-repeat;
     padding: 40px 0 75px;
@@ -666,6 +664,7 @@ footer {
 }
 .b-form label, .input-field{
     width: 100%;
+    color:#ffffff;
 }
 .input-field{
     background-color: #ffffff00;
@@ -673,9 +672,10 @@ footer {
     border-radius: 5px;
     padding: 5%;
 }
-.input-field::placeholder {
-    color: #bcbcbc; 
-    opacity: 1;
+.error-field{
+    background-color: #fb547e6f !important;
+    border-color:#bf1d56 !important;
+    box-shadow: 0px 0px 5px #bf1d56;
 }
 .submit-btn{
     border-radius: 8px;
@@ -761,8 +761,8 @@ footer {
 .b-footer-text .block-name{
     color:#ffffff;
     font-size: 32px;
-    text-align: left;
-    font-weight: 750;
+    text-align: center;
+    font-weight: 700;
 }
 .b-footer-text p{
     color:#b2b2b2;
@@ -803,13 +803,24 @@ footer {
     font-size: 16px;
     font-weight: 400;
 }
+.formstyle1>label{
+    color:#ffffff;
+}
+.error_messages{
+    color:#ffffff;
+}
+h2.white-text{
+    color: #ffffff;
+}
+.numtext{
+    color: #ffffff;
+}
 
 @media screen and (min-width: 768px){
   
     .square-wrapper{
         height: 100%;
     }
-
     .t-part {
         box-shadow: 0px 10px 30px rgba(70, 70, 70, 0.464);
         height: 550px;
@@ -818,7 +829,7 @@ footer {
        background-color: #f8f8f8;
        border-color: #e1e1e1;
     }
-
+    /*--- info-4 ---*/
     .b-info-4 h3, .b-info-4 p{
         text-align: start;
     }
@@ -830,6 +841,7 @@ footer {
         text-align: center;
     }
 
+    /*---footer---*/
     footer{
         padding-top: 20px;
         padding-bottom: 10px;
@@ -853,7 +865,7 @@ footer {
         position: absolute;
         width: 100%;
         height: 100%;
-        background: url("img/icon-bg.svg") no-repeat;
+        background: url("./img/icon-bg.svg") no-repeat;
         background-size: 115px 80px;
         background-position: 0% 50%; 
         top: 10px;
@@ -873,6 +885,7 @@ footer {
     }
     
 }
+
 
 @font-face {
     font-family: 'Montserrat';
