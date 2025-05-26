@@ -905,8 +905,8 @@
 
           <br>
           <div class="b-footer-info p-0">
-            <span> <img src="style/img/phone.svg" alt="phone-sign" height="25" width="25"> 8 800 222-26-73 </span><br>
-            <a href="index.html"> <img src="style/img/mail.svg" alt="mail-sign" height="25" width="25">info@drupal-coder.ru </a>
+            <span> <img src="./styles/img/phone.svg" alt="phone-sign" height="25" width="25"> 8 800 222-26-73 </span><br>
+            <a href="index.html"> <img src="./styles/img/mail.svg" alt="mail-sign" height="25" width="25">info@drupal-coder.ru </a>
           </div>
       </div>
 
