@@ -588,7 +588,7 @@
                 </div>
                   
                <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-2" src="style/img/logo_2.png">
+                  <img class="mb-4" alt="rev-logo-2" src="./styles/img/logo_2.png">
                   <div class="slide-body">
                     Сергей — профессиональный, высококвалифицированый программист
                     с огромным опытом в ИТ. Я долгое время общался с топ-фрилансерами
@@ -603,7 +603,7 @@
                 </div>
 
                 <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-3" src="style/img/farbors_ru.jpg">
+                  <img class="mb-4" alt="rev-logo-3" src="./styles/img/logo.png">
                   <div class="slide-body">
                     Выражаю глубочайшую благодарность команде специалистов компании "Инитлаб"
                     и лично Дмитрию Купянскому и Алексею Синице. Сайт был первоклассно перевёрстан
@@ -617,7 +617,7 @@
                 </div>
 
                 <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-4" src="style/img/nashagazeta_ch.png">
+                  <img class="mb-4" alt="rev-logo-4" src="./styles/img/nashagazeta_ch.png">
                   <div class="slide-body">
                     Моя электронная газета www.nashagazeta.ch существует в Швейцарии уже 10 лет.
                     За это время мы сменили 7 специалистов по техподдержке, и только сейчас, в 
@@ -633,7 +633,7 @@
                 </div>
 
                 <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-5" src="style/img/logo-estee.png">
+                  <img class="mb-4" alt="rev-logo-5" src="./styles/img/logo-estee.png">
                   <div class="slide-body">
                     Наша компания Estee Design занимается дизайном интерьеров. Сайт сверстан на Drupal.
                     Искали программистов под выполнение ряда небольших изменений и корректировок по сайту. 
@@ -666,7 +666,7 @@
                 </div>
 
                 <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-7" src="style/img/serebro.png">
+                  <img class="mb-4" alt="rev-logo-7" src="./styles/img/farbors_ru.jpg">
                   <div class="slide-body">
                     За довольно продолжительный срок (2014 - 2016 годы) весьма плотной работы 
                     (интернет-магазин на безумно замороченном Drupal 6: устраняли косяки разработчиков,
@@ -684,7 +684,7 @@
                 </div>
 
                 <div class="slide p-2 col-12 col-md-8">
-                  <img class="mb-4" alt="rev-logo-8" src="style/img/lab.jpg">
+                  <img class="mb-4" alt="rev-logo-8" src="./styles/img/lpcma_rus_v4.jpg">
                   <div class="slide-body">
                    Хотел поблагодарить за работу над нашими сайтами. За 4 месяца работы привели сайт в порядок,
                    а самое главное получили инструмент, с помощью мы теперь можем быстро и красиво выставлять
@@ -741,16 +741,16 @@
               <img alt="slide-2-logo-4" src="./styles/img/logo-2-4.png">
             </div>
             <div class="slide-2-1 d-flex justify-content-around">
-              <img alt="slide-2-logo-1" src="./styles/img/logo-2-1.png">
+              <img alt="slide-2-logo-1" src="./styles/img/lpcma_rus_v4.jpg">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-2" src="./styles/img/logo-2-2.png">
+              <img alt="slide-2-logo-2" src="./styles/img/farbors_ru.jpg">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-3" src="./styles/img/logo-2-3.png">
+              <img alt="slide-2-logo-3" src="./styles/img/logo_0.png">
             </div>
             <div class="slide-2-1">
-              <img alt="slide-2-logo-4" src="./styles/img/logo-2-4.png">
+              <img alt="slide-2-logo-4" src="./styles/img/nashagazeta_ch.png">
             </div>
 
           </div>
