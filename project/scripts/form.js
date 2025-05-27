@@ -1,22 +1,24 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('myform');
+    const form = document.querySelector('form');
     if (!form) return;
-    
-    const messagesContainer = document.querySelector('.error_messages');
-    
-      // Функция валидации формы
-  function validateForm(form) {
-      const errors = {};
-      const del={};
+
+    // Исправляем action формы, чтобы отправляла на index.php
+    form.action = 'index.php';
+
+    // Создаем контейнер для сообщений
+    const messagesContainer = document.createElement('div');
+    messagesContainer.className = 'form-messages';
+    form.insertBefore(messagesContainer, form.querySelector('.form-actions'));
+
+    // Валидация формы
+    function validateForm(form) {
+        const errors = {};
         let isValid = true;
 
         // Проверка ФИО
         const fullName = form.querySelector('[name="full_name"]').value.trim();
         if (!fullName) {
             errors.full_name = 'Заполните ФИО';
-            isValid = false;
-        } else if (fullName.length > 128) {
-            errors.full_name = 'ФИО не должно превышать 128 символов';
             isValid = false;
         }
 
@@ -25,18 +27,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!phone) {
             errors.phone = 'Введите номер телефона';
             isValid = false;
-        } else if (!/^\+7\d{10}$/.test(phone)) {
-            errors.phone = 'Номер должен быть в формате +7XXXXXXXXXX';
-            isValid = false;
         }
 
         // Проверка email
         const email = form.querySelector('[name="email"]').value.trim();
         if (!email) {
             errors.email = 'Введите email';
-            isValid = false;
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            errors.email = 'Введите корректный email';
             isValid = false;
         }
 
@@ -57,9 +53,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Проверка языков программирования
-        const languages = form.querySelector('[name="languages[]"]');
-        const selectedOptions = Array.from(languages.selectedOptions);
-        if (selectedOptions.length === 0) {
+        const languagesSelect = form.querySelector('[name="languages[]"]');
+        const selectedLanguages = Array.from(languagesSelect.selectedOptions).map(opt => opt.value);
+        if (selectedLanguages.length === 0) {
             errors.languages = 'Выберите хотя бы один язык';
             isValid = false;
         }
@@ -68,9 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const biography = form.querySelector('[name="biography"]').value.trim();
         if (!biography) {
             errors.biography = 'Заполните биографию';
-            isValid = false;
-        } else if (biography.length > 512) {
-            errors.biography = 'Биография не должна превышать 512 символов';
             isValid = false;
         }
 
@@ -95,7 +88,6 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const [field, message] of Object.entries(errors)) {
             let element;
             
-            // Особые случаи для разных типов полей
             if (field === 'birth_date') {
                 element = form.querySelector('.date-fields');
             } else if (field === 'gender') {
@@ -143,9 +135,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(form);
             
             // Добавляем languages[] для корректной обработки на сервере
-            const languages = form.querySelector('[name="languages[]"]');
-            const selectedOptions = Array.from(languages.selectedOptions);
-            selectedOptions.forEach(option => {
+            const languagesSelect = form.querySelector('[name="languages[]"]');
+            const selectedLanguages = Array.from(languagesSelect.selectedOptions);
+            selectedLanguages.forEach(option => {
                 formData.append('languages[]', option.value);
             });
 
