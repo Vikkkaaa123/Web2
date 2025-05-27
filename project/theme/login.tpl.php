@@ -8,7 +8,7 @@
   </head>
   <body>
   <h1>Вход в систему</h1>
-    <form class="login_form" action="<?php echo url('login'); ?>" method="post">
+    <form class="login_form" action="<?= url('login') ?>" method="POST">
       <label> 
         Логин <br/>
         <input name="login" />
