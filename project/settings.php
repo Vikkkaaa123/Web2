@@ -1,13 +1,9 @@
 <?php
 
-// Выключаем отображение ошибок после отладки.
 define('DISPLAY_ERRORS', 1);
 
-// Папки со скриптами и модулями.
 define('INCLUDE_PATH', './scripts' . PATH_SEPARATOR . './modules');
 
-// Храним настройки в массиве чтоб легче было смотреть (print_r),
-// хранить (serialize), оверрайдить и не плодить глобалов.
 $conf = array(
   'sitename' => 'Demo Framework',
   'theme' => './theme',
@@ -22,15 +18,15 @@ $conf = array(
   'password' => '123',
 );
 
-// Определения ресурсов для диспатчера.
 $urlconf = array(
   '' => array('module' => 'front'),
+  '/^form$/' => array('module' => 'front'), 
   '/^admin$/' => array('module' => 'admin', 'auth' => 'auth_basic'),
   '/^admin\/(\d+)$/' => array('module' => 'admin', 'auth' => 'auth_basic'),
+  '/^login$/' => array('module' => 'login'), 
+  '/^logout$/' => array('module' => 'logout', 'method' => 'post') 
 );
 
-// Отрубаем кеш.
 header('Cache-Control: no-cache, must-revalidate');
 header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-// Выдаем кодировку.
 header('Content-Type: text/html; charset=' . $conf['charset']);
