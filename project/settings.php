@@ -5,7 +5,7 @@ define('DISPLAY_ERRORS', 1);
 define('INCLUDE_PATH', './scripts' . PATH_SEPARATOR . './modules');
 
 $conf = array(
-  'sitename' => 'Demo Framework',
+  'sitename' => 'Web-project',
   'theme' => './theme',
   'charset' => 'UTF-8',
   'clean_urls' => TRUE,
@@ -20,9 +20,9 @@ $conf = array(
 
 $urlconf = array(
   '' => array('module' => 'front'),
-  '/^form$/' => array('module' => 'front'),
-  '/^admin$/' => array('module' => 'admin', 'auth' => 'auth_basic'),
-  '/^login$/' => array('module' => 'login'),
+  '/^login$/' => array('module' => 'login'), 
+  '/^admin$/' => array('module' => 'admin'),
+  '/^admin.php$/' => array('module' => 'admin'), 
   '/^logout$/' => array('module' => 'logout')
 );
 
