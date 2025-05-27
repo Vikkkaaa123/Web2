@@ -20,11 +20,10 @@ $conf = array(
 
 $urlconf = array(
   '' => array('module' => 'front'),
-  '/^form$/' => array('module' => 'front'), 
+  '/^form$/' => array('module' => 'front'),
   '/^admin$/' => array('module' => 'admin', 'auth' => 'auth_basic'),
-  '/^admin\/(\d+)$/' => array('module' => 'admin', 'auth' => 'auth_basic'),
-  '/^login$/' => array('module' => 'login'), 
-  '/^logout$/' => array('module' => 'logout', 'method' => 'post') 
+  '/^login$/' => array('module' => 'login'),
+  '/^logout$/' => array('module' => 'logout')
 );
 
 header('Cache-Control: no-cache, must-revalidate');
