@@ -1,5 +1,6 @@
 <IfModule mod_rewrite.c>
-  RewriteEngine on
+  RewriteEngine On
+  RewriteBase /Web2/project/
 
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
