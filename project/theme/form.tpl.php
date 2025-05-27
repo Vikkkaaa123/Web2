@@ -893,7 +893,6 @@
       </div>
 
       <div class="b-form col-12 col-md-6 order-2 order-md-2 px-3 pb-3 pt-1 pt-md-3">
-        <!-- Кнопка входа/выхода -->
         <div class="auth-buttons">
           <?php if (!empty($_SESSION['login'])): ?>
             <input type="button" value="Выйти" onclick="location.href='logout.php'" class="auth-btn">
@@ -903,7 +902,7 @@
         </div>
 
         <div class="formstyle1">
-          <form id="myform" class="application" method="POST" action="">
+          <form id="myform" class="application" method="POST" action="<?= url('form') ?>">
             <h2 class="white-text">ФОРМА</h2>
 
             <label>
