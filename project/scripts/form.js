@@ -1,15 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
+    const form = document.getElementById('myform');
     if (!form) return;
-
-    // Создаем контейнер для сообщений
-    const messagesContainer = document.createElement('div');
-    messagesContainer.className = 'form-messages';
-    form.insertBefore(messagesContainer, form.querySelector('.form-actions'));
-
-    // Валидация формы
-    function validateForm(form) {
-        const errors = {};
+    
+    const messagesContainer = document.querySelector('.error_messages');
+    
+      // Функция валидации формы
+  function validateForm(form) {
+      const errors = {};
+      const del={};
         let isValid = true;
 
         // Проверка ФИО
