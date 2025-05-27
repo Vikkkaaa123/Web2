@@ -2,102 +2,115 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('myform');
     if (!form) return;
     
-    const messagesContainer = document.createElement('div');
-    messagesContainer.className = 'form-messages';
-    form.parentNode.insertBefore(messagesContainer, form.nextSibling);
+    const messagesContainer = document.querySelector('.error_messages');
+    const submitBtn = form.querySelector('#submit-btn');
 
     function validateForm(form) {
         const errors = {};
         let isValid = true;
 
-        const fullName = form.querySelector('[name="full_name"]').value.trim();
-        if (!fullName) {
-            errors.full_name = 'Укажите ФИО';
+        const full_name = form.querySelector('[name="full_name"]')?.value.trim();
+        const phone = form.querySelector('[name="phone"]')?.value.trim();
+        const email = form.querySelector('[name="email"]')?.value.trim();
+        const birth_day = form.querySelector('[name="birth_day"]')?.value;
+        const birth_month = form.querySelector('[name="birth_month"]')?.value;
+        const birth_year = form.querySelector('[name="birth_year"]')?.value;
+        const gender = form.querySelector('[name="gender"]:checked')?.value;
+        const languages = Array.from(form.querySelectorAll('[name="languages[]"]:checked')).map(el => el.value);
+        const biography = form.querySelector('[name="biography"]')?.value.trim();
+        const agreement = form.querySelector('[name="agreement"]')?.checked;
+
+        if (!full_name) {
+            errors.full_name = 'Заполните ФИО';
             isValid = false;
-        } else if (fullName.length > 128) {
+        } else if (full_name.length > 128) {
             errors.full_name = 'ФИО не должно превышать 128 символов';
             isValid = false;
         }
 
-        const phone = form.querySelector('[name="phone"]').value.trim();
         if (!phone) {
-            errors.phone = 'Укажите телефон';
+            errors.phone = 'Введите номер телефона';
             isValid = false;
         } else if (!/^\+7\d{10}$/.test(phone)) {
-            errors.phone = 'Формат: +7XXXXXXXXXX';
+            errors.phone = 'Номер должен быть в формате +7XXXXXXXXXX';
             isValid = false;
         }
 
-        const email = form.querySelector('[name="email"]').value.trim();
         if (!email) {
-            errors.email = 'Укажите email';
+            errors.email = 'Введите email';
             isValid = false;
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            errors.email = 'Некорректный email';
+            errors.email = 'Введите корректный email';
             isValid = false;
         }
 
-        const day = form.querySelector('[name="birth_day"]').value;
-        const month = form.querySelector('[name="birth_month"]').value;
-        const year = form.querySelector('[name="birth_year"]').value;
+        const day = parseInt(birth_day);
+        const month = parseInt(birth_month);
+        const year = parseInt(birth_year);
+        
         if (!day || !month || !year) {
-            errors.birth_date = 'Укажите полную дату';
+            errors.birth_date = 'Заполните дату рождения полностью';
             isValid = false;
         } else {
-            const birthDate = new Date(`${year}-${month}-${day}`);
+            const birthDate = new Date(year, month-1, day);
+            const currentDate = new Date();
             const minDate = new Date();
-            minDate.setFullYear(minDate.getFullYear() - 120);
-            if (birthDate > new Date()) {
-                errors.birth_date = 'Дата не может быть в будущем';
+            minDate.setFullYear(currentDate.getFullYear() - 120);
+            
+            if (birthDate > currentDate) {
+                errors.birth_date = 'Дата рождения не может быть в будущем';
                 isValid = false;
             } else if (birthDate < minDate) {
-                errors.birth_date = 'Проверьте дату рождения';
+                errors.birth_date = 'Возраст не может быть более 120 лет';
                 isValid = false;
             }
         }
 
-        const gender = form.querySelector('[name="gender"]:checked');
         if (!gender) {
             errors.gender = 'Укажите пол';
             isValid = false;
         }
 
-        const langs = form.querySelectorAll('[name="languages[]"]:checked');
-        if (langs.length === 0) {
+        if (languages.length === 0) {
             errors.languages = 'Выберите хотя бы один язык';
             isValid = false;
         }
 
-        const bio = form.querySelector('[name="biography"]').value.trim();
-        if (!bio) {
+        if (!biography) {
             errors.biography = 'Заполните биографию';
             isValid = false;
-        } else if (bio.length > 512) {
-            errors.biography = 'Не более 512 символов';
+        } else if (biography.length > 500) {
+            errors.biography = 'Биография не должна превышать 500 символов';
             isValid = false;
         }
 
-        const agreement = form.querySelector('[name="agreement"]').checked;
         if (!agreement) {
-            errors.agreement = 'Необходимо согласие';
+            errors.agreement = 'Необходимо дать согласие';
             isValid = false;
         }
 
-        return { isValid, errors };
+        return { errors, isValid };
     }
 
-    function showErrors(errors) {
-        messagesContainer.innerHTML = '';
-        messagesContainer.className = 'form-messages errors';
-        
-        form.querySelectorAll('.is-invalid').forEach(el => {
-            el.classList.remove('is-invalid');
+    function showErrors(errors, form) {
+        form.querySelectorAll('.error-field').forEach(el => {
+            el.classList.remove('error-field');
         });
+        
+        messagesContainer.innerHTML = '';
+        messagesContainer.style.display = 'block';
 
         for (const [field, message] of Object.entries(errors)) {
-            const input = form.querySelector(`[name="${field}"]`);
-            if (input) {
-                input.classList.add('is-invalid');
+            const fieldElement = form.querySelector(`[name="${field}"], [name="${field}[]"]`);
+            if (fieldElement) {
+                const parent = fieldElement.closest('.form-group') || fieldElement.closest('label') || fieldElement.parentElement;
+                parent.classList.add('error-field');
+                
+                const errorElement = document.createElement('div');
+                errorElement.className = 'error-message';
+                errorElement.textContent = message;
+                parent.appendChild(errorElement);
+            } else {
                 const errorElement = document.createElement('div');
                 errorElement.className = 'error-message';
                 errorElement.textContent = message;
@@ -106,76 +119,78 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function showSuccess(data) {
+    function showSuccess(response) {
         messagesContainer.innerHTML = '';
-        messagesContainer.className = 'form-messages success';
-        
-        if (data.login && data.password) {
+        messagesContainer.style.display = 'block';
+
+        if (response.login && response.password) {
             const successMsg = document.createElement('div');
+            successMsg.className = 'success-message';
             successMsg.innerHTML = `
-                <p>Данные сохранены!</p>
+                <p>Данные успешно сохранены!</p>
                 <p>Ваши учетные данные:</p>
-                <p><strong>Логин:</strong> ${data.login}</p>
-                <p><strong>Пароль:</strong> ${data.password}</p>
-                <p><a href="/login">Войти в систему</a></p>
+                <p><strong>Логин:</strong> ${response.login}</p>
+                <p><strong>Пароль:</strong> ${response.password}</p>
+                <p>Используйте их для входа в следующий раз.</p>
             `;
             messagesContainer.appendChild(successMsg);
         } else {
-            messagesContainer.textContent = 'Данные успешно обновлены!';
+            const successMsg = document.createElement('div');
+            successMsg.className = 'success-message';
+            successMsg.textContent = 'Данные успешно обновлены!';
+            messagesContainer.appendChild(successMsg);
         }
     }
 
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const submitBtn = form.querySelector('[type="submit"]');
-        const originalText = submitBtn.value;
+        const originalBtnText = submitBtn.value;
         submitBtn.disabled = true;
         submitBtn.value = 'Отправка...';
 
-        const { isValid, errors } = validateForm(form);
+        const { errors, isValid } = validateForm(form);
         if (!isValid) {
-            showErrors(errors);
+            showErrors(errors, form);
             submitBtn.disabled = false;
-            submitBtn.value = originalText;
+            submitBtn.value = originalBtnText;
             return;
         }
 
         try {
             const formData = new FormData(form);
-            const langs = Array.from(form.querySelectorAll('[name="languages[]"]:checked'))
-                .map(el => el.value);
-            formData.set('languages', langs.join(','));
-
-            const response = await fetch('/api/form', {
+            
+            const response = await fetch(form.action, {
                 method: 'POST',
                 headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 },
                 body: formData
             });
 
             const result = await response.json();
 
-            if (response.ok) {
+            if (result.success) {
                 showSuccess(result);
-                if (result.login) {
-                    form.reset();
+                if (result.redirect) {
+                    setTimeout(() => {
+                        window.location.href = result.redirect;
+                    }, 3000);
                 }
             } else {
-                showErrors(result.errors || {});
+                showErrors(result.errors || {}, form);
             }
         } catch (error) {
             messagesContainer.innerHTML = `
-                <div class="error-message">Ошибка сети: ${error.message}</div>
+                <div class="error-message">
+                    Ошибка соединения с сервером. Пожалуйста, попробуйте позже.
+                </div>
             `;
-            messagesContainer.className = 'form-messages errors';
+            messagesContainer.style.display = 'block';
         } finally {
             submitBtn.disabled = false;
-            submitBtn.value = originalText;
+            submitBtn.value = originalBtnText;
         }
     });
-
-    form.setAttribute('novalidate', 'true');
 });
