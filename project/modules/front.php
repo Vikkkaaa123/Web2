@@ -4,6 +4,9 @@ require_once __DIR__ . '/../scripts/db.php';
 
 
 function front_get($request) {
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
     $db = db_connect();
     
     $data = [
