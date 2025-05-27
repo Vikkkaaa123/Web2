@@ -910,7 +910,7 @@
               ФИО: <br/>
               <input type="text" name="fio" 
                      class="input-field <?= !empty($errors['fio']) ? 'error' : '' ?>" 
-                     placeholder="Введите ваше полное имя"
+                     placeholder="Введите имя, фамилию и отчество"
                      value="<?= htmlspecialchars($values['fio'] ?? '') ?>"/>
               <?php if (!empty($errors['fio'])): ?>
                 <span class="error-text"><?= $errors['fio'] ?></span>
@@ -927,7 +927,6 @@
                 <span class="error-text"><?= $errors['phone'] ?></span>
               <?php endif; ?>
             </label><br/>
-            <p class="numtext">* используйте телефонный код +7</p>
 
             <label>
               Email: <br/>
@@ -984,21 +983,26 @@
               <?php endif; ?>
             </label><br/>
 
-            <label>
-              Любимые языки программирования: <br/>
-              <select name="languages[]" multiple 
-                      class="input-field <?= !empty($errors['languages']) ? 'error' : '' ?>">
-                <?php foreach ($allowed_lang as $id => $name): ?>
-                  <option value="<?= $id ?>"
-                          <?= in_array($id, explode(',', $values['languages'] ?? '')) ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($name) ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-              <?php if (!empty($errors['languages'])): ?>
-                <span class="error-text"><?= $errors['languages'] ?></span>
-              <?php endif; ?>
-            </label><br/>
+           <label>
+    Любимые языки программирования: <br/>
+    <select name="languages[]" multiple="multiple" 
+            class="input-field <?= !empty($errors['lang']) ? 'error' : '' ?>"
+            style="height: auto; min-height: 100px; padding: 10px;">
+        
+        <?php 
+        $user_languages = isset($values['lang']) ? explode(",", $values['lang']) : [];
+        foreach ($allowed_lang as $lang => $value): 
+        ?>
+            <option value="<?= htmlspecialchars($lang) ?>"
+                <?= in_array($lang, $user_languages) ? 'selected="selected"' : '' ?>>
+                <?= htmlspecialchars($value) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+    <?php if (!empty($errors['lang'])): ?>
+        <span class="error-text"><?= $errors['lang'] ?></span>
+    <?php endif; ?>
+</label><br/>
 
             <label>
               Биография: <br/>
@@ -1010,21 +1014,24 @@
               <?php endif; ?>
             </label><br/>
 
-            <label class="form-checkbox">
-              <input type="checkbox" name="agreement" 
-                     class="<?= !empty($errors['agreement']) ? 'error' : '' ?>"
-                     <?= !empty($values['agreement']) ? 'checked' : '' ?>>
-              Согласен(а) с обработкой персональных данных
-              <?php if (!empty($errors['agreement'])): ?>
-                <span class="error-text"><?= $errors['agreement'] ?></span>
-              <?php endif; ?>
-            </label><br/>
+          <div class="checkbox-block">
+                <label class="form-checkbox pl-2">
+                    <input type="checkbox" name="agreement" 
+                           class="custom-checkbox <?= !empty($errors['agreement']) ? 'error' : '' ?>"
+                           <?= !empty($values['agreement']) ? 'checked' : '' ?>>
+                    <span class="checkmark"></span>
+                    Согласен(а) с <a href="#">обработкой персональных данных</a>
+                </label>
+                <?php if (!empty($errors['agreement'])): ?>
+                    <span class="error-text"><?= $errors['agreement'] ?></span>
+                <?php endif; ?>
+            </div><br/>
 
             <input class="submit-btn" type="submit" 
                    value="<?= !empty($_SESSION['login']) ? 'Обновить данные' : 'Сохранить' ?>" 
                    id="submit-btn"/>
-          </form>
-        </div>
+        </form>
+    </div>
 
         <?php if (!empty($_SESSION['generated_login']) && !empty($_SESSION['generated_password']) && empty($_SESSION['login'])): ?>
           <div class="credentials">
