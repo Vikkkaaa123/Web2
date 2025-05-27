@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     if (!form) return;
-    
+
     const messagesContainer = document.createElement('div');
     messagesContainer.className = 'form-messages';
     form.insertBefore(messagesContainer, form.querySelector('.form-actions'));
@@ -89,75 +89,39 @@ document.addEventListener('DOMContentLoaded', function() {
         return { errors, isValid };
     }
 
+    // Показ ошибок
     function showErrors(errors) {
         messagesContainer.innerHTML = '';
-        form.querySelectorAll('.error').forEach(el => {
-            el.classList.remove('error');
-        });
+        
+        // Очищаем предыдущие ошибки
+        document.querySelectorAll('.error-message').forEach(el => el.remove());
+        document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
 
+        // Показываем новые ошибки
         for (const [field, message] of Object.entries(errors)) {
-            if (field === 'birth_date') {
-                const dateContainer = form.querySelector('.date-fields');
-                dateContainer.classList.add('error');
-                const errorElement = document.createElement('div');
-                errorElement.className = 'error-message';
-                errorElement.textContent = message;
-                dateContainer.appendChild(errorElement);
-                continue;
-            }
-
-            let fieldElement;
-            
-            if (field === 'gender') {
-                fieldElement = form.querySelector('.gender-options');
-            } else if (field === 'agreement') {
-                fieldElement = form.querySelector('.agreement-field');
-            } else if (field === 'languages') {
-                fieldElement = form.querySelector('select[name="languages[]"]').parentElement;
-            } else {
-                fieldElement = form.querySelector(`[name="${field}"]`);
-            }
-
-            if (fieldElement) {
-                fieldElement.classList.add('error');
-                const errorElement = document.createElement('div');
-                errorElement.className = 'error-message';
-                errorElement.textContent = message;
-                fieldElement.parentNode.insertBefore(errorElement, fieldElement.nextSibling);
+            const input = form.querySelector(`[name="${field}"]`);
+            if (input) {
+                input.classList.add('error');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                input.parentNode.insertBefore(errorDiv, input.nextSibling);
             }
         }
     }
 
-    function showSuccess(result) {
-        messagesContainer.innerHTML = '';
-        
-        const successDiv = document.createElement('div');
-        successDiv.className = 'success-message';
-        
-        if (result.login && result.password) {
-            successDiv.innerHTML = `
-                <p>Данные успешно сохранены!</p>
-                <p>Ваши учетные данные:</p>
-                <p><strong>Логин:</strong> ${result.login}</p>
-                <p><strong>Пароль:</strong> ${result.password}</p>
-            `;
-            form.reset();
-        } else {
-            successDiv.textContent = result.message || 'Данные успешно обновлены';
-        }
-        
-        messagesContainer.appendChild(successDiv);
-    }
-
+    // Обработчик отправки формы
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const submitBtn = form.querySelector('[type="submit"]');
         const originalBtnText = submitBtn.value;
         
+        // Блокируем кнопку
         submitBtn.disabled = true;
         submitBtn.value = 'Отправка...';
 
+        // Валидация
         const { errors, isValid } = validateForm(form);
         if (!isValid) {
             showErrors(errors);
@@ -167,30 +131,45 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            const formData = new FormData(form);
-            
-            const response = await fetch(form.action, {
+            // Отправляем данные на текущий URL (index.php)
+            const response = await fetch('index.php', {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
                 },
-                body: formData
+                body: new FormData(form)
             });
 
-            const result = await response.json();
+            if (!response.ok) throw new Error('Ошибка сервера');
             
+            const result = await response.json();
+
             if (result.success) {
-                showSuccess(result);
+                // Успешная отправка
+                messagesContainer.innerHTML = `
+                    <div class="success-message">
+                        ${result.login ? `Данные сохранены! Логин: ${result.login}, Пароль: ${result.password}` : 'Данные обновлены'}
+                    </div>
+                `;
+                
+                if (result.login) {
+                    form.reset();
+                }
             } else {
+                // Ошибки сервера
                 showErrors(result.errors || {});
             }
         } catch (error) {
-            messagesContainer.innerHTML = `<div class="error-message">Ошибка при отправке формы: ${error.message || 'Неизвестная ошибка'}</div>`;
+            messagesContainer.innerHTML = `
+                <div class="error-message">
+                    Ошибка при отправке: ${error.message}
+                </div>
+            `;
             console.error('Ошибка:', error);
         } finally {
+            // Разблокируем кнопку
             submitBtn.disabled = false;
             submitBtn.value = originalBtnText;
         }
     });
-});
