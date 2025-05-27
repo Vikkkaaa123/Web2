@@ -719,8 +719,8 @@ footer {
 
 .gender-options {
     display: flex;
-    gap: 15px;
-    margin: 10px 0;
+    gap: 10px; 
+    margin: 5px 0; 
 }
 
 .gender-options label {
@@ -728,6 +728,14 @@ footer {
     align-items: center;
     gap: 5px;
     cursor: pointer;
+    font-size: 16px; 
+    font-weight: 400;  
+}
+
+.gender-options input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
 }
 
 select[multiple] {
