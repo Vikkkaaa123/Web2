@@ -875,10 +875,8 @@
   </div>
     
 
-
 <footer>
   <div class="bottom-wrapper container">
-  
     <div class="b-bottom col-12 row d-flex pb-3 px-0 mx-0">
       <div class="b-footer-text col-md-6 order-1 order-md-1 col-12 p-1">
         <h2 class="block-name mb-3"> Оставить заявку на <br> поддержку сайта</h2>
@@ -894,9 +892,9 @@
           </div>
       </div>
 
-      <div class="b-form col-12 col-md-6 order-2 order-md-2 px-3 pb-3 pt-1 pt-md-3">
+        <div class="b-form col-12 col-md-6 order-2 order-md-2 px-3 pb-3 pt-1 pt-md-3">
 
-         <div class="error_messages" <?php if (empty($messages)) {print 'display="none"';} else {print 'display="block"';} ?>>
+        <div class="error_messages" <?php if (empty($messages)) {print 'display="none"';} else {print 'display="block"';} ?>>
 
           <?php
           if (!empty($messages)) {
@@ -910,139 +908,148 @@
 
         </div>
         
-        
-  <div class="formstyle1">
-  <form id="myform" class="application" method="POST" action="">
-    <h2 class="white-text">ФОРМА</h2>
+      <div class="b-form col-12 col-md-6 order-2 order-md-2 px-3 pb-3 pt-1 pt-md-3">
+        <div class="auth-buttons">
+          <?php if (!empty($_SESSION['login'])): ?>
+            <input type="button" value="Выйти" onclick="location.href='logout.php'" class="auth-btn">
+          <?php else: ?>
+            <input type="button" value="Войти" onclick="location.href='login.php'" class="auth-btn">
+          <?php endif; ?>
+        </div>
 
-    <input type="hidden" name="uid" value='<?= htmlspecialchars($values['uid'] ?? '') ?>' />
+        <div class="formstyle1">
+          <form id="myform" class="application" method="POST" action="">
 
-    <label>
-      ФИО: <br/>
-      <input class="input-field <?= !empty($errors['fio']) ? 'error' : '' ?>" 
-             name="fio" 
-             value="<?= htmlspecialchars($values['fio'] ?? '') ?>"/>
-      <?php if (!empty($errors['fio'])): ?>
-        <span class="error-text"><?= $errors['fio'] ?></span>
-      <?php endif; ?>
-    </label><br/>
+            <label>
+              ФИО: <br/>
+              <input type="text" name="fio" 
+                     class="input-field <?= !empty($errors['fio']) ? 'error' : '' ?>" 
+                     placeholder="Введите ваше полное имя"
+                     value="<?= htmlspecialchars($values['fio'] ?? '') ?>"/>
+              <?php if (!empty($errors['fio'])): ?>
+                <span class="error-text"><?= $errors['fio'] ?></span>
+              <?php endif; ?>
+            </label><br/>
 
-    <label>
-      Номер телефона: <br />
-      <input class="input-field <?= !empty($errors['number']) ? 'error' : '' ?>" 
-             name="number" 
-             type="tel" 
-             value="<?= htmlspecialchars($values['number'] ?? '') ?>"/>
-      <?php if (!empty($errors['number'])): ?>
-        <span class="error-text"><?= $errors['number'] ?></span>
-      <?php endif; ?>
-    </label><br/>
-    <p class="numtext">* используйте телефонный код +7</p>
+            <label>
+              Телефон: <br />
+              <input type="tel" name="number" 
+                     class="input-field <?= !empty($errors['number']) ? 'error' : '' ?>" 
+                     placeholder="+7XXXXXXXXXX"
+                     value="<?= htmlspecialchars($values['number'] ?? '') ?>"/>
+              <?php if (!empty($errors['number'])): ?>
+                <span class="error-text"><?= $errors['number'] ?></span>
+              <?php endif; ?>
+            </label><br/>
+            <p class="numtext">* используйте телефонный код +7</p>
 
-    <label>
-      E-mail: <br/>
-      <input class="input-field <?= !empty($errors['email']) ? 'error' : '' ?>" 
-             name="email" 
-             type="email" 
-             value="<?= htmlspecialchars($values['email'] ?? '') ?>"/>
-      <?php if (!empty($errors['email'])): ?>
-        <span class="error-text"><?= $errors['email'] ?></span>
-      <?php endif; ?>
-    </label><br/>
+            <label>
+              E-mail: <br/>
+              <input type="email" name="email" 
+                     class="input-field <?= !empty($errors['email']) ? 'error' : '' ?>" 
+                     placeholder="example@mail.com"
+                     value="<?= htmlspecialchars($values['email'] ?? '') ?>"/>
+              <?php if (!empty($errors['email'])): ?>
+                <span class="error-text"><?= $errors['email'] ?></span>
+              <?php endif; ?>
+            </label><br/>
 
-    <label>
-      Дата рождения: <br/>
-      <input class="input-field <?= !empty($errors['bdate']) ? 'error' : '' ?>" 
-             name="birthdate" 
-             type="date" 
-             value="<?= htmlspecialchars($values['bdate'] ?? '') ?>"/>
-      <?php if (!empty($errors['bdate'])): ?>
-        <span class="error-text"><?= $errors['bdate'] ?></span>
-      <?php endif; ?>
-    </label><br/>
+            <label>
+              Дата рождения: <br/>
+              <input type="date" name="birthdate" 
+                     class="input-field <?= !empty($errors['bdate']) ? 'error' : '' ?>"
+                     value="<?= htmlspecialchars($values['bdate'] ?? '') ?>"/>
+              <?php if (!empty($errors['bdate'])): ?>
+                <span class="error-text"><?= $errors['bdate'] ?></span>
+              <?php endif; ?>
+            </label><br/>
 
-    <label class="white-text">
-      Пол: <br/> 
-      <label>
-        <input type="radio" name="radio-group-1" value="male" 
-               class="<?= !empty($errors['gen']) ? 'error' : '' ?>"
-               <?= ($values['gen'] ?? '') == 'male' ? 'checked' : '' ?>/>
-        Мужской
-      </label>
-      <label>
-        <input type="radio" name="radio-group-1" value="female" 
-               class="<?= !empty($errors['gen']) ? 'error' : '' ?>"
-               <?= ($values['gen'] ?? '') == 'female' ? 'checked' : '' ?>/>
-        Женский
-      </label>
-      <?php if (!empty($errors['gen'])): ?>
-        <span class="error-text"><?= $errors['gen'] ?></span>
-      <?php endif; ?>
-    </label><br/>
+            <label class="white-text">
+              Пол: <br/> 
+              <label>
+                <input type="radio" name="radio-group-1" value="male" 
+                       class="<?= !empty($errors['gen']) ? 'error' : '' ?>"
+                       <?= ($values['gen'] ?? '') == 'male' ? 'checked' : '' ?>/>
+                Мужской
+              </label>
+              <label>
+                <input type="radio" name="radio-group-1" value="female" 
+                       class="<?= !empty($errors['gen']) ? 'error' : '' ?>"
+                       <?= ($values['gen'] ?? '') == 'female' ? 'checked' : '' ?>/>
+                Женский
+              </label>
+              <?php if (!empty($errors['gen'])): ?>
+                <span class="error-text"><?= $errors['gen'] ?></span>
+              <?php endif; ?>
+            </label><br/>
 
-    <label>
-      Любимый язык программирования: <br/>
-      <select name="languages[]" multiple="multiple" 
-              class="<?= !empty($errors['lang']) ? 'error' : '' ?>">
-        <?php foreach ($allowed_lang as $lang => $value): ?>
-          <option value="<?= $lang ?>"
-                  <?= in_array($lang, explode(',', $values['lang'] ?? '')) ? 'selected' : '' ?>>
-            <?= htmlspecialchars($value) ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-      <?php if (!empty($errors['lang'])): ?>
-        <span class="error-text"><?= $errors['lang'] ?></span>
-      <?php endif; ?>
-    </label><br/>
+            <label>
+              Любимые языки программирования: <br/>
+              <select name="languages[]" multiple="multiple" 
+                      class="<?= !empty($errors['lang']) ? 'error' : '' ?>">
+                <?php foreach ($allowed_lang as $lang => $value): ?>
+                  <option value="<?= $lang ?>"
+                          <?= in_array($lang, explode(',', $values['lang'] ?? '')) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($value) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+              <?php if (!empty($errors['lang'])): ?>
+                <span class="error-text"><?= $errors['lang'] ?></span>
+              <?php endif; ?>
+            </label><br/>
 
-    <label>
-      Биография: <br/>
-      <textarea class="input-field <?= !empty($errors['bio']) ? 'error' : '' ?>" 
-                name="biography"><?= htmlspecialchars($values['bio'] ?? '') ?></textarea>
-      <?php if (!empty($errors['bio'])): ?>
-        <span class="error-text"><?= $errors['bio'] ?></span>
-      <?php endif; ?>
-    </label><br/>
+            <label>
+              Биография: <br/>
+              <textarea name="biography" 
+                        class="input-field <?= !empty($errors['bio']) ? 'error' : '' ?>"
+                        placeholder="Расскажите о себе..."><?= htmlspecialchars($values['bio'] ?? '') ?></textarea>
+              <?php if (!empty($errors['bio'])): ?>
+                <span class="error-text"><?= $errors['bio'] ?></span>
+              <?php endif; ?>
+            </label><br/>
 
-    <label class="form-checkbox pl-2">
-      <input type="checkbox" name="checkbox"
-             class="<?= !empty($errors['checkbox']) ? 'error' : '' ?>"
-             <?= empty($errors['checkbox']) ? 'checked' : '' ?>/>
-      С контрактом ознакомлен
-      <?php if (!empty($errors['checkbox'])): ?>
-        <span class="error-text"><?= $errors['checkbox'] ?></span>
-      <?php endif; ?>
-    </label><br/>
+            <!-- Поле Согласие -->
+            <label class="form-checkbox pl-2">
+              <input type="checkbox" name="checkbox"
+                     class="<?= !empty($errors['checkbox']) ? 'error' : '' ?>"
+                     <?= empty($errors['checkbox']) ? 'checked' : '' ?>/>
+              С контрактом ознакомлен
+              <?php if (!empty($errors['checkbox'])): ?>
+                <span class="error-text"><?= $errors['checkbox'] ?></span>
+              <?php endif; ?>
+            </label><br/>
 
-    <input class="submit-btn" type="submit" value="Сохранить" id="submit-btn"/>
-  </form>
+            <input class="submit-btn" type="submit" value="Сохранить" id="submit-btn"/>
+          </form>
+        </div>
 
-  <div class="auth-section">
-    <?php if (!empty($_SESSION['login'])): ?>
-      <form action="<?= url('logout') ?>" method="POST">
-        <input type="submit" value="Выйти" class="auth-btn"/>
-      </form>
-    <?php else: ?>
-      <a href="<?= url('login') ?>" class="auth-btn">Войти</a>
-    <?php endif; ?>
-  </div>
-</div>
+        <?php if (!empty($_SESSION['generated_login']) && !empty($_SESSION['generated_password']) && empty($_SESSION['login'])): ?>
+          <div class="credentials">
+            <h3>Ваши учетные данные:</h3>
+            <p><strong>Логин:</strong> <?php echo htmlspecialchars($_SESSION['generated_login']); ?></p>
+            <p><strong>Пароль:</strong> <?php echo htmlspecialchars($_SESSION['generated_password']); ?></p>
+            <p>Используйте их для входа в следующий раз.</p>
+          </div>
+          <?php 
+            unset($_SESSION['generated_login']);
+            unset($_SESSION['generated_password']);
+          ?>
+        <?php endif; ?>
+      </div>
 
-    <div class="ftr col-12 order-3 order-md-3">
-      <div class="footer-body p-0">
-        <ul class="sns-wrapper row d-flex px-3">
-          <li class="sns"><a title="Facebook" href="index.html"><img alt="logo-fb" src="./styles/img/logo-facebook.png"></a></li>
-          <li class="sns"><a title="Вконтакте" href="index.html"><img alt="logo-vk" src="./styles/img/logo-vk.png"></a></li>
-          <li class="sns"><a title="Telegram" href="index.html"><img alt="logo-tg" src="./styles/img/logo-telegram.png"></a></li>
-          <li class="sns"><a title="YouTube" href="index.html"><img alt="logo-yt" src="./styles/img/logo-youtube.png"></a></li>
-        </ul>
-        ООО «Инитлаб», Краснодар, Россия. <br>
-        Drupal является зарегистрированной торговой маркой Dries Buytaert.
+      <div class="ftr col-12 order-3 order-md-3">
+        <div class="footer-body p-0">
+          <ul class="sns-wrapper row d-flex px-3">
+            <li class="sns"><a title="Facebook" href="index.html"><img alt="logo-fb" src="./styles/img/logo-facebook.png"></a></li>
+            <li class="sns"><a title="Вконтакте" href="index.html"><img alt="logo-vk" src="./styles/img/logo-vk.png"></a></li>
+            <li class="sns"><a title="Telegram" href="index.html"><img alt="logo-tg" src="./styles/img/logo-telegram.png"></a></li>
+            <li class="sns"><a title="YouTube" href="index.html"><img alt="logo-yt" src="./styles/img/logo-youtube.png"></a></li>
+          </ul>
+          ООО «Инитлаб», Краснодар, Россия. <br>
+          Drupal является зарегистрированной торговой маркой Dries Buytaert.
+        </div>
       </div>
     </div>
   </div>
 </footer>
-  
-</body>
-</html>
