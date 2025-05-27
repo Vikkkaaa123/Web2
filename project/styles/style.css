@@ -733,16 +733,36 @@ footer {
 select[multiple] {
     height: auto;
     min-height: 100px;
-    padding: 10px !important;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid #d7d7d7;
+    color: white;
+    border-radius: 5px;
+    width: 100%;
+}
+
+select[multiple] option {
+    padding: 8px 12px;
+    background-color: #040613;
+}
+
+select[multiple] option:checked {
+    background-color: #f14d34;
+    color: white;
+}
+
+.checkbox-block {
+    margin: 15px 0;
 }
 
 .form-checkbox {
     display: flex;
     align-items: center;
-    margin: 15px 0;
     position: relative;
     padding-left: 30px;
     cursor: pointer;
+    color: white;
+    font-size: 16px;
 }
 
 .form-checkbox input {
@@ -778,10 +798,16 @@ select[multiple] {
     color: #f14d34;
     left: 4px;
     top: -2px;
+    font-size: 14px;
 }
 
 .form-checkbox input:checked ~ .checkmark:after {
     display: block;
+}
+
+.form-checkbox a {
+    color: #f14d34;
+    text-decoration: underline;
 }
 
 .submit-btn {
