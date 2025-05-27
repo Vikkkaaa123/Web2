@@ -1015,7 +1015,7 @@
             </label><br/>
 
           <div class="checkbox-block">
-                <label class="form-checkbox pl-2">
+                <label class="form-checkbox">
                     <input type="checkbox" name="agreement" 
                            class="custom-checkbox <?= !empty($errors['agreement']) ? 'error' : '' ?>"
                            <?= !empty($values['agreement']) ? 'checked' : '' ?>>
