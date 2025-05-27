@@ -893,13 +893,15 @@
       </div>
 
       <div class="b-form col-12 col-md-6 order-2 order-md-2 px-3 pb-3 pt-1 pt-md-3">
-        <div class="auth-buttons">
-          <?php if (!empty($_SESSION['login'])): ?>
-            <input type="button" value="Выйти" onclick="location.href='logout.php'" class="auth-btn">
-          <?php else: ?>
-            <input type="button" value="Войти" onclick="location.href='login.php'" class="auth-btn">
-          <?php endif; ?>
-        </div>
+       <div class="auth-buttons">
+  <?php if (!empty($_SESSION['login'])): ?>
+    <form action="<?= url('logout') ?>" method="POST">
+      <input type="submit" value="Выйти" class="auth-btn">
+    </form>
+  <?php else: ?>
+    <a href="<?= url('login') ?>" class="auth-btn">Войти</a>
+  <?php endif; ?>
+</div>
 
         <div class="formstyle1">
           <form id="myform" class="application" method="POST" action="<?= url('form') ?>">
