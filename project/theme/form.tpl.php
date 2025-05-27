@@ -282,7 +282,7 @@
     </div>
 
 
-    <div class="b-info-3 ">
+   <div class="b-info-3 ">
 
         <div class="container">
           <div class="row">
