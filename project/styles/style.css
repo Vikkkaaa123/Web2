@@ -816,8 +816,7 @@ h2.white-text{
     color: #ffffff;
 }
 
-@media screen and (min-width: 768px){
-  
+@media screen and (min-width: 768px){  
     .square-wrapper{
         height: 100%;
     }
@@ -829,7 +828,6 @@ h2.white-text{
        background-color: #f8f8f8;
        border-color: #e1e1e1;
     }
-    /*--- info-4 ---*/
     .b-info-4 h3, .b-info-4 p{
         text-align: start;
     }
@@ -841,7 +839,6 @@ h2.white-text{
         text-align: center;
     }
 
-    /*---footer---*/
     footer{
         padding-top: 20px;
         padding-bottom: 10px;
@@ -885,7 +882,6 @@ h2.white-text{
     }
     
 }
-
 
 @font-face {
     font-family: 'Montserrat';
