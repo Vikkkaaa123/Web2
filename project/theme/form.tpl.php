@@ -892,23 +892,8 @@
           </div>
       </div>
 
-        <div class="b-form col-12 col-md-6 order-2 order-md-2 px-3 pb-3 pt-1 pt-md-3">
-
-        <div class="error_messages" <?php if (empty($messages)) {print 'display="none"';} else {print 'display="block"';} ?>>
-
-          <?php
-          if (!empty($messages)) {
-            print('<div id="messages">');
-            foreach ($messages as $message) {
-              print($message);
-            }
-            print('</div>');
-          }
-          ?>
-
-        </div>
-        
       <div class="b-form col-12 col-md-6 order-2 order-md-2 px-3 pb-3 pt-1 pt-md-3">
+        <!-- Кнопка входа/выхода -->
         <div class="auth-buttons">
           <?php if (!empty($_SESSION['login'])): ?>
             <input type="button" value="Выйти" onclick="location.href='logout.php'" class="auth-btn">
@@ -919,6 +904,7 @@
 
         <div class="formstyle1">
           <form id="myform" class="application" method="POST" action="">
+            <h2 class="white-text">ФОРМА</h2>
 
             <label>
               ФИО: <br/>
@@ -933,18 +919,18 @@
 
             <label>
               Телефон: <br />
-              <input type="tel" name="number" 
-                     class="input-field <?= !empty($errors['number']) ? 'error' : '' ?>" 
+              <input type="tel" name="phone" 
+                     class="input-field <?= !empty($errors['phone']) ? 'error' : '' ?>" 
                      placeholder="+7XXXXXXXXXX"
-                     value="<?= htmlspecialchars($values['number'] ?? '') ?>"/>
-              <?php if (!empty($errors['number'])): ?>
-                <span class="error-text"><?= $errors['number'] ?></span>
+                     value="<?= htmlspecialchars($values['phone'] ?? '') ?>"/>
+              <?php if (!empty($errors['phone'])): ?>
+                <span class="error-text"><?= $errors['phone'] ?></span>
               <?php endif; ?>
             </label><br/>
             <p class="numtext">* используйте телефонный код +7</p>
 
             <label>
-              E-mail: <br/>
+              Email: <br/>
               <input type="email" name="email" 
                      class="input-field <?= !empty($errors['email']) ? 'error' : '' ?>" 
                      placeholder="example@mail.com"
@@ -956,79 +942,95 @@
 
             <label>
               Дата рождения: <br/>
-              <input type="date" name="birthdate" 
-                     class="input-field <?= !empty($errors['bdate']) ? 'error' : '' ?>"
-                     value="<?= htmlspecialchars($values['bdate'] ?? '') ?>"/>
-              <?php if (!empty($errors['bdate'])): ?>
-                <span class="error-text"><?= $errors['bdate'] ?></span>
+              <div class="date-fields">
+                <input type="number" name="birth_day" 
+                       class="input-field date-input <?= !empty($errors['birth_day']) ? 'error' : '' ?>" 
+                       placeholder="День" min="1" max="31"
+                       value="<?= htmlspecialchars($values['birth_day'] ?? '') ?>"/>
+                
+                <input type="number" name="birth_month" 
+                       class="input-field date-input <?= !empty($errors['birth_month']) ? 'error' : '' ?>" 
+                       placeholder="Месяц" min="1" max="12"
+                       value="<?= htmlspecialchars($values['birth_month'] ?? '') ?>"/>
+                
+                <input type="number" name="birth_year" 
+                       class="input-field date-input <?= !empty($errors['birth_year']) ? 'error' : '' ?>" 
+                       placeholder="Год" min="1900" max="<?= date('Y') ?>"
+                       value="<?= htmlspecialchars($values['birth_year'] ?? '') ?>"/>
+              </div>
+              <?php if (!empty($errors['birth_date'])): ?>
+                <span class="error-text"><?= $errors['birth_date'] ?></span>
               <?php endif; ?>
             </label><br/>
 
             <label class="white-text">
               Пол: <br/> 
-              <label>
-                <input type="radio" name="radio-group-1" value="male" 
-                       class="<?= !empty($errors['gen']) ? 'error' : '' ?>"
-                       <?= ($values['gen'] ?? '') == 'male' ? 'checked' : '' ?>/>
-                Мужской
-              </label>
-              <label>
-                <input type="radio" name="radio-group-1" value="female" 
-                       class="<?= !empty($errors['gen']) ? 'error' : '' ?>"
-                       <?= ($values['gen'] ?? '') == 'female' ? 'checked' : '' ?>/>
-                Женский
-              </label>
-              <?php if (!empty($errors['gen'])): ?>
-                <span class="error-text"><?= $errors['gen'] ?></span>
+              <div class="gender-options">
+                <label>
+                  <input type="radio" name="gender" value="male" 
+                         class="<?= !empty($errors['gender']) ? 'error' : '' ?>"
+                         <?= ($values['gender'] ?? '') === 'male' ? 'checked' : '' ?>>
+                  Мужской
+                </label>
+                <label>
+                  <input type="radio" name="gender" value="female" 
+                         class="<?= !empty($errors['gender']) ? 'error' : '' ?>"
+                         <?= ($values['gender'] ?? '') === 'female' ? 'checked' : '' ?>>
+                  Женский
+                </label>
+              </div>
+              <?php if (!empty($errors['gender'])): ?>
+                <span class="error-text"><?= $errors['gender'] ?></span>
               <?php endif; ?>
             </label><br/>
 
             <label>
               Любимые языки программирования: <br/>
-              <select name="languages[]" multiple="multiple" 
-                      class="<?= !empty($errors['lang']) ? 'error' : '' ?>">
-                <?php foreach ($allowed_lang as $lang => $value): ?>
-                  <option value="<?= $lang ?>"
-                          <?= in_array($lang, explode(',', $values['lang'] ?? '')) ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($value) ?>
+              <select name="languages[]" multiple 
+                      class="input-field <?= !empty($errors['languages']) ? 'error' : '' ?>">
+                <?php foreach ($allowed_lang as $id => $name): ?>
+                  <option value="<?= $id ?>"
+                          <?= in_array($id, explode(',', $values['languages'] ?? '')) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($name) ?>
                   </option>
                 <?php endforeach; ?>
               </select>
-              <?php if (!empty($errors['lang'])): ?>
-                <span class="error-text"><?= $errors['lang'] ?></span>
+              <?php if (!empty($errors['languages'])): ?>
+                <span class="error-text"><?= $errors['languages'] ?></span>
               <?php endif; ?>
             </label><br/>
 
             <label>
               Биография: <br/>
               <textarea name="biography" 
-                        class="input-field <?= !empty($errors['bio']) ? 'error' : '' ?>"
-                        placeholder="Расскажите о себе..."><?= htmlspecialchars($values['bio'] ?? '') ?></textarea>
-              <?php if (!empty($errors['bio'])): ?>
-                <span class="error-text"><?= $errors['bio'] ?></span>
+                        class="input-field <?= !empty($errors['biography']) ? 'error' : '' ?>"
+                        placeholder="Расскажите о себе..."><?= htmlspecialchars($values['biography'] ?? '') ?></textarea>
+              <?php if (!empty($errors['biography'])): ?>
+                <span class="error-text"><?= $errors['biography'] ?></span>
               <?php endif; ?>
             </label><br/>
 
-            <!-- Поле Согласие -->
-            <label class="form-checkbox pl-2">
-              <input type="checkbox" name="checkbox"
-                     class="<?= !empty($errors['checkbox']) ? 'error' : '' ?>"
-                     <?= empty($errors['checkbox']) ? 'checked' : '' ?>/>
-              С контрактом ознакомлен
-              <?php if (!empty($errors['checkbox'])): ?>
-                <span class="error-text"><?= $errors['checkbox'] ?></span>
+            <label class="form-checkbox">
+              <input type="checkbox" name="agreement" 
+                     class="<?= !empty($errors['agreement']) ? 'error' : '' ?>"
+                     <?= !empty($values['agreement']) ? 'checked' : '' ?>>
+              Согласен(а) с обработкой персональных данных
+              <?php if (!empty($errors['agreement'])): ?>
+                <span class="error-text"><?= $errors['agreement'] ?></span>
               <?php endif; ?>
             </label><br/>
 
-            <input class="submit-btn" type="submit" value="Сохранить" id="submit-btn"/>
+            <input class="submit-btn" type="submit" 
+                   value="<?= !empty($_SESSION['login']) ? 'Обновить данные' : 'Сохранить' ?>" 
+                   id="submit-btn"/>
           </form>
         </div>
 
         <?php if (!empty($_SESSION['generated_login']) && !empty($_SESSION['generated_password']) && empty($_SESSION['login'])): ?>
           <div class="credentials">
             <h3>Ваши учетные данные:</h3>
-            <p><strong>Логин:</strong> <?php echo htmlspecialchars($_SESSION['generated_login']); ?></p>
-            <p><strong>Пароль:</strong> <?php echo htmlspecialchars($_SESSION['generated_password']); ?></p>
+            <p><strong>Логин:</strong> <?= htmlspecialchars($_SESSION['generated_login']) ?></p>
+            <p><strong>Пароль:</strong> <?= htmlspecialchars($_SESSION['generated_password']) ?></p>
             <p>Используйте их для входа в следующий раз.</p>
           </div>
           <?php 
