@@ -81,7 +81,7 @@ function front_post($request) {
     $is_ajax = $request['is_ajax'] ?? false;
     $post_data = $request['post'] ?? $_POST;
 
-    // Сохраняем все введенные значения
+    // Сохраняем все введенные данные
     $values = [
         'fio' => trim($post_data['fio'] ?? ''),
         'phone' => trim($post_data['phone'] ?? ''),
