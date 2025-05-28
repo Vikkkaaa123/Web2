@@ -54,47 +54,61 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesContainer.appendChild(successElement);
     }
 
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
+   form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = form.querySelector('#submit-btn');
+    const originalBtnText = submitBtn.value;
+    submitBtn.disabled = true;
+    submitBtn.value = 'Отправка...';
+    
+    try {
+        const formData = new FormData(form);
+        formData.append('is_ajax', '1');
         
-        const submitBtn = form.querySelector('#submit-btn');
-        const originalBtnText = submitBtn.value;
-        submitBtn.disabled = true;
-        submitBtn.value = 'Отправка...';
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+
+        // Проверяем Content-Type ответа
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Сервер вернул не JSON ответ');
+        }
+
+        const text = await response.text();
+        let result;
         
         try {
-            const formData = new FormData(form);
-            
-            // Добавляем флаг AJAX запроса
-            formData.append('is_ajax', '1');
-            
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                if (result.credentials) {
-                    showSuccess('Данные успешно сохранены! ' + 
-                              `Логин: ${result.login}, Пароль: ${result.password}`);
-                } else {
-                    showSuccess('Данные успешно обновлены!');
-                }
-            } else {
-                showErrors(result.errors || {});
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            messagesContainer.innerHTML = `<div class="error">Ошибка при отправке формы: ${error.message}</div>`;
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.value = originalBtnText;
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error('Невалидный JSON:', text);
+            throw new Error('Ошибка обработки ответа сервера');
         }
-    });
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Ошибка сервера');
+        }
+
+        if (result.success) {
+            showSuccess(result.message);
+            if (result.credentials) {
+                showSuccess(`Данные сохранены. Логин: ${result.login}, Пароль: ${result.password}`);
+            }
+        } else {
+            showErrors(result.errors || {});
+        }
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showErrors({ form: error.message });
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.value = originalBtnText;
+    }
 });
