@@ -75,13 +75,12 @@ function front_get($request) {
 
 function front_post($request) {
     $db = db_connect();
-    $allowed_lang = getLangs($db);
     $errors = [];
     
     $is_ajax = $request['is_ajax'] ?? false;
     $post_data = $request['post'] ?? $_POST;
 
-    // Сохраняем все введенные данные
+    // Получаем введенные данные
     $values = [
         'fio' => trim($post_data['fio'] ?? ''),
         'phone' => trim($post_data['phone'] ?? ''),
@@ -169,16 +168,16 @@ function front_post($request) {
         $error_messages['birth_date'] = 'Некорректная дата рождения';
     }
 
-   if (!empty($errors)) {
-    if ($is_ajax) {
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'errors' => $errors,
-            'values' => $values // Возвращаем введенные данные
-        ]);
-        exit;
-    } else {
+    if (!empty($errors)) {
+        if ($is_ajax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'errors' => $errors,
+                'values' => $values
+            ]);
+            exit;
+        } else {
         // Сохраняем ошибки и значения в куки для не-AJAX запросов
         foreach ($errors as $field => $error) {
             setcookie($field.'_error', $error, time() + 3600, '/');
