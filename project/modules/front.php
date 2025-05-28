@@ -106,10 +106,12 @@ function front_post($request) {
     if (empty($values['lang'])) $errors['lang'] = 'Выберите языки';
     if (empty($values['agreement'])) $errors['agreement'] = 'Необходимо согласие';
     
-    // Проверка даты рождения
-    if (!checkdate($values['birth_month'], $values['birth_day'], $values['birth_year'])) {
-        $errors['birth_date'] = 'Некорректная дата рождения';
-    }
+   // Проверка даты рождения
+if (empty($values['birth_day']) || empty($values['birth_month']) || empty($values['birth_year'])) {
+    $errors['birth_date'] = 'Укажите дату рождения';
+} elseif (!checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
+    $errors['birth_date'] = 'Некорректная дата рождения';
+}
 
     if (!empty($errors)) {
         return ['success' => false, 'errors' => $errors];
