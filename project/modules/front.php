@@ -76,14 +76,13 @@ function front_get($request) {
 function front_post($request) {
     $db = db_connect();
     $allowed_lang = getLangs($db);
-    $errors = false;
-    $error_messages = [];
+    $errors = [];
     
     $is_ajax = $request['is_ajax'] ?? false;
     $post_data = $request['post'] ?? $_POST;
 
-    // Обработка данных формы
-    $fields = [
+    // Сохраняем все введенные значения
+    $values = [
         'fio' => trim($post_data['fio'] ?? ''),
         'phone' => trim($post_data['phone'] ?? ''),
         'email' => trim($post_data['email'] ?? ''),
@@ -92,8 +91,8 @@ function front_post($request) {
         'birth_year' => trim($post_data['birth_year'] ?? ''),
         'gender' => $post_data['gender'] ?? '',
         'biography' => trim($post_data['biography'] ?? ''),
-        'lang' => $post_data['languages'] ?? [], // Изменили с 'languages' на 'languages[]'
-        'agreement' => isset($post_data['agreement']) && $post_data['agreement'] === '1' ? 1 : 0
+        'lang' => $post_data['languages'] ?? [],
+        'agreement' => isset($post_data['agreement']) ? 1 : 0
     ];
 
     // Валидация
@@ -174,7 +173,11 @@ function front_post($request) {
         if ($is_ajax) {
             return [
                 'headers' => ['Content-Type' => 'application/json'],
-                'entity' => ['success' => false, 'errors' => $error_messages]
+                'entity' => [
+                    'success' => false,
+                    'errors' => $errors,
+                    'values' => $values // Возвращаем введенные значения
+                ]
             ];
         } else {
             header('Location: ' . url(''));
@@ -266,6 +269,8 @@ function front_post($request) {
             
             if (!empty($login)) {
                 $response['credentials'] = true;
+                $response['login'] = $login;
+                $response['password'] = $password;
             }
             
             return [
