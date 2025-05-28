@@ -76,13 +76,16 @@ function front_post($request) {
     $db = db_connect();
     $allowed_lang = getLangs($db);
     $errors = false;
-    $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
-
-    // Получение данных формы
+    
+    // Используем флаг is_ajax из request
+    $is_ajax = $request['is_ajax'];
+    
+    // Получаем данные из правильного источника
+    $post_data = $request['post'];
+    
     $fields = [
-        'fio' => trim($_POST['fio'] ?? ''),
-        'phone' => trim($_POST['phone'] ?? ''),
+        'fio' => trim($post_data['fio'] ?? ''),
+        'phone' => trim($post_data['phone'] ?? ''),
         'email' => trim($_POST['email'] ?? ''),
         'birth_day' => trim($_POST['birth_day'] ?? ''),
         'birth_month' => trim($_POST['birth_month'] ?? ''),
@@ -93,6 +96,7 @@ function front_post($request) {
         'agreement' => isset($_POST['agreement']) && $_POST['agreement'] === '1' ? 1 : 0
     ];
 
+    try {
     // Валидация
     $validationRules = [
         'fio' => [
@@ -165,16 +169,10 @@ function front_post($request) {
 
     if ($errors) {
         if ($is_ajax) {
-            $response = ['success' => false, 'errors' => []];
-            foreach ($_COOKIE as $name => $value) {
-                if (strpos($name, '_error') !== false) {
-                    $field = str_replace('_error', '', $name);
-                    $response['errors'][$field] = getErrorMessage($field, $value);
-                }
-            }
-            header('Content-Type: application/json');
-            echo json_encode($response);
-            exit();
+            return [
+                'headers' => ['Content-Type' => 'application/json'],
+                'entity' => ['success' => false, 'errors' => $error_messages]
+            ];
         } else {
             header('Location: ' . url(''));
             exit();
@@ -259,20 +257,17 @@ function front_post($request) {
             $_SESSION['generated_password'] = $password;
         }
 
-        if ($is_ajax) {
-            $response = ['success' => true];
-            if (!empty($login) && !empty($password)) {
-                $response['login'] = $login;
-                $response['password'] = $password;
-            }
-            header('Content-Type: application/json');
-            echo json_encode($response);
-            exit();
+       if ($is_ajax) {
+            return [
+            'headers' => ['Content-Type' => 'application/json'],
+            'entity' => ['success' => true, 'message' => 'Данные сохранены']
+        ];
         } else {
-            setcookie('save', '1', time() + 3600);
-            header('Location: ' . url(''));
-            exit();
-        }
+        setcookie('save', '1', time() + 3600);
+        header('Location: ' . url(''));
+        exit();
+    }
+}
     } catch (PDOException $e) {
         if ($db->inTransaction()) {
             $db->rollBack();
