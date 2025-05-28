@@ -62,61 +62,33 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         const submitBtn = form.querySelector('#submit-btn');
-        const originalText = submitBtn.value;
         submitBtn.disabled = true;
         submitBtn.value = 'Отправка...';
 
-        // Очистка предыдущих ошибок
-        document.querySelectorAll('.error-text').forEach(el => el.remove());
-        document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
-
         try {
             const formData = new FormData(form);
-            formData.append('is_ajax', '1');
-
-             const response = await fetch(window.location.href, {
-        method: 'POST',
-        body: new FormData(form),
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
-        }
-     });
-
-            if (!response.ok) throw new Error('Ошибка сервера');
+            
+            const response = await fetch('', {  // Пустая строка = текущий URL
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
 
             const result = await response.json();
 
             if (result.success) {
-                if (result.login && result.password) {
-                    // Показываем логин и пароль без перезагрузки
-                    const message = `Данные сохранены! Ваш логин: ${result.login}, пароль: ${result.password}`;
-                    alert(message);
-                } else {
-                    alert('Данные успешно обновлены!');
-                }
+                alert('Данные сохранены! Логин: ' + result.login + ', Пароль: ' + result.password);
             } else {
-                // Показываем ошибки
-                if (result.errors) {
-                    for (const [field, message] of Object.entries(result.errors)) {
-                        const input = form.querySelector(`[name="${field}"]`) || 
-                                     form.querySelector(`[name="${field}[]"]`);
-                        if (input) {
-                            input.classList.add('error');
-                            const errorSpan = document.createElement('span');
-                            errorSpan.className = 'error-text';
-                            errorSpan.textContent = message;
-                            input.parentNode.appendChild(errorSpan);
-                        }
-                    }
-                }
+                // Обработка ошибок
+                console.error(result.errors);
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка при отправке формы: ' + error.message);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.value = originalText;
+            submitBtn.value = 'Сохранить';
         }
     });
 });
