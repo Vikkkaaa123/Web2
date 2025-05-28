@@ -131,71 +131,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
   
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        
-        const submitBtn = form.querySelector('#submit-btn');
-        const originalBtnText = submitBtn.value;
-        submitBtn.disabled = true;
-        submitBtn.value = 'Отправка...';
-        
-        try {
-            const { errors, isValid } = validateForm(form);
-            if (!isValid) {
-                showErrors(errors, form, messagesContainer);
-                submitBtn.disabled = false;
-                submitBtn.value = originalBtnText;
-                return;
-            }
-
-            const formData = new FormData();
-            
-            // Собираем данные формы
-            formData.append('fio', form.querySelector('[name="fio"]').value.trim());
-            formData.append('phone', form.querySelector('[name="phone"]').value.trim());
-            formData.append('email', form.querySelector('[name="email"]').value.trim());
-            formData.append('birth_day', form.querySelector('[name="birth_day"]').value);
-            formData.append('birth_month', form.querySelector('[name="birth_month"]').value);
-            formData.append('birth_year', form.querySelector('[name="birth_year"]').value);
-            
-            const gender = form.querySelector('[name="gender"]:checked');
-            if (gender) formData.append('gender', gender.value);
-            
-            formData.append('biography', form.querySelector('[name="biography"]').value.trim());
-            formData.append('agreement', form.querySelector('[name="agreement"]').checked ? '1' : '0');
-
-            // Добавляем языки программирования
-            const languages = Array.from(form.querySelectorAll('[name="languages[]"]:checked'));
-            languages.forEach(lang => {
-                formData.append('languages[]', lang.value);
-            });
-
-            const response = await fetch('index.php', {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showSuccess(result, messagesContainer, form);
-                if (result.login && result.password) {
-                    // Обновляем страницу для показа учетных данных
-                    window.location.reload();
-                }
-            } else {
-                showErrors(result.errors || {}, form, messagesContainer);
-            }
-        } catch (error) {
-            messagesContainer.innerHTML = `<div class="error">Ошибка при отправке формы: ${error.message}</div>`;
-            messagesContainer.style.display = 'block';
-        } finally {
+   form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = form.querySelector('#submit-btn');
+    const originalBtnText = submitBtn.value;
+    submitBtn.disabled = true;
+    submitBtn.value = 'Отправка...';
+    
+    try {
+        const { errors, isValid } = validateForm(form);
+        if (!isValid) {
+            showErrors(errors, form, messagesContainer);
             submitBtn.disabled = false;
             submitBtn.value = originalBtnText;
+            return;
         }
-    });
+
+        const formData = new FormData(form); // Используем форму напрямую
+
+        const response = await fetch(form.action || 'index.php', { // Используем action формы или index.php
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            if (result.credentials) {
+                /
+                showSuccess(result, messagesContainer, form);
+            } else {
+                
+                window.location.reload();
+            }
+        } else {
+            showErrors(result.errors || {}, form, messagesContainer);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        messagesContainer.innerHTML = `<div class="error">Ошибка при отправке формы: ${error.message}</div>`;
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.value = originalBtnText;
+    }
 });
