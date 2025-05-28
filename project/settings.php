@@ -19,11 +19,9 @@ $conf = array(
 );
 
 $urlconf = array(
-  '' => array('module' => 'front'),
-  '/^form$/' => array('module' => 'front'), 
+  '' => array('module' => 'front','method' => ['get', 'post']),
   '/^login$/' => array('module' => 'login'),
   '/^admin$/' => array('module' => 'admin'),
-  '/^admin.php$/' => array('module' => 'admin'),
   '/^logout$/' => array('module' => 'logout')
 );
 
