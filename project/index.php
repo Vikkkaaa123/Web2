@@ -7,6 +7,11 @@ ini_set('include_path', INCLUDE_PATH);
 include('./scripts/db.php');
 include('./scripts/init.php');
 
+header('Content-Type: text/html; charset=utf-8');
+if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+    header('Content-Type: application/json');
+}
+
 // Определяем тип запроса
 $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
