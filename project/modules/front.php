@@ -100,7 +100,16 @@ function front_post($request) {
     // Проверка обязательных полей
     if (empty($values['fio'])) $errors['fio'] = 'Укажите ФИО';
     if (empty($values['phone'])) $errors['phone'] = 'Укажите телефон';
-    // ... аналогично для других полей ...
+    if (empty($values['email'])) $errors['email'] = 'Укажите email';
+    if (empty($values['gender'])) $errors['gender'] = 'Укажите пол';
+    if (empty($values['biography'])) $errors['biography'] = 'Напишите биографию';
+    if (empty($values['lang'])) $errors['lang'] = 'Выберите языки';
+    if (empty($values['agreement'])) $errors['agreement'] = 'Необходимо согласие';
+    
+    // Проверка даты рождения
+    if (!checkdate($values['birth_month'], $values['birth_day'], $values['birth_year'])) {
+        $errors['birth_date'] = 'Некорректная дата рождения';
+    }
 
     if (!empty($errors)) {
         return ['success' => false, 'errors' => $errors];
@@ -110,14 +119,26 @@ function front_post($request) {
         $db->beginTransaction();
 
         // Сохранение заявки
-        $stmt = $db->prepare("INSERT INTO applications (...) VALUES (...)");
-        $stmt->execute([...]);
+        $birth_date = sprintf("%04d-%02d-%02d", $values['birth_year'], $values['birth_month'], $values['birth_day']);
+        
+        $stmt = $db->prepare("INSERT INTO applications 
+            (full_name, phone, email, birth_date, gender, biography, agreement) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $values['fio'],
+            $values['phone'],
+            $values['email'],
+            $birth_date,
+            $values['gender'],
+            $values['biography'],
+            $values['agreement']
+        ]);
         $app_id = $db->lastInsertId();
 
         // Сохранение языков
+        $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
         foreach ($values['lang'] as $lang_id) {
-            $db->prepare("INSERT INTO application_languages (...) VALUES (...)")
-               ->execute([$app_id, $lang_id]);
+            $stmt->execute([$app_id, $lang_id]);
         }
 
         // Создание пользователя
@@ -125,15 +146,22 @@ function front_post($request) {
         $password = bin2hex(random_bytes(4));
         $pass_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $db->prepare("INSERT INTO users (...) VALUES (...)")
-           ->execute([$login, $pass_hash]);
+        $stmt = $db->prepare("INSERT INTO users (login, password_hash) VALUES (?, ?)");
+        $stmt->execute([$login, $pass_hash]);
         $user_id = $db->lastInsertId();
 
         // Связь пользователя с заявкой
-        $db->prepare("INSERT INTO user_applications (...) VALUES (...)")
-           ->execute([$user_id, $app_id]);
+        $stmt = $db->prepare("INSERT INTO user_applications (user_id, application_id) VALUES (?, ?)");
+        $stmt->execute([$user_id, $app_id]);
 
         $db->commit();
+
+        // Устанавливаем куки только для не-AJAX запросов
+        if (!$is_ajax) {
+            setcookie('save', '1', time() + 3600, '/');
+            setcookie('login', $login, time() + 3600, '/');
+            setcookie('password', $password, time() + 3600, '/');
+        }
 
         return [
             'success' => true,
