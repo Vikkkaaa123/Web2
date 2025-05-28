@@ -2,6 +2,25 @@
 function init($request = array(), $urlconf = array()) {
     global $conf;
     
+    try {
+        $db = db_connect();
+        if (!$db) {
+            throw new Exception('Database connection failed');
+        }
+    } catch (Exception $e) {
+        error_log('Init DB Error: ' . $e->getMessage());
+        if ($request['is_ajax'] ?? false) {
+            return [
+                'headers' => ['Content-Type' => 'application/json'],
+                'entity' => ['success' => false, 'error' => 'Database error']
+            ];
+        }
+        return [
+            'headers' => ['HTTP/1.1 500 Internal Server Error'],
+            'entity' => 'Database connection error'
+        ];
+    }
+
     $response = array();
     $template = 'page';
     $c = array();
