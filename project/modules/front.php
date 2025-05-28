@@ -56,7 +56,7 @@ function front_get($request) {
                 $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
                 $stmt->execute([$application['id']]);
                 $selected_langs = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                $values['lang'] = implode(',', $selected_langs);
+                $values['lang'] = $selected_langs; // Возвращаем массив, а не строку
             }
         } catch (PDOException $e) {
             error_log('DB Error: ' . $e->getMessage());
@@ -76,27 +76,24 @@ function front_post($request) {
     $db = db_connect();
     $allowed_lang = getLangs($db);
     $errors = false;
+    $error_messages = [];
     
-    // Используем флаг is_ajax из request
-    $is_ajax = $request['is_ajax'];
-    
-    // Получаем данные из правильного источника
-    $post_data = $request['post'];
-    
+    $is_ajax = $request['is_ajax'] ?? false;
+    $post_data = $request['post'] ?? $_POST;
+
     $fields = [
         'fio' => trim($post_data['fio'] ?? ''),
         'phone' => trim($post_data['phone'] ?? ''),
-        'email' => trim($_POST['email'] ?? ''),
-        'birth_day' => trim($_POST['birth_day'] ?? ''),
-        'birth_month' => trim($_POST['birth_month'] ?? ''),
-        'birth_year' => trim($_POST['birth_year'] ?? ''),
-        'gender' => $_POST['gender'] ?? '',
-        'biography' => trim($_POST['biography'] ?? ''),
-        'lang' => isset($_POST['languages']) && is_array($_POST['languages']) ? $_POST['languages'] : [],
-        'agreement' => isset($_POST['agreement']) && $_POST['agreement'] === '1' ? 1 : 0
+        'email' => trim($post_data['email'] ?? ''),
+        'birth_day' => trim($post_data['birth_day'] ?? ''),
+        'birth_month' => trim($post_data['birth_month'] ?? ''),
+        'birth_year' => trim($post_data['birth_year'] ?? ''),
+        'gender' => $post_data['gender'] ?? '',
+        'biography' => trim($post_data['biography'] ?? ''),
+        'lang' => isset($post_data['languages']) && is_array($post_data['languages']) ? $post_data['languages'] : [],
+        'agreement' => isset($post_data['agreement']) && $post_data['agreement'] === '1' ? 1 : 0
     ];
 
-    try {
     // Валидация
     $validationRules = [
         'fio' => [
@@ -136,24 +133,31 @@ function front_post($request) {
         if ($rules['required'] && empty($value)) {
             setcookie($field.'_error', '1', time() + 3600);
             $errors = true;
+            $error_messages[$field] = getErrorMessage($field, '1');
         } elseif ($field === 'lang' && empty($value)) {
             setcookie($field.'_error', '1', time() + 3600);
             $errors = true;
+            $error_messages[$field] = getErrorMessage($field, '1');
         } elseif ($field === 'email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
             setcookie($field.'_error', '2', time() + 3600);
             $errors = true;
+            $error_messages[$field] = getErrorMessage($field, '2');
         } elseif (isset($rules['max_length']) && strlen($value) > $rules['max_length']) {
             setcookie($field.'_error', '2', time() + 3600);
             $errors = true;
+            $error_messages[$field] = getErrorMessage($field, '2');
         } elseif (isset($rules['regex']) && !preg_match($rules['regex'], $value)) {
             setcookie($field.'_error', '3', time() + 3600);
             $errors = true;
+            $error_messages[$field] = getErrorMessage($field, '3');
         } elseif (isset($rules['allowed_values']) && !empty(array_diff($value, $rules['allowed_values']))) {
             setcookie($field.'_error', '2', time() + 3600);
             $errors = true;
+            $error_messages[$field] = getErrorMessage($field, '2');
         } elseif (isset($rules['forbidden_pattern']) && preg_match($rules['forbidden_pattern'], $value)) {
             setcookie($field.'_error', '3', time() + 3600);
             $errors = true;
+            $error_messages[$field] = getErrorMessage($field, '3');
         }
         
         setcookie($field.'_value', is_array($value) ? implode(',', $value) : $value, time() + 3600);
@@ -165,6 +169,7 @@ function front_post($request) {
         setcookie('birth_month_error', '1', time() + 3600);
         setcookie('birth_year_error', '1', time() + 3600);
         $errors = true;
+        $error_messages['birth_date'] = 'Некорректная дата рождения';
     }
 
     if ($errors) {
@@ -253,31 +258,29 @@ function front_post($request) {
             // Сохранение данных для отображения
             setcookie('login', $login, time() + 3600);
             setcookie('password', $password, time() + 3600);
-            $_SESSION['generated_login'] = $login;
-            $_SESSION['generated_password'] = $password;
         }
 
-       if ($is_ajax) {
+        if ($is_ajax) {
             return [
-            'headers' => ['Content-Type' => 'application/json'],
-            'entity' => ['success' => true, 'message' => 'Данные сохранены']
-        ];
+                'headers' => ['Content-Type' => 'application/json'],
+                'entity' => ['success' => true, 'message' => 'Данные сохранены']
+            ];
         } else {
-        setcookie('save', '1', time() + 3600);
-        header('Location: ' . url(''));
-        exit();
-    }
-}
+            setcookie('save', '1', time() + 3600);
+            header('Location: ' . url(''));
+            exit();
+        }
     } catch (PDOException $e) {
-        if ($db->inTransaction()) {
+        if (isset($db) && $db->inTransaction()) {
             $db->rollBack();
         }
         error_log('DB Error: ' . $e->getMessage());
         
         if ($is_ajax) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'errors' => ['db' => 'Ошибка базы данных']]);
-            exit();
+            return [
+                'headers' => ['Content-Type' => 'application/json'],
+                'entity' => ['success' => false, 'errors' => ['db' => 'Ошибка базы данных']]
+            ];
         } else {
             die('Произошла ошибка при сохранении данных. Пожалуйста, попробуйте позже.');
         }
