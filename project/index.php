@@ -6,29 +6,42 @@ ini_set('include_path', INCLUDE_PATH);
 
 include('./scripts/db.php');
 include('./scripts/init.php');
+
+// Определяем тип запроса
+$is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+           strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
 $request = array(
   'url' => isset($_GET['q']) ? $_GET['q'] : '',
-  'method' => isset($_POST['method']) && in_array($_POST['method'], array('get', 'post', 'put', 'delete')) ? $_POST['method'] : $_SERVER['REQUEST_METHOD'],
-  'get' => !empty($_GET) ? $_GET : array(),
-  'post' => !empty($_POST) ? $_POST : array(),
-  'put' => !empty($_POST) && !empty($_POST['method']) && $_POST['method'] == 'put' ? $_POST : array(),
-  'delete' => !empty($_POST) && !empty($_POST['method']) && $_POST['method'] == 'delete' ? $_POST : array(),
-  'Content-Type' => 'text/html',
+  'method' => $_SERVER['REQUEST_METHOD'],
+  'get' => $_GET,
+  'post' => $_POST,
+  'files' => $_FILES,
+  'is_ajax' => $is_ajax,
+  'Content-Type' => $is_ajax ? 'application/json' : 'text/html',
 );
+
+// Обработка raw POST данных для AJAX
+if ($is_ajax && empty($_POST) && $input = file_get_contents('php://input')) {
+    parse_str($input, $request['post']);
+    $_POST = $request['post'];
+}
 
 $response = init($request, $urlconf);
 
+// Установка заголовков
 if (!empty($response['headers'])) {
-  foreach ($response['headers'] as $key => $value) {
-    if (is_string($key)) {
-      header(sprintf('%s: %s', $key, $value));
+    foreach ($response['headers'] as $key => $value) {
+        header(is_string($key) ? "$key: $value" : $value);
     }
-    else {
-      header($value);
-    }
-  }
 }
 
+// Вывод ответа
 if (!empty($response['entity'])) {
-  print($response['entity']);
+    if ($is_ajax && is_array($response['entity'])) {
+        header('Content-Type: application/json');
+        echo json_encode($response['entity']);
+    } else {
+        echo $response['entity'];
+    }
 }
