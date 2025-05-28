@@ -74,14 +74,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(form);
             formData.append('is_ajax', '1');
 
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            });
+             const response = await fetch(window.location.href, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+     });
 
             if (!response.ok) throw new Error('Ошибка сервера');
 
