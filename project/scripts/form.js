@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(form);
             formData.append('is_ajax', '1'); // Добавляем флаг AJAX
 
-            const response = await fetch(form.action, {
+            const response = await fetch('<?= url("") ?>', {
                 method: 'POST',
                 body: formData,
                 headers: {
