@@ -54,29 +54,27 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesContainer.appendChild(successElement);
     }
 
-    
-  document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('myform');
     if (!form) return;
 
     form.addEventListener('submit', async function(e) {
-        e.preventDefault(); // Важно: предотвращаем стандартную отправку
+        e.preventDefault();
         
         const submitBtn = form.querySelector('#submit-btn');
         const originalText = submitBtn.value;
-        
         submitBtn.disabled = true;
         submitBtn.value = 'Отправка...';
 
-        // Очищаем предыдущие ошибки
+        // Очистка предыдущих ошибок
         document.querySelectorAll('.error-text').forEach(el => el.remove());
-        document.querySelectorAll('.error-field').forEach(el => el.classList.remove('error-field'));
+        document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
 
         try {
             const formData = new FormData(form);
-            formData.append('is_ajax', '1'); // Добавляем флаг AJAX
+            formData.append('is_ajax', '1');
 
-            const response = await fetch('<?= url("") ?>', {
+            const response = await fetch(form.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -85,18 +83,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
+            if (!response.ok) throw new Error('Ошибка сервера');
+
             const result = await response.json();
 
             if (result.success) {
-                alert('Данные успешно сохранены!');
+                if (result.login && result.password) {
+                    // Показываем логин и пароль без перезагрузки
+                    const message = `Данные сохранены! Ваш логин: ${result.login}, пароль: ${result.password}`;
+                    alert(message);
+                } else {
+                    alert('Данные успешно обновлены!');
+                }
             } else {
-                // Показываем ошибки для каждого поля
+                // Показываем ошибки
                 if (result.errors) {
                     for (const [field, message] of Object.entries(result.errors)) {
                         const input = form.querySelector(`[name="${field}"]`) || 
                                      form.querySelector(`[name="${field}[]"]`);
                         if (input) {
-                            input.classList.add('error-field');
+                            input.classList.add('error');
                             const errorSpan = document.createElement('span');
                             errorSpan.className = 'error-text';
                             errorSpan.textContent = message;
@@ -107,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Произошла ошибка при отправке формы');
+            alert('Ошибка при отправке формы: ' + error.message);
         } finally {
             submitBtn.disabled = false;
             submitBtn.value = originalText;
