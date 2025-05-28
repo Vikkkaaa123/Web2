@@ -77,6 +77,12 @@ function front_post($request) {
     $db = db_connect();
     $errors = [];
     
+    // Инициализируем $allowed_lang в начале функции
+    $allowed_lang = getLangs($db);
+    if (empty($allowed_lang)) {
+        $allowed_lang = []; // гарантируем, что это будет массив
+    }
+
     $is_ajax = $request['is_ajax'] ?? false;
     $post_data = $request['post'] ?? $_POST;
 
@@ -118,9 +124,9 @@ function front_post($request) {
             'max_length' => 512,
             'forbidden_pattern' => '/[<>{}\[\]]|<script|<\?php/i'
         ],
-        'lang' => [
+         'lang' => [
             'required' => true,
-            'allowed_values' => array_keys($allowed_lang)
+            'allowed_values' => array_keys($allowed_lang) 
         ],
         'agreement' => [
             'required' => true
@@ -346,9 +352,10 @@ function getErrorMessage($field, $code) {
 function getLangs($db) {
     try {
         $stmt = $db->query("SELECT id, name FROM programming_languages");
-        return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        $result = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        return $result ?: []; 
     } catch (PDOException $e) {
-        error_log('DB Error: ' . $e->getMessage());
-        return [];
+        error_log('DB Error (getLangs): ' . $e->getMessage());
+        return []; 
     }
 }
