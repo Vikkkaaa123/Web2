@@ -54,50 +54,61 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesContainer.appendChild(successElement);
     }
 
-   document.addEventListener('DOMContentLoaded', function() {
+    
+  document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('myform');
     if (!form) return;
 
+
+
+       
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
+        e.stopPropagation();
+
         const submitBtn = form.querySelector('#submit-btn');
         const originalBtnText = submitBtn.value;
+        
         submitBtn.disabled = true;
         submitBtn.value = 'Отправка...';
 
+        // Удаляем предыдущие ошибки
+        document.querySelectorAll('.error-text').forEach(el => el.remove());
+        document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
+
         try {
             const formData = new FormData(form);
+            
+            // Добавляем флаг AJAX
             formData.append('is_ajax', '1');
 
             const response = await fetch(form.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             });
 
-            // Удаляем старые ошибки
-            document.querySelectorAll('.error-text').forEach(el => el.remove());
-            document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
-
-            if (!response.ok) {
-                throw new Error('Ошибка сервера');
+            // Проверяем, что ответ - JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Сервер вернул не JSON ответ');
             }
 
             const result = await response.json();
 
             if (result.success) {
-                // Успешная отправка - можно показать сообщение
+                // Успешная отправка
                 alert('Данные успешно сохранены!');
             } else {
-                // Показываем ошибки для каждого поля
+                // Показываем ошибки
                 if (result.errors) {
-                    for (const [field, message] of Object.entries(result.errors)) {
-                        const inputName = field === 'birth_date' ? 'birth_day' : 
-                                        field === 'lang' ? 'languages[]' : field;
+                    Object.entries(result.errors).forEach(([field, message]) => {
+                        let inputName = field;
+                        if (field === 'birth_date') inputName = 'birth_day';
+                        if (field === 'lang') inputName = 'languages[]';
                         
                         const input = form.querySelector(`[name="${inputName}"]`);
                         if (input) {
@@ -105,21 +116,16 @@ document.addEventListener('DOMContentLoaded', function() {
                             
                             const errorElement = document.createElement('span');
                             errorElement.className = 'error-text';
-                            errorElement.textContent = message;
+                            errorText.textContent = message;
                             
-                            // Вставляем сообщение об ошибке после поля ввода
-                            const container = input.closest('label') || input.parentNode;
-                            container.appendChild(errorElement);
+                            input.insertAdjacentElement('afterend', errorElement);
                         }
-                    }
+                    });
                 }
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            const errorElement = document.createElement('div');
-            errorElement.className = 'global-error';
-            errorElement.textContent = 'Произошла ошибка при отправке формы';
-            form.prepend(errorElement);
+            alert('Произошла ошибка при отправке формы');
         } finally {
             submitBtn.disabled = false;
             submitBtn.value = originalBtnText;
