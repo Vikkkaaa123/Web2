@@ -59,68 +59,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('myform');
     if (!form) return;
 
-
-
-       
     form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
+        e.preventDefault(); // Важно: предотвращаем стандартную отправку
+        
         const submitBtn = form.querySelector('#submit-btn');
-        const originalBtnText = submitBtn.value;
+        const originalText = submitBtn.value;
         
         submitBtn.disabled = true;
         submitBtn.value = 'Отправка...';
 
-        // Удаляем предыдущие ошибки
+        // Очищаем предыдущие ошибки
         document.querySelectorAll('.error-text').forEach(el => el.remove());
-        document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
+        document.querySelectorAll('.error-field').forEach(el => el.classList.remove('error-field'));
 
         try {
             const formData = new FormData(form);
-            
-            // Добавляем флаг AJAX
-            formData.append('is_ajax', '1');
+            formData.append('is_ajax', '1'); // Добавляем флаг AJAX
 
             const response = await fetch(form.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 }
             });
-
-            // Проверяем, что ответ - JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Сервер вернул не JSON ответ');
-            }
 
             const result = await response.json();
 
             if (result.success) {
-                // Успешная отправка
                 alert('Данные успешно сохранены!');
             } else {
-                // Показываем ошибки
+                // Показываем ошибки для каждого поля
                 if (result.errors) {
-                    Object.entries(result.errors).forEach(([field, message]) => {
-                        let inputName = field;
-                        if (field === 'birth_date') inputName = 'birth_day';
-                        if (field === 'lang') inputName = 'languages[]';
-                        
-                        const input = form.querySelector(`[name="${inputName}"]`);
+                    for (const [field, message] of Object.entries(result.errors)) {
+                        const input = form.querySelector(`[name="${field}"]`) || 
+                                     form.querySelector(`[name="${field}[]"]`);
                         if (input) {
-                            input.classList.add('error');
-                            
-                            const errorElement = document.createElement('span');
-                            errorElement.className = 'error-text';
-                            errorText.textContent = message;
-                            
-                            input.insertAdjacentElement('afterend', errorElement);
+                            input.classList.add('error-field');
+                            const errorSpan = document.createElement('span');
+                            errorSpan.className = 'error-text';
+                            errorSpan.textContent = message;
+                            input.parentNode.appendChild(errorSpan);
                         }
-                    });
+                    }
                 }
             }
         } catch (error) {
@@ -128,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Произошла ошибка при отправке формы');
         } finally {
             submitBtn.disabled = false;
-            submitBtn.value = originalBtnText;
+            submitBtn.value = originalText;
         }
     });
 });
