@@ -1,8 +1,13 @@
 <?php
+/**
+ * Инициализация приложения
+ */
+
 function init($request = array(), $urlconf = array()) {
-    global $conf;
+    global $conf, $db;
     
     try {
+        // Подключение к базе данных
         $db = db_connect();
         if (!$db) {
             throw new Exception('Database connection failed');
@@ -31,12 +36,14 @@ function init($request = array(), $urlconf = array()) {
     foreach ($urlconf as $url => $r) {
         $matches = array();
 
+        // Проверка соответствия URL
         if ($url == '' || $url[0] != '/') {
             if ($url != $q) continue;
         } else {
             if (!preg_match($url, $q, $matches)) continue;
         }
 
+        // Аутентификация
         if (!empty($r['auth'])) {
             require_once "./modules/{$r['auth']}.php";
             if (function_exists('auth')) {
@@ -45,17 +52,26 @@ function init($request = array(), $urlconf = array()) {
             }
         }
 
+        // Переопределение шаблона
+        if (isset($r['tpl'])) {
+            $template = $r['tpl'];
+        }
+
+        // Загрузка модуля
         if (empty($r['module'])) continue;
         require_once "./modules/{$r['module']}.php";
 
+        // Формирование имени функции
         $func = "{$r['module']}_{$method}";
         if (!function_exists($func)) continue;
 
+        // Подготовка параметров
         $params = array('request' => $request);
         if (isset($matches[1])) {
             $params['url_param'] = $matches[1];
         }
 
+        // Вызов обработчика
         $result = call_user_func_array($func, $params);
         
         if (is_array($result)) {
@@ -68,6 +84,7 @@ function init($request = array(), $urlconf = array()) {
         }
     }
 
+    // Формирование ответа
     if (!empty($c)) {
         $c['#request'] = $request;
         $response['entity'] = theme($template, $c);
@@ -80,64 +97,63 @@ function init($request = array(), $urlconf = array()) {
 }
 
 function conf($key) {
-  global $conf;
-  return isset($conf[$key]) ? $conf[$key] : FALSE;
+    global $conf;
+    return $conf[$key] ?? false;
 }
 
 function url($addr = '', $params = array()) {
-  global $conf;
+    global $conf;
 
-  if ($addr == '' && isset($_GET['q'])) {
-    $addr = strip_tags($_GET['q']);
-  }
-  $clean = conf('clean_urls');
-  $r = $clean ? '/' : '?q=';
-  $r = conf('basedir') . ltrim($r . strip_tags($addr), '/'); 
+    if ($addr == '' && isset($_GET['q'])) {
+        $addr = strip_tags($_GET['q']);
+    }
 
-  if (count($params) > 0) {
-    $r .= $clean ? '?' : '&';
-    $r .= implode('&', $params);
-  }
-  return $r;
+    $clean = conf('clean_urls');
+    $r = $clean ? '/' : '?q=';
+    $r = conf('basedir') . ltrim($r . strip_tags($addr), '/');
+
+    if (count($params) > 0) {
+        $r .= $clean ? '?' : '&';
+        $r .= http_build_query($params);
+    }
+    return $r;
 }
 
-function redirect($l = NULL, $statusCode = 302) {
-  if (is_null($l)) {
-    $location = $_SERVER['REQUEST_URI']; 
-  }
-  else {
-    $location = conf('basedir') . $l; 
-  }
-    return array('headers' => array('Location' => $location),
-                 'statusCode' => $statusCode);
+function redirect($location = null, $statusCode = 302) {
+    if (is_null($location)) {
+        $location = $_SERVER['REQUEST_URI'];
+    } else {
+        $location = conf('basedir') . $location;
+    }
+    return [
+        'headers' => ['Location' => $location],
+        'statusCode' => $statusCode
+    ];
 }
-
 
 function access_denied() {
-  return array(
-    'headers' => array('HTTP/1.1 403 Forbidden'),
-    'entity' => theme('403'),
-  );
+    return [
+        'headers' => ['HTTP/1.1 403 Forbidden'],
+        'entity' => theme('403')
+    ];
 }
 
 function not_found() {
-  return array(
-    'headers' => array('HTTP/1.1 404 Not Found'),
-    'entity' => theme('404'),
-  );
+    return [
+        'headers' => ['HTTP/1.1 404 Not Found'],
+        'entity' => theme('404')
+    ];
 }
 
+function theme($template, $context = array()) {
+    $template_path = conf('theme') . '/' . str_replace('/', '_', $template) . '.tpl.php';
+    
+    if (!file_exists($template_path)) {
+        return implode('', $context);
+    }
 
-function theme($t, $c = array()) {
-  $template = conf('theme') . '/' . str_replace('/', '_', $t) . '.tpl.php';
-  if (!file_exists($template)) {
-    return implode('', $c);
-  }
-  ob_start();
-  extract($c);
-  include $template;
-  $contents = ob_get_contents();
-  ob_end_clean();
-  return $contents;
+    ob_start();
+    extract($context);
+    include $template_path;
+    return ob_get_clean();
 }
-
