@@ -1,152 +1,161 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Находим форму и заменяем её на div
-    const oldForm = document.querySelector('form');
-    if (!oldForm) return;
+    const form = document.getElementById('myform');
+    if (!form) return;
     
-    const formContainer = document.createElement('div');
-    formContainer.className = 'form-container';
-    formContainer.innerHTML = oldForm.innerHTML;
-    oldForm.parentNode.replaceChild(formContainer, oldForm);
-
-    // 2. Создаем контейнер для сообщений
-    const messagesContainer = document.createElement('div');
-    messagesContainer.className = 'form-messages';
-    formContainer.insertBefore(messagesContainer, formContainer.querySelector('.form-actions'));
-
-    // 3. Валидация формы
-    function validateForm() {
+    // Удаляем стандартный action формы
+    form.removeAttribute('action');
+    
+    const messagesContainer = document.querySelector('.error_messages');
+    
+    // Функция валидации формы
+    function validateForm(form) {
         const errors = {};
         let isValid = true;
 
         // Проверка ФИО
-        const fullName = formContainer.querySelector('[name="full_name"]').value.trim();
-        if (!fullName) {
-            errors.full_name = 'Заполните ФИО';
+        const fio = form.querySelector('[name="fio"]').value.trim();
+        if (!fio) {
+            errors.fio = 'Заполните имя, пожалуйста';
             isValid = false;
         }
 
         // Проверка телефона
-        const phone = formContainer.querySelector('[name="phone"]').value.trim();
+        const phone = form.querySelector('[name="number"]').value.trim();
         if (!phone) {
-            errors.phone = 'Введите номер телефона';
+            errors.number = 'Введите номер телефона';
             isValid = false;
         }
 
         // Проверка email
-        const email = formContainer.querySelector('[name="email"]').value.trim();
+        const email = form.querySelector('[name="email"]').value.trim();
         if (!email) {
             errors.email = 'Введите email';
             isValid = false;
         }
 
         // Проверка даты рождения
-        const day = formContainer.querySelector('[name="birth_day"]').value;
-        const month = formContainer.querySelector('[name="birth_month"]').value;
-        const year = formContainer.querySelector('[name="birth_year"]').value;
+        const day = form.querySelector('[name="birth_day"]').value;
+        const month = form.querySelector('[name="birth_month"]').value;
+        const year = form.querySelector('[name="birth_year"]').value;
         if (!day || !month || !year) {
-            errors.birth_date = 'Укажите полную дату рождения';
+            errors.birthdate = 'Укажите полную дату рождения';
             isValid = false;
         }
 
         // Проверка пола
-        const gender = formContainer.querySelector('[name="gender"]:checked');
+        const gender = form.querySelector('[name="radio-group-1"]:checked');
         if (!gender) {
-            errors.gender = 'Укажите пол';
+            errors['radio-group-1'] = 'Укажите пол';
             isValid = false;
         }
 
-        // Проверка языков программирования
-        const languages = Array.from(formContainer.querySelectorAll('[name="languages[]"]:checked'));
+        // Проверка языков
+        const languages = Array.from(form.querySelectorAll('[name="languages[]"]:checked'));
         if (languages.length === 0) {
-            errors.languages = 'Выберите хотя бы один язык';
+            errors.languages = 'Укажите хотя бы один язык';
             isValid = false;
         }
 
         // Проверка биографии
-        const biography = formContainer.querySelector('[name="biography"]').value.trim();
+        const biography = form.querySelector('[name="biography"]').value.trim();
         if (!biography) {
             errors.biography = 'Заполните биографию';
             isValid = false;
         }
 
         // Проверка согласия
-        const agreement = formContainer.querySelector('[name="agreement"]').checked;
-        if (!agreement) {
-            errors.agreement = 'Необходимо дать согласие';
+        const contract = form.querySelector('[name="checkbox"]').checked;
+        if (!contract) {
+            errors.checkbox = 'Необходимо согласиться с условиями';
             isValid = false;
         }
 
         return { errors, isValid };
     }
-
-    // 4. Показ ошибок
-    function showErrors(errors) {
-        messagesContainer.innerHTML = '';
-        formContainer.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
-        formContainer.querySelectorAll('.error-message').forEach(el => el.remove());
+    
+    // Функция отображения ошибок
+    function showErrors(errors, form, container) {
+        container.innerHTML = '';
+        form.querySelectorAll('.error-field').forEach(el => {
+            el.classList.remove('error-field');
+        });
 
         for (const [field, message] of Object.entries(errors)) {
-            let element;
+            let fieldElement;
             
-            if (field === 'birth_date') {
-                element = formContainer.querySelector('.date-fields');
-            } else if (field === 'gender') {
-                element = formContainer.querySelector('.gender-options');
-            } else if (field === 'agreement') {
-                element = formContainer.querySelector('.agreement-field');
+            if (field === 'radio-group-1') {
+                fieldElement = form.querySelector(`[name="${field}"]`).closest('label');
+            } else if (field === 'checkbox') {
+                fieldElement = form.querySelector(`[name="${field}"]`).closest('label');
             } else if (field === 'languages') {
-                element = formContainer.querySelector('[name="languages[]"]').parentElement;
+                fieldElement = form.querySelector(`[name="languages[]"]`).closest('label');
             } else {
-                element = formContainer.querySelector(`[name="${field}"]`);
+                fieldElement = form.querySelector(`[name="${field}"]`);
             }
 
-            if (element) {
-                element.classList.add('error');
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.textContent = message;
-                element.parentNode.insertBefore(errorDiv, element.nextSibling);
+            if (fieldElement) {
+                fieldElement.classList.add('error-field');
+                const errorElement = document.createElement('div');
+                errorElement.className = 'error';
+                errorElement.textContent = message;
+                container.appendChild(errorElement);
             }
         }
     }
 
-    // 5. Обработчик кнопки
-    formContainer.querySelector('[type="submit"]').addEventListener('click', async function(e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        const submitBtn = this;
-        const originalText = submitBtn.value;
+    // Функция отображения успеха
+    function showSuccess(result, container, form) {
+        container.innerHTML = '';
+        container.style.display = 'block';
         
+        if (result.login && result.password) {
+            const loginMsg = document.createElement('div');
+            loginMsg.className = 'success';
+            loginMsg.innerHTML = `Вы можете войти с логином: ${result.login} и паролем: ${result.password}`;
+            container.appendChild(loginMsg);
+        }
+        
+        if (!form.querySelector('[name="uid"]')) {
+            form.reset();
+        }
+    }
+  
+    // Обработчик отправки формы
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        e.stopImmediatePropagation(); // Важно: предотвращаем стандартное поведение
+        
+        const submitBtn = form.querySelector('#submit-btn');
+        const originalBtnText = submitBtn.value;
         submitBtn.disabled = true;
         submitBtn.value = 'Отправка...';
-
-        // Валидация
-        const { errors, isValid } = validateForm();
-        if (!isValid) {
-            showErrors(errors);
-            submitBtn.disabled = false;
-            submitBtn.value = originalText;
-            return;
-        }
-
+        
         try {
+            // Валидация
+            const { errors, isValid } = validateForm(form);
+            if (!isValid) {
+                showErrors(errors, form, messagesContainer);
+                submitBtn.disabled = false;
+                submitBtn.value = originalBtnText;
+                return;
+            }
+
             // Подготовка данных
             const formData = new FormData();
             
             // Собираем все данные
             const fields = [
-                'full_name', 'phone', 'email', 
+                'fio', 'number', 'email', 
                 'birth_day', 'birth_month', 'birth_year',
-                'gender', 'biography', 'agreement'
+                'radio-group-1', 'biography', 'checkbox'
             ];
             
             fields.forEach(field => {
-                const element = formContainer.querySelector(`[name="${field}"]`);
+                const element = form.querySelector(`[name="${field}"]`);
                 if (element.type === 'checkbox') {
                     formData.append(field, element.checked ? '1' : '0');
                 } else if (element.type === 'radio') {
-                    const checked = formContainer.querySelector(`[name="${field}"]:checked`);
+                    const checked = form.querySelector(`[name="${field}"]:checked`);
                     if (checked) formData.append(field, checked.value);
                 } else {
                     formData.append(field, element.value);
@@ -154,12 +163,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // Добавляем языки программирования
-            const languages = Array.from(formContainer.querySelectorAll('[name="languages[]"]:checked'));
+            const languages = Array.from(form.querySelectorAll('[name="languages[]"]:checked'));
             languages.forEach(lang => {
                 formData.append('languages[]', lang.value);
             });
 
-            // Отправка на сервер
+            // Отправка на сервер (явно указываем index.php)
             const response = await fetch('index.php', {
                 method: 'POST',
                 headers: {
@@ -170,39 +179,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Обработка ответа
             const result = await response.json();
-            
+
             if (result.success) {
-                messagesContainer.innerHTML = `
-                    <div class="success-message">
-                        ${result.login ? `Данные сохранены! Логин: ${result.login}, Пароль: ${result.password}` : 'Данные обновлены'}
-                    </div>
-                `;
-                
-                if (result.login) {
-                    // Сброс формы
-                    formContainer.querySelectorAll('input, textarea, select').forEach(el => {
-                        if (el.type !== 'submit') {
-                            if (el.type === 'checkbox' || el.type === 'radio') {
-                                el.checked = false;
-                            } else {
-                                el.value = '';
-                            }
-                        }
-                    });
-                }
+                showSuccess(result, messagesContainer, form);
             } else {
-                showErrors(result.errors || {});
+                showErrors(result.errors || {}, form, messagesContainer);
             }
         } catch (error) {
-            messagesContainer.innerHTML = `
-                <div class="error-message">
-                    Ошибка при отправке: ${error.message}
-                </div>
-            `;
-            console.error('Ошибка:', error);
+            messagesContainer.innerHTML = `<div class="error">Ошибка при отправке формы: ${error.message}</div>`;
+            messagesContainer.style.display = 'block';
         } finally {
             submitBtn.disabled = false;
-            submitBtn.value = originalText;
+            submitBtn.value = originalBtnText;
         }
     });
 });
