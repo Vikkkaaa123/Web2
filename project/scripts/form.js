@@ -54,61 +54,75 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesContainer.appendChild(successElement);
     }
 
-   form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const submitBtn = form.querySelector('#submit-btn');
-    const originalBtnText = submitBtn.value;
-    submitBtn.disabled = true;
-    submitBtn.value = 'Отправка...';
-    
-    try {
-        const formData = new FormData(form);
-        formData.append('is_ajax', '1');
-        
-        const response = await fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        });
+   document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('myform');
+    if (!form) return;
 
-        // Проверяем Content-Type ответа
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Сервер вернул не JSON ответ');
-        }
-
-        const text = await response.text();
-        let result;
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
         
+        const submitBtn = form.querySelector('#submit-btn');
+        const originalBtnText = submitBtn.value;
+        submitBtn.disabled = true;
+        submitBtn.value = 'Отправка...';
+
         try {
-            result = JSON.parse(text);
-        } catch (e) {
-            console.error('Невалидный JSON:', text);
-            throw new Error('Ошибка обработки ответа сервера');
-        }
+            const formData = new FormData(form);
+            formData.append('is_ajax', '1');
 
-        if (!response.ok) {
-            throw new Error(result.error || 'Ошибка сервера');
-        }
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
 
-        if (result.success) {
-            showSuccess(result.message);
-            if (result.credentials) {
-                showSuccess(`Данные сохранены. Логин: ${result.login}, Пароль: ${result.password}`);
+            // Удаляем старые ошибки
+            document.querySelectorAll('.error-text').forEach(el => el.remove());
+            document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
+
+            if (!response.ok) {
+                throw new Error('Ошибка сервера');
             }
-        } else {
-            showErrors(result.errors || {});
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Успешная отправка - можно показать сообщение
+                alert('Данные успешно сохранены!');
+            } else {
+                // Показываем ошибки для каждого поля
+                if (result.errors) {
+                    for (const [field, message] of Object.entries(result.errors)) {
+                        const inputName = field === 'birth_date' ? 'birth_day' : 
+                                        field === 'lang' ? 'languages[]' : field;
+                        
+                        const input = form.querySelector(`[name="${inputName}"]`);
+                        if (input) {
+                            input.classList.add('error');
+                            
+                            const errorElement = document.createElement('span');
+                            errorElement.className = 'error-text';
+                            errorElement.textContent = message;
+                            
+                            // Вставляем сообщение об ошибке после поля ввода
+                            const container = input.closest('label') || input.parentNode;
+                            container.appendChild(errorElement);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            const errorElement = document.createElement('div');
+            errorElement.className = 'global-error';
+            errorElement.textContent = 'Произошла ошибка при отправке формы';
+            form.prepend(errorElement);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.value = originalBtnText;
         }
-        
-    } catch (error) {
-        console.error('Ошибка:', error);
-        showErrors({ form: error.message });
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.value = originalBtnText;
-    }
+    });
 });
