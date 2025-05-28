@@ -148,15 +148,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const formData = new FormData(form); // Используем форму напрямую
+        const formData = new FormData(form); 
 
-        const response = await fetch(form.action || 'index.php', { // Используем action формы или index.php
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
+        const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    });
 
         const result = await response.json();
 
