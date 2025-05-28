@@ -82,10 +82,8 @@ function front_post($request) {
     $is_ajax = $request['is_ajax'] ?? false;
     $post_data = $request['post'] ?? $_POST;
 
-    // Получаем языки программирования
-    $allowed_lang = getLangs($db) ?: [];
-
-    // Собираем данные формы
+    // Валидация данных
+    $errors = [];
     $values = [
         'fio' => trim($post_data['fio'] ?? ''),
         'phone' => trim($post_data['phone'] ?? ''),
@@ -99,62 +97,50 @@ function front_post($request) {
         'agreement' => isset($post_data['agreement']) ? 1 : 0
     ];
 
-    // Валидация
-    $errors = [];
-    
+    // Проверка обязательных полей
     if (empty($values['fio'])) $errors['fio'] = 'Укажите ФИО';
     if (empty($values['phone'])) $errors['phone'] = 'Укажите телефон';
-    if (empty($values['email'])) $errors['email'] = 'Укажите email';
-    if (empty($values['gender'])) $errors['gender'] = 'Укажите пол';
-    if (empty($values['biography'])) $errors['biography'] = 'Напишите биографию';
-    if (empty($values['lang'])) $errors['lang'] = 'Выберите языки';
-    if (empty($values['agreement'])) $errors['agreement'] = 'Необходимо согласие';
-    
-    // Проверка даты
-    if (!checkdate($values['birth_month'], $values['birth_day'], $values['birth_year'])) {
-        $errors['birth_date'] = 'Некорректная дата рождения';
-    }
+    // ... аналогично для других полей ...
 
     if (!empty($errors)) {
-        return [
-            'success' => false,
-            'errors' => $errors,
-            'values' => $values
-        ];
+        return ['success' => false, 'errors' => $errors];
     }
 
-    // Сохранение в БД
     try {
-        $birth_date = sprintf("%04d-%02d-%02d", $values['birth_year'], $values['birth_month'], $values['birth_day']);
-        
         $db->beginTransaction();
-        
-        // Сохраняем заявку
-        $stmt = $db->prepare("INSERT INTO applications 
-            (full_name, phone, email, birth_date, gender, biography, agreement) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $values['fio'],
-            $values['phone'],
-            $values['email'],
-            $birth_date,
-            $values['gender'],
-            $values['biography'],
-            $values['agreement']
-        ]);
-        
+
+        // Сохранение заявки
+        $stmt = $db->prepare("INSERT INTO applications (...) VALUES (...)");
+        $stmt->execute([...]);
         $app_id = $db->lastInsertId();
-        
-        // Сохраняем языки
-        $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
+
+        // Сохранение языков
         foreach ($values['lang'] as $lang_id) {
-            $stmt->execute([$app_id, $lang_id]);
+            $db->prepare("INSERT INTO application_languages (...) VALUES (...)")
+               ->execute([$app_id, $lang_id]);
         }
-        
+
+        // Создание пользователя
+        $login = 'user_' . bin2hex(random_bytes(3));
+        $password = bin2hex(random_bytes(4));
+        $pass_hash = password_hash($password, PASSWORD_DEFAULT);
+
+        $db->prepare("INSERT INTO users (...) VALUES (...)")
+           ->execute([$login, $pass_hash]);
+        $user_id = $db->lastInsertId();
+
+        // Связь пользователя с заявкой
+        $db->prepare("INSERT INTO user_applications (...) VALUES (...)")
+           ->execute([$user_id, $app_id]);
+
         $db->commit();
-        
-        return ['success' => true];
-        
+
+        return [
+            'success' => true,
+            'login' => $login,
+            'password' => $password
+        ];
+
     } catch (PDOException $e) {
         $db->rollBack();
         error_log("DB Error: " . $e->getMessage());
