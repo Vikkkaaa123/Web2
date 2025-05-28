@@ -54,9 +54,32 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesContainer.appendChild(successElement);
     }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('myform');
-    if (!form) return;
+document.getElementById('myform')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  
+  try {
+    const response = await fetch('', {
+      method: 'POST',
+      body: new FormData(form),
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+    
+    if (!response.ok) throw new Error('HTTP error');
+    const result = await response.json();
+    
+    if (result.success) {
+      alert(`Данные сохранены! Логин: ${result.login}, Пароль: ${result.password}`);
+    } else {
+      console.error('Ошибки:', result.errors);
+    }
+  } catch (err) {
+    console.error('Ошибка отправки:', err);
+    alert('Ошибка соединения с сервером');
+  }
+});
 
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
