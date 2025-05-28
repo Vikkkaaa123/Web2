@@ -27,9 +27,10 @@ function front_get($request) {
     $fields = ['fio', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year', 'gender', 'biography', 'lang', 'agreement'];
     
     foreach ($fields as $field) {
-        $errors[$field] = !empty($_COOKIE[$field.'_error']);
+        $errors[$field] = !empty($_COOKIE[$field.'_error']) ? getErrorMessage($field, $_COOKIE[$field.'_error']) : '';
         $values[$field] = empty($_COOKIE[$field.'_value']) ? '' : $_COOKIE[$field.'_value'];
         setcookie($field.'_error', '', time() - 3600);
+        setcookie($field.'_value', '', time() - 3600);
     }
 
     // Загрузка данных для авторизованных пользователей
@@ -56,7 +57,7 @@ function front_get($request) {
                 $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
                 $stmt->execute([$application['id']]);
                 $selected_langs = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                $values['lang'] = $selected_langs; // Возвращаем массив, а не строку
+                $values['lang'] = implode(',', $selected_langs);
             }
         } catch (PDOException $e) {
             error_log('DB Error: ' . $e->getMessage());
@@ -81,6 +82,7 @@ function front_post($request) {
     $is_ajax = $request['is_ajax'] ?? false;
     $post_data = $request['post'] ?? $_POST;
 
+    // Обработка данных формы
     $fields = [
         'fio' => trim($post_data['fio'] ?? ''),
         'phone' => trim($post_data['phone'] ?? ''),
@@ -90,7 +92,7 @@ function front_post($request) {
         'birth_year' => trim($post_data['birth_year'] ?? ''),
         'gender' => $post_data['gender'] ?? '',
         'biography' => trim($post_data['biography'] ?? ''),
-        'lang' => isset($post_data['languages']) && is_array($post_data['languages']) ? $post_data['languages'] : [],
+        'lang' => $post_data['languages'] ?? [], // Изменили с 'languages' на 'languages[]'
         'agreement' => isset($post_data['agreement']) && $post_data['agreement'] === '1' ? 1 : 0
     ];
 
@@ -131,43 +133,39 @@ function front_post($request) {
         $value = $fields[$field];
         
         if ($rules['required'] && empty($value)) {
-            setcookie($field.'_error', '1', time() + 3600);
-            $errors = true;
-            $error_messages[$field] = getErrorMessage($field, '1');
-        } elseif ($field === 'lang' && empty($value)) {
-            setcookie($field.'_error', '1', time() + 3600);
+            setcookie($field.'_error', '1', time() + 3600, '/');
             $errors = true;
             $error_messages[$field] = getErrorMessage($field, '1');
         } elseif ($field === 'email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            setcookie($field.'_error', '2', time() + 3600);
+            setcookie($field.'_error', '2', time() + 3600, '/');
             $errors = true;
             $error_messages[$field] = getErrorMessage($field, '2');
         } elseif (isset($rules['max_length']) && strlen($value) > $rules['max_length']) {
-            setcookie($field.'_error', '2', time() + 3600);
+            setcookie($field.'_error', '2', time() + 3600, '/');
             $errors = true;
             $error_messages[$field] = getErrorMessage($field, '2');
         } elseif (isset($rules['regex']) && !preg_match($rules['regex'], $value)) {
-            setcookie($field.'_error', '3', time() + 3600);
+            setcookie($field.'_error', '3', time() + 3600, '/');
             $errors = true;
             $error_messages[$field] = getErrorMessage($field, '3');
-        } elseif (isset($rules['allowed_values']) && !empty(array_diff($value, $rules['allowed_values']))) {
-            setcookie($field.'_error', '2', time() + 3600);
+        } elseif (isset($rules['allowed_values']) && is_array($value) && !empty(array_diff($value, $rules['allowed_values']))) {
+            setcookie($field.'_error', '2', time() + 3600, '/');
             $errors = true;
             $error_messages[$field] = getErrorMessage($field, '2');
         } elseif (isset($rules['forbidden_pattern']) && preg_match($rules['forbidden_pattern'], $value)) {
-            setcookie($field.'_error', '3', time() + 3600);
+            setcookie($field.'_error', '3', time() + 3600, '/');
             $errors = true;
             $error_messages[$field] = getErrorMessage($field, '3');
         }
         
-        setcookie($field.'_value', is_array($value) ? implode(',', $value) : $value, time() + 3600);
+        setcookie($field.'_value', is_array($value) ? implode(',', $value) : $value, time() + 3600, '/');
     }
 
     // Проверка даты рождения
     if (!checkdate($fields['birth_month'], $fields['birth_day'], $fields['birth_year'])) {
-        setcookie('birth_day_error', '1', time() + 3600);
-        setcookie('birth_month_error', '1', time() + 3600);
-        setcookie('birth_year_error', '1', time() + 3600);
+        setcookie('birth_day_error', '1', time() + 3600, '/');
+        setcookie('birth_month_error', '1', time() + 3600, '/');
+        setcookie('birth_year_error', '1', time() + 3600, '/');
         $errors = true;
         $error_messages['birth_date'] = 'Некорректная дата рождения';
     }
@@ -186,7 +184,7 @@ function front_post($request) {
 
     // Очистка ошибок
     foreach ($fields as $field => $value) {
-        setcookie($field.'_error', '', time() - 3600);
+        setcookie($field.'_error', '', time() - 3600, '/');
     }
 
     // Сохранение данных
@@ -256,17 +254,26 @@ function front_post($request) {
             $db->commit();
 
             // Сохранение данных для отображения
-            setcookie('login', $login, time() + 3600);
-            setcookie('password', $password, time() + 3600);
+            setcookie('login', $login, time() + 3600, '/');
+            setcookie('password', $password, time() + 3600, '/');
         }
 
         if ($is_ajax) {
+            $response = [
+                'success' => true,
+                'message' => 'Данные успешно сохранены'
+            ];
+            
+            if (!empty($login)) {
+                $response['credentials'] = true;
+            }
+            
             return [
                 'headers' => ['Content-Type' => 'application/json'],
-                'entity' => ['success' => true, 'message' => 'Данные сохранены']
+                'entity' => $response
             ];
         } else {
-            setcookie('save', '1', time() + 3600);
+            setcookie('save', '1', time() + 3600, '/');
             header('Location: ' . url(''));
             exit();
         }
