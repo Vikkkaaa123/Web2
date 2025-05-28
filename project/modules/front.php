@@ -169,21 +169,27 @@ function front_post($request) {
         $error_messages['birth_date'] = 'Некорректная дата рождения';
     }
 
-    if ($errors) {
-        if ($is_ajax) {
-            return [
-                'headers' => ['Content-Type' => 'application/json'],
-                'entity' => [
-                    'success' => false,
-                    'errors' => $errors,
-                    'values' => $values // Возвращаем введенные значения
-                ]
-            ];
-        } else {
-            header('Location: ' . url(''));
-            exit();
+   if (!empty($errors)) {
+    if ($is_ajax) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'errors' => $errors,
+            'values' => $values // Возвращаем введенные данные
+        ]);
+        exit;
+    } else {
+        // Сохраняем ошибки и значения в куки для не-AJAX запросов
+        foreach ($errors as $field => $error) {
+            setcookie($field.'_error', $error, time() + 3600, '/');
         }
+        foreach ($values as $field => $value) {
+            setcookie($field.'_value', is_array($value) ? implode(',', $value) : $value, time() + 3600, '/');
+        }
+        header('Location: ' . url(''));
+        exit();
     }
+}
 
     // Очистка ошибок
     foreach ($fields as $field => $value) {
