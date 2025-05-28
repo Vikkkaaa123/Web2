@@ -22,12 +22,11 @@ $request = array(
 );
 
 // Обработка raw POST данных для AJAX
-/*
 if ($is_ajax && empty($_POST) && $input = file_get_contents('php://input')) {
     parse_str($input, $request['post']);
     $_POST = $request['post'];
 }
-*/
+
 
 $response = init($request, $urlconf);
 
