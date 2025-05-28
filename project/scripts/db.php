@@ -8,76 +8,114 @@ function db_connect() {
     if ($db === null) {
         $user = 'u68606';
         $pass = '9347178';
+        $dsn = 'mysql:host=localhost;dbname=u68606;charset=utf8mb4';
         
         try {
-            $db = new PDO('mysql:host=localhost;dbname=u68606', $user, $pass, 
-                [
-                    PDO::ATTR_PERSISTENT => true,
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4",
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-                ]
-            );
+            $db = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_PERSISTENT => true,
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+            ]);
+            
+            // Проверяем доступность необходимых таблиц
+            $requiredTables = ['programming_languages', 'applications', 'users'];
+            foreach ($requiredTables as $table) {
+                $db->query("SELECT 1 FROM `{$table}` LIMIT 1");
+            }
+            
+            return $db;
+            
         } catch (PDOException $e) {
-            error_log("Database error: " . $e->getMessage());
-            die("Ошибка подключения к БД. Попробуйте позже.");
+            error_log("DB Connection Error [{$dsn}]: " . $e->getMessage());
+            return false;
         }
     }
+    
     return $db;
 }
 
-function db_row($stmt) {
-    return $stmt->fetch();
-}
-
-function db_query($query) {
-    global $db;
-    $args = func_get_args();
-    $query = array_shift($args);
-    $stmt = $db->prepare($query);
-    $stmt->execute($args);
-    $result = [];
-    while ($row = $stmt->fetch()) {
-        if (isset($row['id'])) {
-            $result[$row['id']] = $row;
-        } else {
-            $result[] = $row;
-        }
+function db_row($query, ...$params) {
+    try {
+        $stmt = db_query($query, ...$params);
+        return $stmt ? $stmt->fetch() : false;
+    } catch (PDOException $e) {
+        error_log("DB Row Error: {$query} - " . $e->getMessage());
+        return false;
     }
-    return $result;
 }
 
-function db_command($query) {
-    global $db;
-    $args = func_get_args();
-    $query = array_shift($args);
-    $stmt = $db->prepare($query);
-    return $stmt->execute($args);
+function db_query($query, ...$params) {
+    $db = db_connect();
+    if (!$db) return false;
+    
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+        return $stmt;
+    } catch (PDOException $e) {
+        error_log("DB Query Error: {$query} - " . $e->getMessage());
+        return false;
+    }
 }
+
+
+function db_command($query, ...$params) {
+    $db = db_connect();
+    if (!$db) return false;
+    
+    try {
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+        return $stmt->rowCount();
+    } catch (PDOException $e) {
+        error_log("DB Command Error: {$query} - " . $e->getMessage());
+        return false;
+    }
+}
+
 
 function db_insert_id() {
-    global $db;
-    return $db->lastInsertId();
+    $db = db_connect();
+    return $db ? $db->lastInsertId() : false;
 }
 
-function db_result($query) {
-    $result = db_query($query);
-    return $result ? reset($result[0]) : false;
+
+function db_result($query, ...$params) {
+    $row = db_row($query, ...$params);
+    return $row ? reset($row) : false;
 }
 
-function admin_login_check($db, $login) {
-    $stmt = $db->prepare("SELECT COUNT(*) FROM admins WHERE login = ?");
-    $stmt->execute([$login]);
-    return $stmt->fetchColumn() > 0;
+
+function admin_login_check($login) {
+    $db = db_connect();
+    if (!$db) return false;
+    
+    try {
+        $stmt = $db->prepare("SELECT COUNT(*) FROM admins WHERE login = ?");
+        $stmt->execute([$login]);
+        return $stmt->fetchColumn() > 0;
+    } catch (PDOException $e) {
+        error_log("Admin login check failed: " . $e->getMessage());
+        return false;
+    }
 }
 
-function admin_password_check($db, $login, $password) {
-    $stmt = $db->prepare("SELECT password FROM admins WHERE login = ?");
-    $stmt->execute([$login]);
-    $storedPassword = $stmt->fetchColumn();
 
-    return password_verify($password, $storedPassword);
+function admin_password_check($login, $password) {
+    $db = db_connect();
+    if (!$db) return false;
+    
+    try {
+        $stmt = $db->prepare("SELECT password FROM admins WHERE login = ?");
+        $stmt->execute([$login]);
+        $hash = $stmt->fetchColumn();
+        return $hash && password_verify($password, $hash);
+    } catch (PDOException $e) {
+        error_log("Admin password check failed: " . $e->getMessage());
+        return false;
+    }
 }
 
 db_connect();
