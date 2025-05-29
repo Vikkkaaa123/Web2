@@ -137,7 +137,7 @@ function front_post($request) {
 
         $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
         foreach ($values['languages'] as $lang_id) {
-            $stmt->execute([$app_id, $lang_id]);
+        $stmt->execute([$app_id, $lang_id]);
         }
 
         $login = 'user_' . bin2hex(random_bytes(3));
