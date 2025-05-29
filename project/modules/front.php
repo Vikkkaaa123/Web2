@@ -6,11 +6,14 @@ function front_get($request) {
     $values = [];
     $allowed_lang = getLangs();
 
-    // Успешное сохранение
+    // Если форма была успешно сохранена
     if (!empty($_COOKIE['save'])) {
+        setcookie('save', '', time() - 3600, '/');
+        setcookie('login', '', time() - 3600, '/');
+        setcookie('password', '', time() - 3600, '/');
         $messages[] = 'Спасибо, результаты сохранены.';
 
-        if (!empty($_COOKIE['login']) && !empty($_COOKIE['password'])) {
+        if (!empty($_COOKIE['password'])) {
             $messages[] = sprintf(
                 'Вы можете <a href="%s">войти</a> с логином <strong>%s</strong> и паролем <strong>%s</strong> для изменения данных.',
                 htmlspecialchars(url('login'), ENT_QUOTES, 'UTF-8'),
@@ -18,27 +21,17 @@ function front_get($request) {
                 htmlspecialchars($_COOKIE['password'], ENT_QUOTES, 'UTF-8')
             );
         }
-
-        // Очистка всех куки после успешного сохранения
-        $fields = ['fio', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year', 'gender', 'biography', 'lang', 'agreement'];
-        foreach ($fields as $field) {
-            setcookie($field . '_error', '', time() - 3600, '/');
-            setcookie($field . '_value', '', time() - 3600, '/');
-        }
-        setcookie('save', '', time() - 3600, '/');
-        setcookie('login', '', time() - 3600, '/');
-        setcookie('password', '', time() - 3600, '/');
     }
 
-    // Загрузка значений и ошибок из куки
     $fields = ['fio', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year', 'gender', 'biography', 'lang', 'agreement'];
+
     foreach ($fields as $field) {
-        $errors[$field] = !empty($_COOKIE[$field . '_error']) ? getErrorMessage($field, $_COOKIE[$field . '_error']) : '';
-        $values[$field] = empty($_COOKIE[$field . '_value']) ? '' : $_COOKIE[$field . '_value'];
-        setcookie($field . '_error', '', time() - 3600, '/');
+        $error_code = $_COOKIE[$field . '_error'] ?? '';
+        $errors[$field] = $error_code ? getErrorMessage($field, $error_code) : '';
+        $values[$field] = $_COOKIE[$field . '_value'] ?? '';
     }
 
-    // Автозаполнение для авторизованных
+    // Если авторизован, загрузка данных из БД
     if (!empty($_SESSION['login'])) {
         try {
             $stmt = $db->prepare("SELECT a.* FROM applications a 
@@ -46,27 +39,26 @@ function front_get($request) {
                                   JOIN users u ON ua.user_id = u.id 
                                   WHERE u.login = ?");
             $stmt->execute([$_SESSION['login']]);
-            $application = $stmt->fetch(PDO::FETCH_ASSOC);
+            $app = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($application) {
-                $values['fio'] = $application['full_name'];
-                $values['phone'] = $application['phone'];
-                $values['email'] = $application['email'];
-                $values['birth_day'] = date('d', strtotime($application['birth_date']));
-                $values['birth_month'] = date('m', strtotime($application['birth_date']));
-                $values['birth_year'] = date('Y', strtotime($application['birth_date']));
-                $values['gender'] = $application['gender'];
-                $values['biography'] = $application['biography'];
-                $values['agreement'] = $application['agreement'];
+            if ($app) {
+                $values['fio'] = $app['full_name'];
+                $values['phone'] = $app['phone'];
+                $values['email'] = $app['email'];
+                $values['birth_day'] = date('d', strtotime($app['birth_date']));
+                $values['birth_month'] = date('m', strtotime($app['birth_date']));
+                $values['birth_year'] = date('Y', strtotime($app['birth_date']));
+                $values['gender'] = $app['gender'];
+                $values['biography'] = $app['biography'];
+                $values['agreement'] = $app['agreement'];
 
                 $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
-                $stmt->execute([$application['id']]);
-                $selected_langs = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                $values['lang'] = implode(',', $selected_langs);
+                $stmt->execute([$app['id']]);
+                $values['lang'] = implode(',', $stmt->fetchAll(PDO::FETCH_COLUMN));
             }
         } catch (PDOException $e) {
             error_log('DB Error: ' . $e->getMessage());
-            $messages[] = '<div class="error">Ошибка загрузки данных.</div>';
+            $messages[] = 'Ошибка загрузки данных';
         }
     }
 
@@ -78,60 +70,62 @@ function front_get($request) {
     ]);
 }
 
+
 function front_post($request) {
     $db = db_connect();
-    if (!$db) {
-        return ['success' => false, 'errors' => ['db' => 'Ошибка подключения к БД']];
-    }
+    if (!$db) return ['success' => false, 'errors' => ['db' => 'Ошибка БД']];
 
+    $post = $request['post'] ?? $_POST;
     $is_ajax = $request['is_ajax'] ?? false;
-    $post_data = $request['post'] ?? $_POST;
 
-    $errors = [];
     $values = [
-        'fio' => trim($post_data['fio'] ?? ''),
-        'phone' => trim($post_data['phone'] ?? ''),
-        'email' => trim($post_data['email'] ?? ''),
-        'birth_day' => trim($post_data['birth_day'] ?? ''),
-        'birth_month' => trim($post_data['birth_month'] ?? ''),
-        'birth_year' => trim($post_data['birth_year'] ?? ''),
-        'gender' => $post_data['gender'] ?? '',
-        'biography' => trim($post_data['biography'] ?? ''),
-        'lang' => $post_data['languages'] ?? [],
-        'agreement' => isset($post_data['agreement']) ? 1 : 0
+        'fio' => trim($post['fio'] ?? ''),
+        'phone' => trim($post['phone'] ?? ''),
+        'email' => trim($post['email'] ?? ''),
+        'birth_day' => trim($post['birth_day'] ?? ''),
+        'birth_month' => trim($post['birth_month'] ?? ''),
+        'birth_year' => trim($post['birth_year'] ?? ''),
+        'gender' => $post['gender'] ?? '',
+        'biography' => trim($post['biography'] ?? ''),
+        'lang' => $post['languages'] ?? [],
+        'agreement' => isset($post['agreement']) ? 1 : 0
     ];
 
-    // Валидация
-    if (empty($values['fio'])) $errors['fio'] = '1';
-    if (empty($values['phone'])) $errors['phone'] = '1';
-    if (empty($values['email'])) $errors['email'] = '1';
-    if (empty($values['gender'])) $errors['gender'] = '1';
-    if (empty($values['biography'])) $errors['biography'] = '1';
+    $errors = [];
 
-    if (empty($values['lang']) || !is_array($values['lang'])) {
-        $errors['lang'] = '1';
+    // Валидация
+    if ($values['fio'] === '') $errors['fio'] = 1;
+    if ($values['phone'] === '') $errors['phone'] = 1;
+    if ($values['email'] === '') $errors['email'] = 1;
+    if ($values['gender'] === '') $errors['gender'] = 1;
+    if ($values['biography'] === '') $errors['biography'] = 1;
+    if (!$values['agreement']) $errors['agreement'] = 1;
+
+    if (empty($values['lang']) || !is_array($values['lang']) || count($values['lang']) === 0) {
+        $errors['lang'] = 1;
     } else {
-        $validLangs = array_keys(getLangs());
-        foreach ($values['lang'] as $lang) {
-            if (!in_array($lang, $validLangs)) {
-                $errors['lang'] = '2';
+        $allowed = array_keys(getLangs());
+        foreach ($values['lang'] as $l) {
+            if (!in_array($l, $allowed)) {
+                $errors['lang'] = 2;
                 break;
             }
         }
     }
 
-    if (!$values['agreement']) {
-        $errors['agreement'] = '1';
-    }
-
-    if (empty($values['birth_day']) || empty($values['birth_month']) || empty($values['birth_year']) ||
+    if (!$values['birth_day'] || !$values['birth_month'] || !$values['birth_year'] ||
         !checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
-        $errors['birth_day'] = '1';
+        $errors['birth_day'] = 1;
     }
 
-    // Сохраняем ошибки и значения в куки
+    // Сохраняем значения и ошибки в куки
     foreach ($values as $key => $val) {
-        setcookie($key . '_value', is_array($val) ? implode(',', $val) : $val, time() + 365 * 24 * 60 * 60, '/');
+        setcookie($key . '_value', is_array($val) ? implode(',', $val) : $val, time() + 365*24*60*60, '/');
+    }
+
+    // Удаляем старые ошибки
+    foreach (array_keys($values) as $key) {
+        setcookie($key . '_error', '', time() - 3600, '/');
     }
 
     if (!empty($errors)) {
@@ -141,22 +135,16 @@ function front_post($request) {
         return ['success' => false, 'errors' => $errors];
     }
 
-    // Всё верно — сохраняем
+    // Сохраняем в БД
     try {
         $db->beginTransaction();
 
-        $birth_date = sprintf("%04d-%02d-%02d", $values['birth_year'], $values['birth_month'], $values['birth_day']);
-        $stmt = $db->prepare("INSERT INTO applications 
-            (full_name, phone, email, birth_date, gender, biography, agreement) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $birth_date = sprintf('%04d-%02d-%02d', $values['birth_year'], $values['birth_month'], $values['birth_day']);
+        $stmt = $db->prepare("INSERT INTO applications (full_name, phone, email, birth_date, gender, biography, agreement)
+                              VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
-            $values['fio'],
-            $values['phone'],
-            $values['email'],
-            $birth_date,
-            $values['gender'],
-            $values['biography'],
-            $values['agreement']
+            $values['fio'], $values['phone'], $values['email'],
+            $birth_date, $values['gender'], $values['biography'], $values['agreement']
         ]);
         $app_id = $db->lastInsertId();
 
@@ -167,10 +155,10 @@ function front_post($request) {
 
         $login = 'user_' . bin2hex(random_bytes(3));
         $password = bin2hex(random_bytes(4));
-        $pass_hash = password_hash($password, PASSWORD_DEFAULT);
+        $hash = password_hash($password, PASSWORD_DEFAULT);
 
         $stmt = $db->prepare("INSERT INTO users (login, password_hash) VALUES (?, ?)");
-        $stmt->execute([$login, $pass_hash]);
+        $stmt->execute([$login, $hash]);
         $user_id = $db->lastInsertId();
 
         $stmt = $db->prepare("INSERT INTO user_applications (user_id, application_id) VALUES (?, ?)");
@@ -182,10 +170,14 @@ function front_post($request) {
             setcookie('save', '1', time() + 3600, '/');
             setcookie('login', $login, time() + 3600, '/');
             setcookie('password', $password, time() + 3600, '/');
+
+            // Удаляем ошибки
+            foreach (array_keys($values) as $key) {
+                setcookie($key . '_error', '', time() - 3600, '/');
+            }
         }
 
-        return ['success' => true];
-
+        return ['success' => true, 'login' => $login, 'password' => $password];
     } catch (PDOException $e) {
         $db->rollBack();
         error_log("DB Error: " . $e->getMessage());
@@ -195,32 +187,33 @@ function front_post($request) {
 
 
 function getErrorMessage($field, $code) {
-    $messages = [
+    $map = [
         'fio' => [
-            '1' => 'Имя не указано.',
+            1 => 'Поле ФИО обязательно.',
         ],
         'phone' => [
-            '1' => 'Телефон не указан.',
+            1 => 'Поле телефона обязательно.',
         ],
         'email' => [
-            '1' => 'Email не указан.',
+            1 => 'Поле email обязательно.',
         ],
         'gender' => [
-            '1' => 'Пол не указан.',
+            1 => 'Укажите пол.',
         ],
         'biography' => [
-            '1' => 'Биография не указана.',
+            1 => 'Биография обязательна.',
         ],
         'lang' => [
-            '1' => 'Не выбран язык программирования.',
-            '2' => 'Выбран недопустимый язык программирования.',
+            1 => 'Выберите хотя бы один язык.',
+            2 => 'Выбран недопустимый язык.',
         ],
         'agreement' => [
-            '1' => 'Необходимо согласиться с условиями.',
+            1 => 'Вы должны согласиться с условиями.',
         ],
         'birth_day' => [
-            '1' => 'Дата рождения некорректна.',
+            1 => 'Введите корректную дату рождения.',
         ]
     ];
-    return $messages[$field][$code] ?? 'Ошибка заполнения поля.';
+
+    return $map[$field][$code] ?? 'Ошибка в поле ' . $field;
 }
