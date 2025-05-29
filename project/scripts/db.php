@@ -105,36 +105,18 @@ function db_result($query, ...$params) {
 /**
  * Check if admin exists
  */
-function admin_login_check($login) {
-    $db = db_connect();
-    if (!$db) return false;
-    
-    try {
-        $stmt = $db->prepare("SELECT COUNT(*) FROM admins WHERE login = ?");
-        $stmt->execute([$login]);
-        return $stmt->fetchColumn() > 0;
-    } catch (PDOException $e) {
-        error_log("Admin login check failed: " . $e->getMessage());
-        return false;
-    }
+function admin_login_check($db, $login) {
+$stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
+$stmt->execute([$login]);
+return $stmt->fetch() !== false;
 }
 
-/**
- * Verify admin password
- */
-function admin_password_check($login, $password) {
-    $db = db_connect();
-    if (!$db) return false;
-    
-    try {
-        $stmt = $db->prepare("SELECT password FROM admins WHERE login = ?");
-        $stmt->execute([$login]);
-        $hash = $stmt->fetchColumn();
-        return $hash && password_verify($password, $hash);
-    } catch (PDOException $e) {
-        error_log("Admin password check failed: " . $e->getMessage());
-        return false;
-    }
+
+function admin_password_check($db, $login, $password) {
+$stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
+$stmt->execute([$login]);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+return $row && password_verify($password, $row['password_hash']);
 }
 
 /**
