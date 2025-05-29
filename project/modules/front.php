@@ -1,13 +1,10 @@
 <?php
 
-require_once __DIR__ . '/../scripts/db.php';
-
 function front_get($request) {
     $messages = [];
     $errors = [];
     $values = [];
     $allowed_lang = getLangs();
-
     $all_fields = [
         'fio', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year',
         'gender', 'biography', 'languages', 'agreement'
@@ -46,6 +43,7 @@ function front_get($request) {
             $errors[$field] = !empty($_COOKIE["{$field}_error"])
                 ? getErrorMessage($field, $_COOKIE["{$field}_error"])
                 : '';
+
             $values[$field] = $_COOKIE["{$field}_value"] ?? '';
             setcookie("{$field}_error", '', time() - 3600, '/');
             setcookie("{$field}_value", '', time() - 3600, '/');
@@ -110,11 +108,7 @@ function front_post($request) {
     }
 
     if (!isset($errors['birth_day']) && !isset($errors['birth_month']) && !isset($errors['birth_year'])) {
-        if (!checkdate(
-            (int)$values['birth_month'], 
-            (int)$values['birth_day'], 
-            (int)$values['birth_year']
-        )) {
+        if (!checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
             $errors['birth_day'] = 'Некорректная дата';
             $errors['birth_month'] = 'Некорректная дата';
             $errors['birth_year'] = 'Некорректная дата';
@@ -187,7 +181,6 @@ function front_post($request) {
         }
 
         return ['success' => true, 'login' => $login, 'password' => $password];
-
     } catch (PDOException $e) {
         $db->rollBack();
         error_log('DB Error: ' . $e->getMessage());
