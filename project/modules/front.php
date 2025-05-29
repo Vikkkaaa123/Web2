@@ -1,4 +1,5 @@
 <?php
+
 function front_get($request) {
     $db = db_connect();
     $messages = [];
@@ -6,7 +7,6 @@ function front_get($request) {
     $values = [];
     $allowed_lang = getLangs();
 
-    // Обработка успешного сохранения
     if (!empty($_COOKIE['save'])) {
         setcookie('save', '', time() - 3600, '/');
         setcookie('login', '', time() - 3600, '/');
@@ -27,20 +27,23 @@ function front_get($request) {
 
     foreach ($fields as $field) {
         $errors[$field] = !empty($_COOKIE[$field.'_error']) ? getErrorMessage($field, $_COOKIE[$field.'_error']) : '';
-        $values[$field] = empty($_COOKIE[$field.'_value']) ? '' : $_COOKIE[$field.'_value'];
+        $values[$field] = isset($_COOKIE[$field.'_value']) ? $_COOKIE[$field.'_value'] : '';
 
         // Удаляем только ошибки
         setcookie($field.'_error', '', time() - 3600, '/');
-        // Значения НЕ удаляем, чтобы они остались при следующем заходе
     }
 
-    // Загрузка данных для авторизованных пользователей
+    // Обработка языков как массива
+    if (!empty($values['lang'])) {
+        $values['lang'] = explode(',', $values['lang']);
+    }
+
     if (!empty($_SESSION['login'])) {
         try {
             $stmt = $db->prepare("SELECT a.* FROM applications a 
-                                JOIN user_applications ua ON a.id = ua.application_id 
-                                JOIN users u ON ua.user_id = u.id 
-                                WHERE u.login = ?");
+                                  JOIN user_applications ua ON a.id = ua.application_id 
+                                  JOIN users u ON ua.user_id = u.id 
+                                  WHERE u.login = ?");
             $stmt->execute([$_SESSION['login']]);
             $application = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -57,8 +60,7 @@ function front_get($request) {
 
                 $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
                 $stmt->execute([$application['id']]);
-                $selected_langs = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                $values['lang'] = implode(',', $selected_langs);
+                $values['lang'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
             }
         } catch (PDOException $e) {
             error_log('DB Error: ' . $e->getMessage());
@@ -97,21 +99,18 @@ function front_post($request) {
         'agreement' => isset($post_data['agreement']) ? 1 : 0
     ];
 
-    // Валидации
+    // Валидация всех полей сразу
     if (empty($values['fio'])) $errors['fio'] = 1;
     if (empty($values['phone'])) $errors['phone'] = 1;
     if (empty($values['email'])) $errors['email'] = 1;
     if (empty($values['gender'])) $errors['gender'] = 1;
     if (empty($values['biography'])) $errors['biography'] = 1;
 
-    $langs = $values['lang'] ?? [];
-    if (empty($langs) || (is_array($langs) && count($langs) == 0)) {
+    if (empty($values['lang']) || !is_array($values['lang'])) {
         $errors['lang'] = 1;
-    } elseif (!is_array($langs)) {
-        $errors['lang'] = 2;
     } else {
         $validLangs = array_keys(getLangs());
-        foreach ($langs as $langId) {
+        foreach ($values['lang'] as $langId) {
             if (!in_array($langId, $validLangs)) {
                 $errors['lang'] = 2;
                 break;
@@ -121,31 +120,32 @@ function front_post($request) {
 
     if (empty($values['agreement'])) $errors['agreement'] = 1;
 
-    if (empty($values['birth_day']) || empty($values['birth_month']) || empty($values['birth_year'])) {
-        $errors['birth_day'] = 1;
-    } elseif (!checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
+    if (
+        empty($values['birth_day']) || empty($values['birth_month']) || empty($values['birth_year']) ||
+        !checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])
+    ) {
         $errors['birth_day'] = 1;
     }
 
-    // Если есть ошибки — сохранить их в куки и вернуть
-    if (!empty($errors)) {
-        foreach ($values as $key => $val) {
-            setcookie($key . '_value', is_array($val) ? implode(',', $val) : $val, time() + 365 * 24 * 60 * 60, '/');
-        }
+    // Сохраняем значения и ошибки в куки
+    foreach ($values as $key => $val) {
+        setcookie($key . '_value', is_array($val) ? implode(',', $val) : $val, time() + 365 * 24 * 60 * 60, '/');
+    }
 
-        foreach ($errors as $key => $val) {
-            setcookie($key . '_error', $val, time() + 3600, '/');
+    if (!empty($errors)) {
+        foreach ($errors as $key => $code) {
+            setcookie($key . '_error', $code, time() + 3600, '/');
         }
 
         return ['success' => false, 'errors' => $errors];
     }
 
-    // Если всё верно — сохраняем в БД
+    // Сохраняем в БД
     try {
         $db->beginTransaction();
 
-        $birth_date = sprintf("%04d-%02d-%02d", $values['birth_year'], $values['birth_month'], $values['birth_day']);
-        
+        $birth_date = sprintf('%04d-%02d-%02d', $values['birth_year'], $values['birth_month'], $values['birth_day']);
+
         $stmt = $db->prepare("INSERT INTO applications 
             (full_name, phone, email, birth_date, gender, biography, agreement) 
             VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -160,13 +160,11 @@ function front_post($request) {
         ]);
         $app_id = $db->lastInsertId();
 
-        // Языки
         $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
         foreach ($values['lang'] as $lang_id) {
             $stmt->execute([$app_id, $lang_id]);
         }
 
-        // Создание пользователя
         $login = 'user_' . bin2hex(random_bytes(3));
         $password = bin2hex(random_bytes(4));
         $pass_hash = password_hash($password, PASSWORD_DEFAULT);
@@ -180,18 +178,13 @@ function front_post($request) {
 
         $db->commit();
 
-        // Устанавливаем куки только для не-AJAX
         if (!$is_ajax) {
             setcookie('save', '1', time() + 3600, '/');
             setcookie('login', $login, time() + 3600, '/');
             setcookie('password', $password, time() + 3600, '/');
         }
 
-        return [
-            'success' => true,
-            'login' => $login,
-            'password' => $password
-        ];
+        return ['success' => true, 'login' => $login, 'password' => $password];
 
     } catch (PDOException $e) {
         $db->rollBack();
@@ -199,7 +192,6 @@ function front_post($request) {
         return ['success' => false, 'errors' => ['db' => 'Ошибка сохранения данных']];
     }
 }
-
 
 
 function getErrorMessage($field, $code) {
