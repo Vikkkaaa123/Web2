@@ -1,49 +1,52 @@
 <?php
-require_once __DIR__ . '/../scripts/db.php'; 
+require_once __DIR__ . '/../scripts/db.php';
+session_start();
 
-$db = db_connect();
-$login = $_SESSION['login'] ?? '';
-
-if (!$login || !admin_login_check($db, $login)) {
+// Проверка авторизации
+if (empty($_SESSION['login']) || !admin_login_check($_SESSION['login'])) {
     header('Location: login.php');
     exit;
 }
 
 function admin_get() {
     $db = db_connect();
-    
-    $stmt = $db->query("
-        SELECT 
-            a.id, 
-            u.login, 
-            a.full_name, 
-            a.phone, 
-            a.email, 
-            a.birth_date, 
-            a.gender, 
-            a.biography, 
-            a.agreement,
-            GROUP_CONCAT(pl.name ORDER BY pl.name SEPARATOR ', ') AS languages
-        FROM applications a
-        JOIN users u ON a.id = u.id
-        LEFT JOIN application_language al ON al.application_id = a.id
-        LEFT JOIN programming_languages pl ON al.language_id = pl.id
-        GROUP BY a.id
-    ");
-    $processedApplications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Получение статистики по языкам
-    $stmt = $db->query("
-        SELECT pl.name AS language, COUNT(al.language_id) AS count
-        FROM programming_languages pl
-        LEFT JOIN application_language al ON pl.id = al.language_id
-        GROUP BY pl.name
-    ");
-    $stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Все заявки пользователей
+    $apps = db_all("SELECT * FROM applications");
 
-    // Подключение шаблона
-    include __DIR__ . '/../theme/admin.tpl.php';
+    $result = [];
+    foreach ($apps as $app) {
+        $app_id = $app['id'];
+
+        // Получаем логин из таблицы users
+        $loginRow = db_row("SELECT login FROM users WHERE app_id = ?", $app_id);
+        $login = $loginRow ? $loginRow['login'] : '—';
+
+        // Получаем языки
+        $langsRows = db_all("SELECT pl.name FROM app_language al JOIN programming_languages pl ON al.language_id = pl.id WHERE al.app_id = ?", $app_id);
+        $languages = array_column($langsRows, 'name');
+
+        $result[] = [
+            'id' => $app['id'],
+            'login' => $login,
+            'full_name' => $app['full_name'],
+            'phone' => $app['phone'],
+            'email' => $app['email'],
+            'birth_date' => $app['birth_date'],
+            'gender_short' => $app['gender'],
+            'biography' => $app['biography'],
+            'languages' => implode(', ', $languages),
+        ];
+    }
+
+    // Статистика по языкам
+    $langStats = db_all("SELECT pl.name, COUNT(*) as count FROM app_language al JOIN programming_languages pl ON al.language_id = pl.id GROUP BY al.language_id");
+
+    return [$result, $langStats];
 }
 
-// Запуск
-admin_get();
+// Получаем данные
+[$processedApplications, $stats] = admin_get();
+
+// Показываем шаблон
+require_once __DIR__ . '/../theme/admin.tpl.php';
