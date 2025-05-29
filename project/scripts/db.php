@@ -60,18 +60,20 @@ function admin_login_check($login) {
 
 function getLangs() {
     $db = db_connect();
-    $stmt = $db->query("SELECT id, name FROM programming_languages");
-
     $langs = [];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $langs[] = [
-            'id' => $row['id'],
-            'name' => $row['name']
-        ];
+
+    try {
+        $stmt = $db->query("SELECT id, name FROM programming_languages");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $langs[$row['id']] = $row['name'];
+        }
+    } catch (PDOException $e) {
+        error_log('Ошибка при получении языков: ' . $e->getMessage());
     }
 
     return $langs;
 }
+
 
 
 
