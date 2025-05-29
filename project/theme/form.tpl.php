@@ -903,7 +903,7 @@
 </div>
 
         <div class="formstyle1">
-          <form id="myform" class="application" method="POST" action="">
+          <form id="myform" class="application" method="POST" action="?q=">
             <h2 class="white-text">ФОРМА</h2>
 
             <label>
