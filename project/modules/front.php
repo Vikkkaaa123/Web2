@@ -1,5 +1,4 @@
 <?php
-
 function front_get($request) {
     $db = db_connect();
     $messages = [];
@@ -7,37 +6,45 @@ function front_get($request) {
     $values = [];
     $allowed_lang = getLangs();
 
+    // Поля формы
+    $fields = ['fio', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year', 'gender', 'biography', 'lang', 'agreement'];
+
+    // Обработка сообщения об успешном сохранении
     if (!empty($_COOKIE['save'])) {
         setcookie('save', '', time() - 3600, '/');
-        setcookie('login', '', time() - 3600, '/');
-        setcookie('password', '', time() - 3600, '/');
         $messages[] = 'Спасибо, результаты сохранены.';
 
-        if (!empty($_COOKIE['password'])) {
+        if (!empty($_COOKIE['login']) && !empty($_COOKIE['password'])) {
             $messages[] = sprintf(
                 'Вы можете <a href="%s">войти</a> с логином <strong>%s</strong> и паролем <strong>%s</strong> для изменения данных.',
                 htmlspecialchars(url('login'), ENT_QUOTES, 'UTF-8'),
                 htmlspecialchars($_COOKIE['login'], ENT_QUOTES, 'UTF-8'),
                 htmlspecialchars($_COOKIE['password'], ENT_QUOTES, 'UTF-8')
             );
+            setcookie('login', '', time() - 3600, '/');
+            setcookie('password', '', time() - 3600, '/');
         }
     }
 
-    $fields = ['fio', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year', 'gender', 'biography', 'lang', 'agreement'];
-
+    // Загрузка ошибок и значений из куков
     foreach ($fields as $field) {
-        $errors[$field] = !empty($_COOKIE[$field.'_error']) ? getErrorMessage($field, $_COOKIE[$field.'_error']) : '';
-        $values[$field] = isset($_COOKIE[$field.'_value']) ? $_COOKIE[$field.'_value'] : '';
+        $errors[$field] = '';
+        if (!empty($_COOKIE[$field . '_error'])) {
+            $errors[$field] = getErrorMessage($field, $_COOKIE[$field . '_error']);
+            setcookie($field . '_error', '', time() - 3600, '/');
+        }
 
-        // Удаляем только ошибки
-        setcookie($field.'_error', '', time() - 3600, '/');
+        // Важно: поле "agreement" должно быть числом 0 или 1, не строкой
+        if (isset($_COOKIE[$field . '_value'])) {
+            $val = $_COOKIE[$field . '_value'];
+            $values[$field] = ($field === 'agreement') ? (int)$val : $val;
+        } else {
+            // Устанавливаем значение по умолчанию
+            $values[$field] = ($field === 'agreement') ? 0 : '';
+        }
     }
 
-    // Обработка языков как массива
-    if (!empty($values['lang'])) {
-        $values['lang'] = explode(',', $values['lang']);
-    }
-
+    // Загрузка данных для авторизованных пользователей
     if (!empty($_SESSION['login'])) {
         try {
             $stmt = $db->prepare("SELECT a.* FROM applications a 
@@ -56,11 +63,12 @@ function front_get($request) {
                 $values['birth_year'] = date('Y', strtotime($application['birth_date']));
                 $values['gender'] = $application['gender'];
                 $values['biography'] = $application['biography'];
-                $values['agreement'] = $application['agreement'];
+                $values['agreement'] = (int)$application['agreement'];
 
                 $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
                 $stmt->execute([$application['id']]);
-                $values['lang'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                $selected_langs = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                $values['lang'] = implode(',', $selected_langs);
             }
         } catch (PDOException $e) {
             error_log('DB Error: ' . $e->getMessage());
@@ -75,6 +83,7 @@ function front_get($request) {
         'allowed_lang' => $allowed_lang
     ]);
 }
+
 
 function front_post($request) {
     $db = db_connect();
