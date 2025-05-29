@@ -1,4 +1,5 @@
 <?php
+session_start();
 include('./settings.php');
 
 ini_set('display_errors', DISPLAY_ERRORS);
