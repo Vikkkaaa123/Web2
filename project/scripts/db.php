@@ -57,6 +57,7 @@ function admin_login_check($login) {
     return db_row("SELECT id FROM admins WHERE login = ?", $login) !== false;
 }
 
+
 function getLangs() {
     $db = db_connect();
     $stmt = $db->query("SELECT id, name FROM programming_languages");
@@ -71,6 +72,7 @@ function getLangs() {
 
     return $langs;
 }
+
 
 
 
