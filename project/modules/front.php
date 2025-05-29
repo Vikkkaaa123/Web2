@@ -96,12 +96,15 @@ function front_post($request) {
         'agreement' => isset($post_data['agreement']) ? 1 : 0
     ];
 
-    // Валидация
-    if ($values['fio'] === '') $errors['fio'] = 1;
-    if ($values['phone'] === '') $errors['phone'] = 1;
-    if ($values['email'] === '') $errors['email'] = 1;
-    if ($values['gender'] === '') $errors['gender'] = 1;
-    if ($values['biography'] === '') $errors['biography'] = 1;
+    // Валидация всех полей
+    $errors['fio'] = ($values['fio'] === '') ? 1 : 0;
+    $errors['phone'] = ($values['phone'] === '') ? 1 : 0;
+    $errors['email'] = ($values['email'] === '') ? 1 : 0;
+    $errors['gender'] = ($values['gender'] === '') ? 1 : 0;
+    $errors['biography'] = ($values['biography'] === '') ? 1 : 0;
+    $errors['agreement'] = (!$values['agreement']) ? 1 : 0;
+
+    // Проверка языков программирования
     if (empty($values['lang']) || !is_array($values['lang'])) {
         $errors['lang'] = 1;
     } else {
@@ -112,36 +115,54 @@ function front_post($request) {
                 break;
             }
         }
+        if (!isset($errors['lang'])) $errors['lang'] = 0;
     }
 
-    if (!$values['agreement']) $errors['agreement'] = 1;
-
-    // Дата рождения
+    // Проверка даты рождения
+    $dateError = false;
     if (empty($values['birth_day']) || empty($values['birth_month']) || empty($values['birth_year'])) {
-        $errors['birth_day'] = 1;
-        $errors['birth_month'] = 1;
-        $errors['birth_year'] = 1;
+        $dateError = true;
     } elseif (!checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
+        $dateError = true;
+    }
+    
+    if ($dateError) {
         $errors['birth_day'] = 1;
         $errors['birth_month'] = 1;
         $errors['birth_year'] = 1;
+    } else {
+        $errors['birth_day'] = 0;
+        $errors['birth_month'] = 0;
+        $errors['birth_year'] = 0;
     }
 
-    // Сохраняем значения в куки
+    // Сохраняем значения и ошибки в куки
     foreach ($values as $key => $val) {
         setcookie($key . '_value', is_array($val) ? implode(',', $val) : $val, time() + 365 * 24 * 60 * 60, '/');
     }
 
-    // Сохраняем ВСЕ ошибки в куки
+    // Сохраняем только реальные ошибки (где код ошибки > 0)
     foreach ($errors as $key => $code) {
-        setcookie($key . '_error', $code, time() + 3600, '/');
+        if ($code > 0) {
+            setcookie($key . '_error', $code, time() + 3600, '/');
+        } else {
+            setcookie($key . '_error', '', time() - 3600, '/');
+        }
     }
 
-    // Если есть ошибки
-    if (!empty($errors)) {
+    // Проверяем, есть ли хотя бы одна ошибка
+    $hasErrors = false;
+    foreach ($errors as $code) {
+        if ($code > 0) {
+            $hasErrors = true;
+            break;
+        }
+    }
+
+    if ($hasErrors) {
         return ['success' => false];
     }
-
+    
     try {
         $db->beginTransaction();
 
@@ -195,18 +216,20 @@ function front_post($request) {
 }
 
 function getErrorMessage($field, $code) {
-    $messages = [
+   $messages = [
         'fio' => ['1' => 'Имя не указано.'],
         'phone' => ['1' => 'Телефон не указан.'],
         'email' => ['1' => 'Email не указан.'],
-        'gender' => ['1' => 'Пол не выбран.'],
-        'biography' => ['1' => 'Биография не заполнена.'],
-        'lang' => ['1' => 'Не выбран ни один язык.'],
-        'agreement' => ['1' => 'Необходимо согласие.'],
-        'birth_day' => ['1' => 'Некорректная дата рождения.'],
-        'birth_month' => ['1' => 'Некорректная дата рождения.'],
-        'birth_year' => ['1' => 'Некорректная дата рождения.']
+        'gender' => ['1' => 'Пол не указан.'],
+        'biography' => ['1' => 'Биография не указана.'],
+        'lang' => [
+            '1' => 'Не выбран язык программирования.',
+            '2' => 'Выбран недопустимый язык.'
+        ],
+        'agreement' => ['1' => 'Вы должны согласиться с условиями.'],
+        'birth_day' => ['1' => 'Неверная или неполная дата рождения.'],
+        'birth_month' => ['1' => 'Неверная или неполная дата рождения.'],
+        'birth_year' => ['1' => 'Неверная или неполная дата рождения.']
     ];
-
-    return $messages[$field][$code] ?? 'Ошибка';
+    return $messages[$field][$code] ?? 'Ошибка в поле';
 }
