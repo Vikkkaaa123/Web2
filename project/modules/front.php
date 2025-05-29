@@ -103,10 +103,25 @@ function front_post($request) {
     if (empty($values['email'])) $errors['email'] = 'Укажите email';
     if (empty($values['gender'])) $errors['gender'] = 'Укажите пол';
     if (empty($values['biography'])) $errors['biography'] = 'Напишите биографию';
-    if (empty($values['lang'])) $errors['lang'] = 'Выберите языки';
+
+    $langs = $values['lang'] ?? [];
+if (empty($langs) || (is_array($langs) && count($langs) == 0)) {
+    $errors['lang'] = 'Выберите хотя бы один язык';
+} elseif (!is_array($langs)) {
+    $errors['lang'] = 'Некорректный формат данных';
+} else {
+    // Дополнительная проверка, что выбранные языки существуют в БД
+    $validLangs = array_keys(getLangs());
+    foreach ($langs as $langId) {
+        if (!in_array($langId, $validLangs)) {
+            $errors['lang'] = 'Выбран недопустимый язык программирования';
+            break;
+        }
+    }
+}
+   
     if (empty($values['agreement'])) $errors['agreement'] = 'Необходимо согласие';
     
-    // Проверка даты рождения
    if (empty($values['birth_day']) || empty($values['birth_month']) || empty($values['birth_year'])) {
     $errors['birth_date'] = 'Укажите дату рождения';
 } elseif (!checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
