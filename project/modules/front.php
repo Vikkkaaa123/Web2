@@ -45,66 +45,62 @@ function front_post($request) {
         return ['success' => false, 'errors' => ['db' => 'Ошибка подключения к БД']];
     }
 
+    $is_ajax = $request['is_ajax'] ?? false;
     $post_data = $request['post'] ?? $_POST;
+
+    // Все обязательные поля
+    $required_fields = [
+        'fio' => 'Укажите ФИО',
+        'phone' => 'Укажите телефон',
+        'email' => 'Укажите email',
+        'birth_day' => 'Укажите день рождения',
+        'birth_month' => 'Укажите месяц рождения',
+        'birth_year' => 'Укажите год рождения',
+        'gender' => 'Укажите пол',
+        'biography' => 'Напишите биографию',
+        'languages' => 'Выберите хотя бы один язык',
+        'agreement' => 'Необходимо ваше согласие'
+    ];
+
     $errors = [];
     $values = [];
 
-    // Все поля, которые должны проверяться
-    $fields = [
-        'fio', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year',
-        'gender', 'biography', 'languages', 'agreement'
-    ];
-
-    // Проверяем каждое поле
-    foreach ($fields as $field) {
-        // Получаем значение (для чекбоксов и массивов - особый случай)
-        if ($field === 'agreement') {
-            $values[$field] = isset($post_data[$field]) ? 1 : 0;
-        } elseif ($field === 'languages') {
-            $values[$field] = $post_data[$field] ?? [];
+    // Проверка полей
+    foreach ($required_fields as $field => $error_message) {
+        if ($field === 'languages') {
+            $values[$field] = $post_data['languages'] ?? [];
+            if (empty($values[$field])) {
+                $errors[$field] = $error_message;
+            }
+        } elseif ($field === 'agreement') {
+            $values[$field] = isset($post_data['agreement']) ? 1 : 0;
+            if (!$values[$field]) {
+                $errors[$field] = $error_message;
+            }
         } else {
             $values[$field] = trim($post_data[$field] ?? '');
-        }
-
-        // Проверка на заполненность
-        if (empty($values[$field])) {
-            $errors[$field] = 1; // Код ошибки "поле обязательно"
+            if (empty($values[$field])) {
+                $errors[$field] = $error_message;
+            }
         }
     }
 
-    // Дополнительная проверка даты
+    // Проверка даты
     if (!isset($errors['birth_day']) && !isset($errors['birth_month']) && !isset($errors['birth_year'])) {
-        if (!checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
-            $errors['birth_day'] = 2; // Код ошибки "некорректная дата"
-            $errors['birth_month'] = 2;
-            $errors['birth_year'] = 2;
+        if (!checkdate(
+            (int)$values['birth_month'], 
+            (int)$values['birth_day'], 
+            (int)$values['birth_year']
+        )) {
+            $errors['birth_day'] = 'Некорректная дата';
+            $errors['birth_month'] = 'Некорректная дата';
+            $errors['birth_year'] = 'Некорректная дата';
         }
-    }
-
-    // Сохраняем ВСЕ значения и ошибки в куки
-    foreach ($values as $field => $value) {
-        setcookie("{$field}_value", is_array($value) ? implode(',', $value) : $value, [
-            'expires' => time() + 3600,
-            'path' => '/',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Lax'
-        ]);
-    }
-
-    foreach ($errors as $field => $code) {
-        setcookie("{$field}_error", $code, [
-            'expires' => time() + 3600,
-            'path' => '/',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'Lax'
-        ]);
     }
 
     // Если есть ошибки - возвращаем
     if (!empty($errors)) {
-        return ['success' => false];
+        return ['success' => false, 'errors' => $errors];
     }
 
     // Сохраняем в БД
