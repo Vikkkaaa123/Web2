@@ -1,84 +1,46 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('myform');
-    if (!form) {
-        console.error('Форма не найдена');
-        return;
-    }
+    if (!form) return;
 
     const messagesContainer = document.querySelector('.form-messages');
-    if (!messagesContainer) {
-        console.error('Контейнер сообщений не найден');
-        return;
-    }
+    const submitBtn = form.querySelector('#submit-btn');
 
-    // Отключаем стандартную отправку формы
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        console.log('Начата обработка формы');
-
-        const submitBtn = form.querySelector('#submit-btn');
-        if (!submitBtn) {
-            console.error('Кнопка отправки не найдена');
-            return;
-        }
-
-        // Блокируем кнопку
+        
+        // Блокировка кнопки
         const originalText = submitBtn.value;
         submitBtn.disabled = true;
         submitBtn.value = 'Отправка...';
 
         try {
-            // Валидация
-            const errors = validateForm();
+            // Валидация ВСЕХ полей
+            const errors = validateForm(form);
             if (Object.keys(errors).length > 0) {
                 showErrors(errors);
                 return;
             }
 
             // Подготовка данных
-           const formData = new FormData();
+            const formData = new FormData(form);
+            formData.append('is_ajax', '1');
 
-  for (const element of form.elements) {
-    if (element.name && element.type !== 'submit') {
-        if (element.type === 'select-multiple') {
-            for (const option of element.selectedOptions) {
-                formData.append(element.name, option.value);
-            }
-        } else if ((element.type === 'checkbox' || element.type === 'radio') && !element.checked) {
-            continue; // Пропускаем неотмеченные чекбоксы и радио
-        } else {
-            formData.append(element.name, element.value);
-        }
-    }
-}
-
-formData.append('is_ajax', '1');
-
-            // Определяем правильный URL для отправки
-            const formAction = form.getAttribute('action') || window.location.pathname;
-            console.log('Отправка на URL:', formAction);
-
-            // Отправка запроса
-            const response = await fetch(formAction, {
+            // Отправка
+            const response = await fetch(form.action || window.location.href, {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             });
 
-            console.log('Статус ответа:', response.status);
-
-            if (!response.ok) {
-                throw new Error('HTTP error! status: ${response.status}');
-            }
-
             const result = await response.json();
-            console.log('Результат:', result);
 
             if (result.success) {
                 showSuccess(result);
+                if (result.redirect) {
+                    window.location.href = result.redirect;
+                }
             } else {
                 showErrors(result.errors || {});
             }
@@ -86,7 +48,7 @@ formData.append('is_ajax', '1');
             console.error('Ошибка:', error);
             messagesContainer.innerHTML = `
                 <div class="error-message">
-                    Ошибка при отправке формы: ${error.message}
+                    Ошибка при отправке формы. Пожалуйста, попробуйте еще раз.
                 </div>
             `;
         } finally {
@@ -95,34 +57,69 @@ formData.append('is_ajax', '1');
         }
     });
 
-    // Функция валидации
-    function validateForm() {
+    // Полная валидация формы
+    function validateForm(form) {
         const errors = {};
-        const langSelect = document.querySelector('[name="languages[]"]');
-        const selectedLangs = langSelect ? 
-            Array.from(langSelect.selectedOptions).map(opt => opt.value) : 
-            [];
+        const fields = {
+            'fio': 'Укажите ФИО',
+            'phone': 'Укажите телефон',
+            'email': 'Укажите email',
+            'birth_day': 'Укажите день рождения',
+            'birth_month': 'Укажите месяц рождения',
+            'birth_year': 'Укажите год рождения',
+            'gender': 'Укажите пол',
+            'biography': 'Напишите биографию',
+            'languages[]': 'Выберите хотя бы один язык',
+            'agreement': 'Необходимо ваше согласие'
+        };
 
-        // Проверка обязательных полей
-        if (!form.querySelector('[name="fio"]').value.trim()) {
-            errors.fio = 'Укажите ФИО';
+        // Проверка каждого поля
+        for (const [name, message] of Object.entries(fields)) {
+            const element = form.querySelector(`[name="${name}"]`);
+            if (!element) continue;
+
+            let isValid = true;
+
+            if (element.type === 'checkbox') {
+                isValid = element.checked;
+            } else if (element.type === 'radio') {
+                isValid = form.querySelector(`[name="${name}"]:checked`) !== null;
+            } else if (element.type === 'select-multiple') {
+                isValid = element.selectedOptions.length > 0;
+            } else {
+                isValid = element.value.trim() !== '';
+            }
+
+            if (!isValid) {
+                errors[name.replace('[]', '')] = message;
+            }
         }
 
-        if (!form.querySelector('[name="phone"]').value.trim()) {
-            errors.phone = 'Укажите телефон';
-        }
-
-        if (selectedLangs.length === 0) {
-            errors.lang = 'Выберите хотя бы один язык';
+        // Дополнительная проверка даты
+        if (!errors.birth_day && !errors.birth_month && !errors.birth_year) {
+            const day = parseInt(form.querySelector('[name="birth_day"]').value);
+            const month = parseInt(form.querySelector('[name="birth_month"]').value);
+            const year = parseInt(form.querySelector('[name="birth_year"]').value);
+            
+            if (!checkDate(day, month, year)) {
+                errors.birth_day = 'Некорректная дата';
+                errors.birth_month = 'Некорректная дата';
+                errors.birth_year = 'Некорректная дата';
+            }
         }
 
         return errors;
     }
 
-    // Показ ошибок
+    function checkDate(day, month, year) {
+        if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
+        const date = new Date(year, month - 1, day);
+        return date.getFullYear() === year && 
+               date.getMonth() === month - 1 && 
+               date.getDate() === day;
+    }
+
     function showErrors(errors) {
-        messagesContainer.innerHTML = '';
-        
         // Очистка предыдущих ошибок
         document.querySelectorAll('.error-field').forEach(el => {
             el.classList.remove('error-field');
@@ -135,34 +132,44 @@ formData.append('is_ajax', '1');
         for (const [field, message] of Object.entries(errors)) {
             let element;
             
-            if (field === 'lang') {
+            if (field === 'languages') {
                 element = document.querySelector('[name="languages[]"]');
             } else {
                 element = document.querySelector(`[name="${field}"]`);
             }
 
             if (element) {
-                const container = element.closest('.form-group') || element.parentElement;
+                const container = element.closest('label') || element.parentElement;
                 container.classList.add('error-field');
                 
-                const errorElement = document.createElement('div');
+                const errorElement = document.createElement('span');
                 errorElement.className = 'error-text';
                 errorElement.textContent = message;
                 container.appendChild(errorElement);
             }
         }
+
+        // Прокрутка к первой ошибке
+        const firstError = document.querySelector('.error-field');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
 
-    // Показ успешной отправки
     function showSuccess(result) {
         messagesContainer.innerHTML = `
             <div class="success-message">
-                ${result.login && result.password ? 
-                    `Данные сохранены!<br>
-                    Логин: ${result.login}<br>
-                    Пароль: ${result.password}` : 
-                    'Данные успешно обновлены!'}
+                ${result.message || 'Форма успешно отправлена!'}
             </div>
         `;
+        
+        if (result.login && result.password) {
+            messagesContainer.innerHTML += `
+                <div class="credentials">
+                    Логин: <strong>${result.login}</strong><br>
+                    Пароль: <strong>${result.password}</strong>
+                </div>
+            `;
+        }
     }
 });
