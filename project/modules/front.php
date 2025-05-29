@@ -79,45 +79,66 @@ function front_post($request) {
         return ['success' => false, 'errors' => ['db' => 'Ошибка подключения к БД']];
     }
 
-    $post = $request['post'] ?? $_POST;
     $is_ajax = $request['is_ajax'] ?? false;
-
-    $values = [
-        'fio' => trim($post['fio'] ?? ''),
-        'phone' => trim($post['phone'] ?? ''),
-        'email' => trim($post['email'] ?? ''),
-        'birth_day' => trim($post['birth_day'] ?? ''),
-        'birth_month' => trim($post['birth_month'] ?? ''),
-        'birth_year' => trim($post['birth_year'] ?? ''),
-        'gender' => $post['gender'] ?? '',
-        'biography' => trim($post['biography'] ?? ''),
-        'lang' => $post['languages'] ?? [],
-        'agreement' => isset($post['agreement']) ? 1 : 0
-    ];
+    $post_data = $request['post'] ?? $_POST;
 
     $errors = [];
+    $values = [
+        'fio' => trim($post_data['fio'] ?? ''),
+        'phone' => trim($post_data['phone'] ?? ''),
+        'email' => trim($post_data['email'] ?? ''),
+        'birth_day' => trim($post_data['birth_day'] ?? ''),
+        'birth_month' => trim($post_data['birth_month'] ?? ''),
+        'birth_year' => trim($post_data['birth_year'] ?? ''),
+        'gender' => $post_data['gender'] ?? '',
+        'biography' => trim($post_data['biography'] ?? ''),
+        'lang' => $post_data['languages'] ?? [],
+        'agreement' => isset($post_data['agreement']) ? 1 : 0
+    ];
 
-    if ($values['fio'] === '') $errors['fio'] = '1';
-    if ($values['phone'] === '') $errors['phone'] = '1';
-    if ($values['email'] === '') $errors['email'] = '1';
-    if ($values['gender'] === '') $errors['gender'] = '1';
-    if ($values['biography'] === '') $errors['biography'] = '1';
-    if (empty($values['lang'])) $errors['lang'] = '1';
-    if (empty($values['agreement'])) $errors['agreement'] = '1';
-
-    if (empty($values['birth_day']) || empty($values['birth_month']) || empty($values['birth_year']) ||
-        !checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
-        $errors['birth_day'] = '1';
+    // Валидация
+    if ($values['fio'] === '') $errors['fio'] = 1;
+    if ($values['phone'] === '') $errors['phone'] = 1;
+    if ($values['email'] === '') $errors['email'] = 1;
+    if ($values['gender'] === '') $errors['gender'] = 1;
+    if ($values['biography'] === '') $errors['biography'] = 1;
+    if (empty($values['lang']) || !is_array($values['lang'])) {
+        $errors['lang'] = 1;
+    } else {
+        $validLangs = array_keys(getLangs());
+        foreach ($values['lang'] as $langId) {
+            if (!in_array($langId, $validLangs)) {
+                $errors['lang'] = 2;
+                break;
+            }
+        }
     }
 
+    if (!$values['agreement']) $errors['agreement'] = 1;
+
+    // Дата рождения
+    if (empty($values['birth_day']) || empty($values['birth_month']) || empty($values['birth_year'])) {
+        $errors['birth_day'] = 1;
+        $errors['birth_month'] = 1;
+        $errors['birth_year'] = 1;
+    } elseif (!checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
+        $errors['birth_day'] = 1;
+        $errors['birth_month'] = 1;
+        $errors['birth_year'] = 1;
+    }
+
+    // Сохраняем значения в куки
     foreach ($values as $key => $val) {
         setcookie($key . '_value', is_array($val) ? implode(',', $val) : $val, time() + 365 * 24 * 60 * 60, '/');
     }
 
+    // Сохраняем ВСЕ ошибки в куки
+    foreach ($errors as $key => $code) {
+        setcookie($key . '_error', $code, time() + 3600, '/');
+    }
+
+    // Если есть ошибки
     if (!empty($errors)) {
-        foreach ($errors as $key => $val) {
-            setcookie($key . '_error', $val, time() + 3600, '/');
-        }
         return ['success' => false];
     }
 
