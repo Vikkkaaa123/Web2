@@ -1,8 +1,13 @@
 <?php
+session_start();
 require_once __DIR__ . '/../scripts/db.php';
 
-// просто вызываем функцию, не объявляя её заново
-admin_login_check();
+// Проверка авторизации администратора
+if (!isset($_SESSION['login']) || !admin_login_check($_SESSION['login'])) {
+    header('Location: login.php');
+    exit;
+}
+
 
 function admin_get() {
     $db = connectDB();
