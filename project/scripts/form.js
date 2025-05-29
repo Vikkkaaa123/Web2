@@ -172,69 +172,80 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Обработчик отправки формы
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    console.log('Начало обработки формы');
+    
+    const submitBtn = form.querySelector('#submit-btn');
+    if (!submitBtn) {
+        console.error('Кнопка submit не найдена');
+        return;
+    }
+    
+    const originalText = submitBtn.value;
+    submitBtn.disabled = true;
+    submitBtn.value = 'Отправка...';
+    
+    try {
+        console.log('Валидация формы');
+        const {errors, values} = validateForm(form);
         
-        const submitBtn = form.querySelector('#submit-btn');
-        const originalText = submitBtn.value;
-        submitBtn.disabled = true;
-        submitBtn.value = 'Отправка...';
-        
-        try {
-            // Валидация
-            const {errors, values} = validateForm(form);
-            if (!errors.isValid) {
-                showErrors(errors, form);
-                submitBtn.disabled = false;
-                submitBtn.value = originalText;
-                return;
-            }
-
-            // Подготовка данных
-            const formData = new FormData(form);
-            formData.append('is_ajax', '1');
-
-            // Добавляем языки в FormData (нужно для select multiple)
-            const langSelect = form.querySelector('[name="languages[]"]');
-            if (langSelect) {
-                Array.from(langSelect.selectedOptions).forEach(option => {
-                    formData.append('languages[]', option.value);
-                });
-            }
-
-            // Отправка запроса
-            const response = await fetch('', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Ошибка сервера');
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                showSuccess(result);
-                if (result.login && result.password) {
-                    form.reset();
-                }
-            } else {
-                showErrors(result.errors || {}, form);
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            messagesContainer.innerHTML = `
-                <div class="error-message">
-                    Ошибка соединения с сервером. Пожалуйста, попробуйте позже.
-                </div>
-            `;
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.value = originalText;
+        if (!errors.isValid) {
+            console.log('Ошибки валидации:', errors);
+            showErrors(errors, form);
+            return;
         }
-    });
+
+        console.log('Подготовка FormData');
+        const formData = new FormData(form);
+        formData.append('is_ajax', '1');
+        
+        // Явно добавляем языки
+        const langSelect = form.querySelector('[name="languages[]"]');
+        if (langSelect) {
+            Array.from(langSelect.selectedOptions).forEach(option => {
+                formData.append('languages[]', option.value);
+                console.log('Добавлен язык:', option.value);
+            });
+        }
+
+        console.log('Отправка запроса');
+        const response = await fetch('', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        console.log('Ответ получен, статус:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Результат:', result);
+
+        if (result.success) {
+            showSuccess(result);
+            if (result.login && result.password) {
+                form.reset();
+            }
+        } else {
+            showErrors(result.errors || {}, form);
+        }
+    } catch (error) {
+        console.error('Ошибка при отправке:', error);
+        messagesContainer.innerHTML = `
+            <div class="error-message">
+                Ошибка: ${error.message}
+            </div>
+        `;
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.value = originalText;
+        console.log('Обработка формы завершена');
+    }
 });
