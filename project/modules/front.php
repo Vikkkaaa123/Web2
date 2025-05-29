@@ -4,7 +4,7 @@ function front_get($request) {
     $messages = [];
     $errors = [];
     $values = [];
-    $allowed_lang = getLangs($db);
+    $allowed_lang = getLangs();
 
     // Обработка успешного сохранения
     if (!empty($_COOKIE['save'])) {
@@ -216,15 +216,4 @@ function getErrorMessage($field, $code) {
     ];
 
     return $messages[$field][$code] ?? 'Некорректное значение';
-}
-
-function getLangs($db) {
-    try {
-        $stmt = $db->query("SELECT id, name FROM programming_languages");
-        $result = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-        return $result ?: []; 
-    } catch (PDOException $e) {
-        error_log('DB Error (getLangs): ' . $e->getMessage());
-        return []; 
-    }
 }
