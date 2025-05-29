@@ -5,6 +5,7 @@ ini_set('display_errors', DISPLAY_ERRORS);
 ini_set('include_path', INCLUDE_PATH);
 
 include('./scripts/db.php');
+include('./modules/front.php');
 include('./scripts/init.php');
 
 header('Content-Type: text/html; charset=utf-8');
