@@ -23,6 +23,7 @@ function login_get($request) {
 }
 
 function login_post($request) {
+    session_start();
     $db = db_connect();
     $login = trim($request['post']['login'] ?? '');
     $password = trim($request['post']['password'] ?? '');
