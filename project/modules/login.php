@@ -23,15 +23,15 @@ function login_get($request) {
 }
 
 function login_post($request) {
-    session_start();
     $db = db_connect();
     $login = trim($request['post']['login'] ?? '');
     $password = trim($request['post']['password'] ?? '');
-    
+
     try {
+        // Сначала проверяем, не админ ли
         $stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
         $stmt->execute([$login]);
-        
+
         if ($admin = $stmt->fetch()) {
             if (password_verify($password, $admin['password'])) {
                 $_SESSION['admin'] = true;
@@ -39,10 +39,11 @@ function login_post($request) {
                 return redirect('admin');
             }
         }
-        
+
+        // Затем проверяем обычного пользователя
         $stmt = $db->prepare("SELECT * FROM users WHERE login = ?");
         $stmt->execute([$login]);
-        
+
         if ($user = $stmt->fetch()) {
             if (password_verify($password, $user['password_hash'])) {
                 $_SESSION['user'] = true;
@@ -50,9 +51,9 @@ function login_post($request) {
                 return redirect('');
             }
         }
-        
+
         return redirect('login?error=' . urlencode('Неверный логин или пароль'));
-        
+
     } catch (PDOException $e) {
         error_log("Login error: " . $e->getMessage());
         return redirect('login?error=' . urlencode('Ошибка системы'));
