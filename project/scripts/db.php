@@ -105,18 +105,19 @@ function db_result($query, ...$params) {
 /**
  * Check if admin exists
  */
-function admin_login_check($db, $login) {
-$stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
-$stmt->execute([$login]);
-return $stmt->fetch() !== false;
+function admin_login_check($login) {
+    $db = db_connect();
+    $stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
+    $stmt->execute([$login]);
+    return $stmt->fetch() !== false;
 }
 
-
-function admin_password_check($db, $login, $password) {
-$stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
-$stmt->execute([$login]);
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-return $row && password_verify($password, $row['password_hash']);
+function admin_password_check($login, $password) {
+    $db = db_connect();
+    $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
+    $stmt->execute([$login]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row && password_verify($password, $row['password_hash']);
 }
 
 /**
