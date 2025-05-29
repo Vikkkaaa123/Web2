@@ -1,12 +1,13 @@
 <?php
-require_once __DIR__ . '/../scripts/db.php';
+require_once DIR . '/../scripts/db.php'; 
 
 $db = db_connect();
-if (!isset($_SESSION['login']) || !admin_login_check($db, $_SESSION['login'])) {
+$login = $_SESSION['login'] ?? '';
+
+if (!$login || !admin_login_check($db, $login)) {
     header('Location: login.php');
     exit;
 }
-
 
 function admin_get() {
     $db = db_connect();
