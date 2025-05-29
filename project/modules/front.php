@@ -4,7 +4,7 @@ function front_get($request) {
     $messages = [];
     $errors = [];
     $values = [];
-    $allowed_lang = getLangs();
+    $allowed_lang = getLangs($db);
 
     // Обработка успешного сохранения
     if (!empty($_COOKIE['save'])) {
@@ -106,8 +106,8 @@ function front_post($request) {
     if (empty($values['lang'])) $errors['lang'] = 'Выберите языки';
     if (empty($values['agreement'])) $errors['agreement'] = 'Необходимо согласие';
     
-   // Проверка даты рождения
-if (empty($values['birth_day']) || empty($values['birth_month']) || empty($values['birth_year'])) {
+    // Проверка даты рождения
+   if (empty($values['birth_day']) || empty($values['birth_month']) || empty($values['birth_year'])) {
     $errors['birth_date'] = 'Укажите дату рождения';
 } elseif (!checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
     $errors['birth_date'] = 'Некорректная дата рождения';
@@ -216,4 +216,15 @@ function getErrorMessage($field, $code) {
     ];
 
     return $messages[$field][$code] ?? 'Некорректное значение';
+}
+
+function getLangs($db) {
+    try {
+        $stmt = $db->query("SELECT id, name FROM programming_languages");
+        $result = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        return $result ?: []; 
+    } catch (PDOException $e) {
+        error_log('DB Error (getLangs): ' . $e->getMessage());
+        return []; 
+    }
 }
