@@ -1,11 +1,7 @@
 <?php
-// scripts/db.php
 
 $db = null;
 
-/**
- * Подключение к БД
- */
 function db_connect() {
     global $db;
     if ($db !== null) return $db;
@@ -57,14 +53,26 @@ function db_insert_id() {
     return db_connect()->lastInsertId();
 }
 
-// Проверка логина администратора
 function admin_login_check($login) {
-    $row = db_row("SELECT id FROM admins WHERE login = ?", $login);
-    return $row !== false;
+    return db_row("SELECT id FROM admins WHERE login = ?", $login) !== false;
 }
 
-// Проверка пароля администратора
 function admin_password_check($login, $password) {
     $row = db_row("SELECT password_hash FROM admins WHERE login = ?", $login);
     return $row && password_verify($password, $row['password_hash']);
+}
+
+//  Получение всех заявок
+function get_all_applications() {
+    return db_all("
+        SELECT a.*, u.login as user_login, g.short as gender_short,
+               GROUP_CONCAT(l.name SEPARATOR ', ') as languages
+        FROM applications a
+        LEFT JOIN users u ON u.id = a.user_id
+        LEFT JOIN genders g ON g.id = a.gender
+        LEFT JOIN application_language al ON al.app_id = a.id
+        LEFT JOIN programming_languages l ON l.id = al.lang_id
+        GROUP BY a.id
+        ORDER BY a.id DESC
+    ");
 }
