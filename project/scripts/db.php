@@ -59,7 +59,7 @@ function admin_login_check($login) {
 
 function getLangs() {
     $db = db_connect();
-    $stmt = $db->query("SELECT id, name FROM languages");
+    $stmt = $db->query("SELECT id, name FROM programming_languages");
 
     $langs = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -71,6 +71,7 @@ function getLangs() {
 
     return $langs;
 }
+
 
 
 function admin_password_check($login, $password) {
