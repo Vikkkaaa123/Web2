@@ -902,6 +902,8 @@
   <?php endif; ?>
 </div>
 
+
+        <div class="form-messages"></div>
         <div class="formstyle1">
           <form id="myform" class="application" method="POST" action="">
             <h2 class="white-text">ФОРМА</h2>
