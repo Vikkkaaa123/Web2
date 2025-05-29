@@ -2,14 +2,29 @@
 
 global $db;
 
-// Подключение к базе данных
-$user = 'u68606';
-$pass = '9347178'; 
-$db = new PDO('mysql:host=localhost;dbname=u68606', $user, $pass, [
-    PDO::ATTR_PERSISTENT => true,
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
-]);
+function db_connect() {
+    $host = 'localhost';
+    $dbname = 'u68606'; 
+    $user = 'u68606';  
+    $pass = '9347178';  
+    
+    try {
+        $db = new PDO(
+            "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
+            $user,
+            $pass,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false
+            ]
+        );
+        return $db;
+    } catch (PDOException $e) {
+        error_log("DB Connection Error: " . $e->getMessage());
+        return false;
+    }
+}
 
 /**
  * Получение списка языков программирования
