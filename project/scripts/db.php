@@ -1,13 +1,13 @@
 <?php
 /**
- * Database connection and operations
+ * Подключение к базе и функции работы с БД
  */
 
 $db = null;
 
 function db_connect() {
     global $db;
-    
+
     if ($db === null) {
         $user = 'u68606';
         $pass = '9347178';
@@ -19,126 +19,46 @@ function db_connect() {
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
             ]);
-
-            // Проверка существования необходимых таблиц
-            $requiredTables = ['programming_languages', 'applications', 'users', 'admins'];
-            foreach ($requiredTables as $table) {
-                $db->query("SELECT 1 FROM `{$table}` LIMIT 1");
-            }
-            
-            return $db;
-            
         } catch (PDOException $e) {
-            error_log("DB Connection Error [{$dsn}]: " . $e->getMessage());
-            throw new Exception("Ошибка подключения к БД. Попробуйте позже.");
+            error_log("Ошибка подключения к БД: " . $e->getMessage());
+            die("Ошибка подключения к БД");
         }
     }
-    
+
     return $db;
 }
 
-/**
- * Execute query and return single row
- */
-function db_row($query, ...$params) {
-    try {
-        $stmt = db_query($query, ...$params);
-        return $stmt ? $stmt->fetch() : false;
-    } catch (PDOException $e) {
-        error_log("DB Row Error: {$query} - " . $e->getMessage());
-        return false;
-    }
-}
-
-/**
- * Execute query and return statement handler
- */
 function db_query($query, ...$params) {
     $db = db_connect();
-    if (!$db) return false;
-    
-    try {
-        $stmt = $db->prepare($query);
-        $stmt->execute($params);
-        return $stmt;
-    } catch (PDOException $e) {
-        error_log("DB Query Error: {$query} - " . $e->getMessage());
-        return false;
-    }
+    $stmt = $db->prepare($query);
+    $stmt->execute($params);
+    return $stmt;
 }
 
-/**
- * Execute command (INSERT/UPDATE/DELETE) and return affected rows count
- */
-function db_command($query, ...$params) {
-    $db = db_connect();
-    if (!$db) return false;
-    
-    try {
-        $stmt = $db->prepare($query);
-        $stmt->execute($params);
-        return $stmt->rowCount();
-    } catch (PDOException $e) {
-        error_log("DB Command Error: {$query} - " . $e->getMessage());
-        return false;
-    }
+function db_row($query, ...$params) {
+    return db_query($query, ...$params)->fetch();
 }
 
-/**
- * Get last inserted ID
- */
-function db_insert_id() {
-    $db = db_connect();
-    return $db ? $db->lastInsertId() : false;
+function db_all($query, ...$params) {
+    return db_query($query, ...$params)->fetchAll();
 }
 
-/**
- * Execute query and return single value
- */
-function db_result($query, ...$params) {
-    $row = db_row($query, ...$params);
-    return $row ? reset($row) : false;
-}
-
-/**
- * Check if admin exists
- */
 function admin_login_check($login) {
-    $db = db_connect();
-    $stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
-    $stmt->execute([$login]);
-    return $stmt->fetch() !== false;
+    $row = db_row("SELECT id FROM admins WHERE login = ?", $login);
+    return $row ? true : false;
 }
 
 function admin_password_check($login, $password) {
-    $db = db_connect();
-    $stmt = $db->prepare("SELECT password_hash FROM admins WHERE login = ?");
-    $stmt->execute([$login]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $row = db_row("SELECT password_hash FROM admins WHERE login = ?", $login);
     return $row && password_verify($password, $row['password_hash']);
 }
 
-/**
- * Get list of programming languages
- */
 function getLangs() {
-    $db = db_connect();
-    if (!$db) return [];
-    
-    try {
-        $stmt = $db->query("SELECT id, name FROM programming_languages");
-        return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-    } catch (PDOException $e) {
-        error_log('DB Error (getLangs): ' . $e->getMessage());
-        return [];
+    $rows = db_all("SELECT id, name FROM programming_languages");
+    $langs = [];
+    foreach ($rows as $row) {
+        $langs[$row['id']] = $row['name'];
     }
-}
-
-// Устанавливаем соединение при первом включении файла
-try {
-    db_connect();
-} catch (Exception $e) {
-    // Ошибка уже записана в лог
+    return $langs;
 }
