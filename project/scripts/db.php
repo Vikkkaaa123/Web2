@@ -57,6 +57,10 @@ function admin_login_check($login) {
     return db_row("SELECT id FROM admins WHERE login = ?", $login) !== false;
 }
 
+function getLangs() {
+    return db_all("SELECT id, name FROM programming_languages ORDER BY name");
+}
+
 function admin_password_check($login, $password) {
     $row = db_row("SELECT password_hash FROM admins WHERE login = ?", $login);
     return $row && password_verify($password, $row['password_hash']);
