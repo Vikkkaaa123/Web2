@@ -56,10 +56,7 @@
                     <td><?= htmlspecialchars($app['birth_date'] ?? '-') ?></td>
                     <td><?= htmlspecialchars($app['gender_short'] ?? '-') ?></td>
                     <td><?= htmlspecialchars($app['languages'] ?? '-') ?></td>
-                    <td>
-                        <?= htmlspecialchars(mb_substr($app['biography'] ?? '', 0, 50)) ?>
-                        <?= mb_strlen($app['biography'] ?? '') > 50 ? '...' : '' ?>
-                    </td>
+                    <td><?= htmlspecialchars(substr($app['biography'] ?? '', 0, 50)) ?><?= strlen($app['biography'] ?? '') > 50 ? '...' : '' ?></td>
                     <td><?= isset($app['agreement']) && $app['agreement'] ? 'Да' : 'Нет' ?></td>
                     <td class="buttons">
                         <div class="change_button">
