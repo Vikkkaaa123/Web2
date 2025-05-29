@@ -1,5 +1,5 @@
 <?php
-require_once DIR . '/../scripts/db.php'; 
+require_once __DIR__ . '/../scripts/db.php'; 
 
 $db = db_connect();
 $login = $_SESSION['login'] ?? '';
