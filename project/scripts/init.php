@@ -1,8 +1,8 @@
+project/scripts/init.php:
 <?php
-
 function init($request = array(), $urlconf = array()) {
     global $conf;
-
+    
     try {
         $db = db_connect();
         if (!$db) {
@@ -10,6 +10,12 @@ function init($request = array(), $urlconf = array()) {
         }
     } catch (Exception $e) {
         error_log('Init DB Error: ' . $e->getMessage());
+        if ($request['is_ajax'] ?? false) {
+            return [
+                'headers' => ['Content-Type' => 'application/json'],
+                'entity' => ['success' => false, 'error' => 'Database error']
+            ];
+        }
         return [
             'headers' => ['HTTP/1.1 500 Internal Server Error'],
             'entity' => 'Database connection error'
@@ -46,80 +52,101 @@ function init($request = array(), $urlconf = array()) {
         $func = "{$r['module']}_{$method}";
         if (!function_exists($func)) continue;
 
-        $params = ['request' => $request];
+        $params = array('request' => $request);
         if (isset($matches[1])) {
             $params['url_param'] = $matches[1];
         }
 
         $result = call_user_func_array($func, $params);
 
-        if (is_array($result)) {
-            if ($request['is_ajax'] ?? false) {
-                return [
-                    'headers' => ['Content-Type' => 'application/json'],
-                    'entity' => $result
-                ];
-            }
-
-            if (!empty($result['headers'])) {
-                return $result;
-            }
-            $response = array_merge($response, $result);
-        } else {
-            $c['#content'][$r['module']] = $result;
-        }
+   if (is_array($result)) {
+    // Если front_post вернул JSON, сразу вернуть (AJAX-запрос)
+    if ($request['is_ajax'] ?? false) {
+        return [
+            'headers' => ['Content-Type' => 'application/json'],
+            'entity' => $result
+        ];
     }
 
-   if (!empty($response)) {
-    if (isset($response['template'])) {
-        $template = $response['template'];
-        unset($response['template']);
+    // Иначе продолжить как обычно (например, front_get)
+    if (!empty($result['headers'])) {
+        return $result;
     }
-    $c = array_merge($c, $response);
-    $c['#request'] = $request;
-    $response['entity'] = theme($template, $c);
+    $response = array_merge($response, $result);
+} else {
+    $c['#content'][$r['module']] = $result;
 }
+    }
+
+    if (!empty($c)) {
+        $c['#request'] = $request;
+        $response['entity'] = theme($template, $c);
+    } else {
+        $response = not_found();
+    }
 
     $response['headers']['Content-Type'] = 'text/html; charset=' . conf('charset');
     return $response;
 }
 
 function conf($key) {
-    global $conf;
-    return $conf[$key] ?? false;
+  global $conf;
+  return isset($conf[$key]) ? $conf[$key] : FALSE;
 }
 
-function url($addr = '', $params = []) {
-    $clean = conf('clean_urls');
-    $r = $clean ? '/' : '?q=';
-    $r = conf('basedir') . ltrim($r . strip_tags($addr), '/');
-    if (count($params) > 0) {
-        $r .= $clean ? '?' : '&';
-        $r .= implode('&', $params);
-    }
-    return $r;
+function url($addr = '', $params = array()) {
+  global $conf;
+
+  if ($addr == '' && isset($_GET['q'])) {
+    $addr = strip_tags($_GET['q']);
+  }
+  $clean = conf('clean_urls');
+  $r = $clean ? '/' : '?q=';
+  $r = conf('basedir') . ltrim($r . strip_tags($addr), '/'); 
+
+  if (count($params) > 0) {
+    $r .= $clean ? '?' : '&';
+    $r .= implode('&', $params);
+  }
+  return $r;
 }
 
-function redirect($l = null, $statusCode = 302) {
-    $location = is_null($l) ? $_SERVER['REQUEST_URI'] : conf('basedir') . $l;
-    return ['headers' => ['Location' => $location], 'statusCode' => $statusCode];
+function redirect($l = NULL, $statusCode = 302) {
+  if (is_null($l)) {
+    $location = $_SERVER['REQUEST_URI']; 
+  }
+  else {
+    $location = conf('basedir') . $l; 
+  }
+    return array('headers' => array('Location' => $location),
+                 'statusCode' => $statusCode);
 }
+
 
 function access_denied() {
-    return ['headers' => ['HTTP/1.1 403 Forbidden'], 'entity' => theme('403')];
+  return array(
+    'headers' => array('HTTP/1.1 403 Forbidden'),
+    'entity' => theme('403'),
+  );
 }
 
 function not_found() {
-    return ['headers' => ['HTTP/1.1 404 Not Found'], 'entity' => theme('404')];
+  return array(
+    'headers' => array('HTTP/1.1 404 Not Found'),
+    'entity' => theme('404'),
+  );
 }
 
-function theme($t, $c = []) {
-    $template = conf('theme') . '/' . str_replace('/', '_', $t) . '.tpl.php';
-    if (!file_exists($template)) {
-        return implode('', $c);
-    }
-    ob_start();
-    extract($c);
-    include $template;
-    return ob_get_clean();
+
+function theme($t, $c = array()) {
+  $template = conf('theme') . '/' . str_replace('/', '_', $t) . '.tpl.php';
+  if (!file_exists($template)) {
+    return implode('', $c);
+  }
+  ob_start();
+  extract($c);
+  include $template;
+  $contents = ob_get_contents();
+  ob_end_clean();
+  return $contents;
 }
