@@ -1,71 +1,49 @@
 <?php
 require_once __DIR__ . '/../scripts/db.php';
 
-function admin_get($request, $db) {
-    $user_log = $_SERVER['PHP_AUTH_USER'] ?? '';
-    $user_pass = $_SERVER['PHP_AUTH_PW'] ?? '';
-
-    if (empty($user_log) || empty($user_pass) || 
-        !admin_login_check($db, $user_log) || 
-        !admin_password_check($db, $user_log, $user_pass)) {
-
-        header('HTTP/1.1 401 Unauthorized');
-        header('WWW-Authenticate: Basic realm="Admin Panel"');
-        return theme('401');
+function admin_login_check() {
+    session_start();
+    if (empty($_SESSION['admin'])) {
+        header('HTTP/1.1 403 Forbidden');
+        include_once __DIR__ . '/../theme/403.tpl.php';
+        exit();
     }
+}
 
-    // Статистика по языкам
-    $language_table = $db->query("
-        SELECT p.name, COUNT(al.application_id) as count 
-        FROM programming_languages p
-        LEFT JOIN application_languages al ON p.id = al.language_id
-        GROUP BY p.id
-        ORDER BY count DESC
-    ")->fetchAll(PDO::FETCH_ASSOC);
+function admin_get() {
+    $db = connectDB();
 
-    // Все заявки с пользователями
-    $user_table = $db->query("
-        SELECT
+    // Получаем статистику по языкам
+    $stmt = $db->query("
+        SELECT l.language, COUNT(al.language_id) AS count
+        FROM application_languages al
+        JOIN languages l ON al.language_id = l.id
+        GROUP BY al.language_id
+    ");
+    $stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Получаем все заявки пользователей и их языки
+    $stmt = $db->query("
+        SELECT 
             a.id,
-            u.login AS user_login,
             a.full_name,
-            a.email,
             a.phone,
+            a.email,
             a.birth_date,
-            CASE a.gender
-                WHEN 'm' THEN 'М'
-                WHEN 'f' THEN 'Ж'
-                ELSE 'Другое'
-            END AS gender_short,
+            a.gender,
             a.biography,
             a.agreement,
-            GROUP_CONCAT(p.name SEPARATOR ', ') AS languages
+            GROUP_CONCAT(l.language SEPARATOR ', ') as languages
         FROM applications a
-        LEFT JOIN users u ON a.user_id = u.id
         LEFT JOIN application_languages al ON a.id = al.application_id
-        LEFT JOIN programming_languages p ON al.language_id = p.id
+        LEFT JOIN languages l ON al.language_id = l.id
         GROUP BY a.id
-        ORDER BY a.id DESC
-    ")->fetchAll(PDO::FETCH_ASSOC);
+    ");
+    $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    return theme('admin', [
-        'language_stats' => $language_table,
-        'processedApplications' => $user_table
-    ]);
+    // Передаём в шаблон
+    include_once __DIR__ . '/../theme/admin.tpl.php';
 }
 
-function admin_post($request, $db) {
-    if (!empty($request['del_by_uid'])) {
-        $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
-        $stmt->execute([$request['del_by_uid']]);
-    }
-
-    return redirect('admin');
-}
-
-$db = db_connect();
-$response = ($_SERVER['REQUEST_METHOD'] === 'POST') 
-    ? admin_post($_POST, $db) 
-    : admin_get($_GET, $db);
-
-echo $response;
+admin_login_check();
+admin_get();
