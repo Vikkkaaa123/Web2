@@ -1,79 +1,39 @@
 <?php
-// Подключение конфигурации
 include('./settings.php');
 
-// Настройки отображения ошибок
+// Выключаем отображение ошибок после отладки.
 ini_set('display_errors', DISPLAY_ERRORS);
+//error_reporting(E_ALL & E_STRICT);
+//ini_set("mysql.trace_mode","On");
+
+// Папки со скриптами и модулями.
 ini_set('include_path', INCLUDE_PATH);
 
-// Подключение основных скриптов
 include('./scripts/db.php');
 include('./scripts/init.php');
+$request = array(
+  'url' => isset($_GET['q']) ? $_GET['q'] : '',
+  'method' => isset($_POST['method']) && in_array($_POST['method'], array('get', 'post', 'put', 'delete')) ? $_POST['method'] : $_SERVER['REQUEST_METHOD'],
+  'get' => !empty($_GET) ? $_GET : array(),
+  'post' => !empty($_POST) ? $_POST : array(),
+  'put' => !empty($_POST) && !empty($_POST['method']) && $_POST['method'] == 'put' ? $_POST : array(),
+  'delete' => !empty($_POST) && !empty($_POST['method']) && $_POST['method'] == 'delete' ? $_POST : array(),
+  'Content-Type' => 'text/html',
+);
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Проверка существования файлов перед включением
-$files_to_include = [
-    './settings.php',
-    './scripts/db.php',
-    './scripts/init.php'
-];
-
-foreach ($files_to_include as $file) {
-    if (!file_exists($file)) {
-        die("Error: Missing required file - $file");
-    }
-    require_once $file;
-}
-
-// Проверка работы db_connect()
-if (!function_exists('db_connect')) {
-    die("Error: db_connect() function not found");
-}
-
-// Определение типа запроса (AJAX или обычный)
-$is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-           strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
-
-// Подготовка данных запроса
-$request = [
-    'url' => $_GET['q'] ?? '',
-    'method' => strtolower($_SERVER['REQUEST_METHOD']),
-    'get' => $_GET,
-    'post' => $_POST,
-    'files' => $_FILES,
-    'is_ajax' => $is_ajax,
-    'Content-Type' => $is_ajax ? 'application/json' : 'text/html'
-];
-
-// Обработка raw POST данных для AJAX
-if ($is_ajax && empty($_POST) && $input = file_get_contents('php://input')) {
-    parse_str($input, $request['post']);
-    $_POST = $request['post'];
-}
-
-// Установка заголовков для AJAX
-if ($is_ajax) {
-    header('Content-Type: application/json');
-}
-
-// Обработка запроса
 $response = init($request, $urlconf);
 
-// Отправка заголовков
 if (!empty($response['headers'])) {
-    foreach ($response['headers'] as $key => $value) {
-        header(is_string($key) ? "$key: $value" : $value);
+  foreach ($response['headers'] as $key => $value) {
+    if (is_string($key)) {
+      header(sprintf('%s: %s', $key, $value));
     }
+    else {
+      header($value);
+    }
+  }
 }
 
-// Вывод результата
 if (!empty($response['entity'])) {
-    if ($is_ajax && is_array($response['entity'])) {
-        echo json_encode($response['entity']);
-    } else {
-        echo $response['entity'];
-    }
+  print($response['entity']);
 }
