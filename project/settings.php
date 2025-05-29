@@ -19,6 +19,7 @@ $conf = array(
 );
 
 $urlconf = array(
+  '/^project$/' => array('module' => 'project'),
   '' => array('module' => 'front','method' => ['get', 'post']),
   '/^login$/' => array('module' => 'login'),
   '/^admin$/' => array('module' => 'admin'),
