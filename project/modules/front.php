@@ -5,27 +5,56 @@ function front_get($request) {
     $errors = [];
     $values = [];
     $allowed_lang = getLangs();
-
     $all_fields = [
         'fio', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year',
         'gender', 'biography', 'languages', 'agreement'
     ];
 
-    foreach ($all_fields as $field) {
-        $errors[$field] = !empty($_COOKIE["{$field}_error"]) 
-            ? getErrorMessage($field, $_COOKIE["{$field}_error"]) 
-            : '';
+    // Если пользователь вошёл — загрузим данные из БД
+    if (!empty($_SESSION['login'])) {
+        $db = db_connect();
+        $stmt = $db->prepare("
+            SELECT a.*, GROUP_CONCAT(al.language_id) as languages
+            FROM users u
+            JOIN user_applications ua ON ua.user_id = u.id
+            JOIN applications a ON a.id = ua.application_id
+            LEFT JOIN application_languages al ON al.application_id = a.id
+            WHERE u.login = ?
+            GROUP BY a.id
+        ");
+        $stmt->execute([$_SESSION['login']]);
+        $row = $stmt->fetch();
 
-        $raw_val = $_COOKIE["{$field}_value"] ?? '';
-        $values[$field] = ($field === 'languages') ? explode(',', $raw_val) : $raw_val;
+        if ($row) {
+            $values = [
+                'fio' => $row['full_name'],
+                'phone' => $row['phone'],
+                'email' => $row['email'],
+                'birth_day' => date('d', strtotime($row['birth_date'])),
+                'birth_month' => date('m', strtotime($row['birth_date'])),
+                'birth_year' => date('Y', strtotime($row['birth_date'])),
+                'gender' => $row['gender'],
+                'biography' => $row['biography'],
+                'languages' => explode(',', $row['languages']),
+                'agreement' => $row['agreement']
+            ];
+        }
+    } else {
+        // Загружаем значения из куки
+        foreach ($all_fields as $field) {
+            $errors[$field] = !empty($_COOKIE["{$field}_error"])
+                ? getErrorMessage($field, $_COOKIE["{$field}_error"])
+                : '';
 
-        setcookie("{$field}_error", '', time() - 3600, '/');
-        setcookie("{$field}_value", '', time() - 3600, '/');
-    }
+            $values[$field] = $_COOKIE["{$field}_value"] ?? '';
+            setcookie("{$field}_error", '', time() - 3600, '/');
+            setcookie("{$field}_value", '', time() - 3600, '/');
+        }
 
-    if (!empty($_COOKIE['save'])) {
-        $messages[] = 'Спасибо, результаты сохранены.';
-        setcookie('save', '', time() - 3600, '/');
+        if (!empty($_COOKIE['save'])) {
+            $messages[] = 'Спасибо, результаты сохранены.';
+            setcookie('save', '', time() - 3600, '/');
+        }
     }
 
     return theme('form', [
