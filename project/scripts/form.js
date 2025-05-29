@@ -71,7 +71,7 @@ formData.append('is_ajax', '1');
             console.log('Статус ответа:', response.status);
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error('HTTP error! status: ${response.status}');
             }
 
             const result = await response.json();
