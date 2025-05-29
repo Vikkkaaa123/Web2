@@ -892,7 +892,7 @@
       </div>
 
       <div class="b-form col-12 col-md-6 order-2 order-md-2 px-3 pb-3 pt-1 pt-md-3">
-       <<?php if (session_status() == PHP_SESSION_NONE) session_start(); ?>
+       <?php if (session_status() == PHP_SESSION_NONE) session_start(); ?>
     <div class="auth-buttons">
   <?php if (!empty($_SESSION['login'])): ?>
     <form action="<?= url('logout') ?>" method="POST">
