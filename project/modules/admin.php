@@ -30,8 +30,8 @@ function admin_get($request, $db) {
     ")->fetchAll();
 
     return theme('admin', [
-        'language_stats' => $language_table,
-        'users' => $user_table
+        'stats' => $language_table,
+        'processedApplications' => $user_table
     ]);
 }
 
