@@ -24,7 +24,10 @@ function init($request = [], $urlconf = []) {
 
     $response = array();
     $template = 'page';
-    $c = array();
+    $c = array(
+        '#content' => array(), 
+        '#request' => $request
+    );
 
     $q = $request['url'] ?? '';
     $method = strtolower($request['method'] ?? 'get');
@@ -76,7 +79,10 @@ function init($request = [], $urlconf = []) {
             }
             $response = array_merge($response, $result);
         } else {
-            $c['#content'][$r['module']] = $result;
+            if (!isset($c['#content'])) {
+              $c['#content'] = array();
+            }
+           $c['#content'][$r['module']] = $result;
         }
     }
 
