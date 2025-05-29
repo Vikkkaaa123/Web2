@@ -58,8 +58,20 @@ function admin_login_check($login) {
 }
 
 function getLangs() {
-    return db_all("SELECT id, name FROM programming_languages ORDER BY name");
+    $db = db_connect();
+    $stmt = $db->query("SELECT id, name FROM languages");
+
+    $langs = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $langs[] = [
+            'id' => $row['id'],
+            'name' => $row['name']
+        ];
+    }
+
+    return $langs;
 }
+
 
 function admin_password_check($login, $password) {
     $row = db_row("SELECT password_hash FROM admins WHERE login = ?", $login);
