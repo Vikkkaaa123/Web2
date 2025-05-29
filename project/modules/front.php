@@ -1,206 +1,122 @@
 <?php
 
-function front_get($request) {
-    $messages = [];
-    $errors = [];
-    $values = [];
-    $allowed_lang = getLangs();
-    $all_fields = [
-        'fio', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year',
-        'gender', 'biography', 'languages', 'agreement'
-    ];
+function init($request = array(), $urlconf = array()) {
+    global $conf;
 
-    if (!empty($_SESSION['login'])) {
+    try {
         $db = db_connect();
-        $stmt = $db->prepare("
-            SELECT a.*, GROUP_CONCAT(al.language_id) as languages
-            FROM users u
-            JOIN user_applications ua ON ua.user_id = u.id
-            JOIN applications a ON a.id = ua.application_id
-            LEFT JOIN application_languages al ON al.application_id = a.id
-            WHERE u.login = ?
-            GROUP BY a.id
-        ");
-        $stmt->execute([$_SESSION['login']]);
-        $row = $stmt->fetch();
-
-        if ($row) {
-            $values = [
-                'fio' => $row['full_name'],
-                'phone' => $row['phone'],
-                'email' => $row['email'],
-                'birth_day' => date('d', strtotime($row['birth_date'])),
-                'birth_month' => date('m', strtotime($row['birth_date'])),
-                'birth_year' => date('Y', strtotime($row['birth_date'])),
-                'gender' => $row['gender'],
-                'biography' => $row['biography'],
-                'languages' => explode(',', $row['languages']),
-                'agreement' => $row['agreement']
-            ];
+        if (!$db) {
+            throw new Exception('Database connection failed');
         }
-    } else {
-        foreach ($all_fields as $field) {
-            $errors[$field] = !empty($_COOKIE["{$field}_error"])
-                ? getErrorMessage($field, $_COOKIE["{$field}_error"])
-                : '';
-
-            $values[$field] = $_COOKIE["{$field}_value"] ?? '';
-            setcookie("{$field}_error", '', time() - 3600, '/');
-            setcookie("{$field}_value", '', time() - 3600, '/');
-        }
-
-        if (!empty($_COOKIE['save'])) {
-            $messages[] = 'Спасибо, результаты сохранены.';
-            setcookie('save', '', time() - 3600, '/');
-        }
-    }
-
-    return theme('form', [
-        'messages' => $messages,
-        'errors' => $errors,
-        'values' => $values,
-        'allowed_lang' => $allowed_lang
-    ]);
-}
-
-function front_post($request) {
-    $db = db_connect();
-    if (!$db) {
-        return ['success' => false, 'errors' => ['db' => 'Ошибка подключения к БД']];
-    }
-
-    $is_ajax = $request['is_ajax'] ?? false;
-    $post_data = $request['post'] ?? $_POST;
-
-    $required_fields = [
-        'fio' => 'Укажите ФИО',
-        'phone' => 'Укажите телефон',
-        'email' => 'Укажите email',
-        'birth_day' => 'Укажите день рождения',
-        'birth_month' => 'Укажите месяц рождения',
-        'birth_year' => 'Укажите год рождения',
-        'gender' => 'Укажите пол',
-        'biography' => 'Напишите биографию',
-        'languages' => 'Выберите хотя бы один язык',
-        'agreement' => 'Необходимо ваше согласие'
-    ];
-
-    $errors = [];
-    $values = [];
-
-    foreach ($required_fields as $field => $error_message) {
-        if ($field === 'languages') {
-            $values[$field] = $post_data['languages'] ?? [];
-            if (empty($values[$field])) {
-                $errors[$field] = $error_message;
-            }
-        } elseif ($field === 'agreement') {
-            $values[$field] = isset($post_data['agreement']) ? 1 : 0;
-            if (!$values[$field]) {
-                $errors[$field] = $error_message;
-            }
-        } else {
-            $values[$field] = trim($post_data[$field] ?? '');
-            if (empty($values[$field])) {
-                $errors[$field] = $error_message;
-            }
-        }
-    }
-
-    if (!isset($errors['birth_day']) && !isset($errors['birth_month']) && !isset($errors['birth_year'])) {
-        if (!checkdate((int)$values['birth_month'], (int)$values['birth_day'], (int)$values['birth_year'])) {
-            $errors['birth_day'] = 'Некорректная дата';
-            $errors['birth_month'] = 'Некорректная дата';
-            $errors['birth_year'] = 'Некорректная дата';
-        }
-    }
-
-    foreach ($values as $key => $val) {
-        if ($key === 'languages') {
-            setcookie("{$key}_value", implode(',', $val), time() + 365 * 24 * 3600, '/');
-        } else {
-            setcookie("{$key}_value", $val, time() + 365 * 24 * 3600, '/');
-        }
-    }
-
-    if (!empty($errors)) {
-        foreach ($errors as $key => $_) {
-            setcookie("{$key}_error", 1, time() + 60, '/');
-        }
-
-        $first_error_field = array_key_first($errors);
-
+    } catch (Exception $e) {
+        error_log('Init DB Error: ' . $e->getMessage());
         return [
-            'success' => false,
-            'errors' => $errors,
-            'scroll_to_first_error' => $first_error_field
+            'headers' => ['HTTP/1.1 500 Internal Server Error'],
+            'entity' => 'Database connection error'
         ];
     }
 
-    try {
-        $db->beginTransaction();
+    $response = array();
+    $template = 'page';
+    $c = array();
 
-        $birth_date = sprintf('%04d-%02d-%02d', $values['birth_year'], $values['birth_month'], $values['birth_day']);
+    $q = $request['url'] ?? '';
+    $method = strtolower($request['method'] ?? 'get');
 
-        $stmt = $db->prepare("INSERT INTO applications 
-            (full_name, phone, email, birth_date, gender, biography, agreement) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $values['fio'],
-            $values['phone'],
-            $values['email'],
-            $birth_date,
-            $values['gender'],
-            $values['biography'],
-            $values['agreement']
-        ]);
-        $app_id = $db->lastInsertId();
+    foreach ($urlconf as $url => $r) {
+        $matches = array();
 
-        $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
-        foreach ($values['languages'] as $lang_id) {
-            $stmt->execute([$app_id, $lang_id]);
+        if ($url == '' || $url[0] != '/') {
+            if ($url != $q) continue;
+        } else {
+            if (!preg_match($url, $q, $matches)) continue;
         }
 
-        $login = 'user_' . bin2hex(random_bytes(3));
-        $password = bin2hex(random_bytes(4));
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-
-        $stmt = $db->prepare("INSERT INTO users (login, password_hash) VALUES (?, ?)");
-        $stmt->execute([$login, $hash]);
-
-        $user_id = $db->lastInsertId();
-        $stmt = $db->prepare("INSERT INTO user_applications (user_id, application_id) VALUES (?, ?)");
-        $stmt->execute([$user_id, $app_id]);
-
-        $db->commit();
-
-        if (!$is_ajax) {
-            setcookie('save', 1, time() + 3600, '/');
-            setcookie('login', $login, time() + 3600, '/');
-            setcookie('password', $password, time() + 3600, '/');
+        if (!empty($r['auth'])) {
+            require_once "./modules/{$r['auth']}.php";
+            if (function_exists('auth')) {
+                $auth_response = auth($request, $r);
+                if ($auth_response) return $auth_response;
+            }
         }
 
-        return ['success' => true, 'login' => $login, 'password' => $password];
-    } catch (PDOException $e) {
-        $db->rollBack();
-        error_log('DB Error: ' . $e->getMessage());
-        return ['success' => false, 'errors' => ['db' => 'Ошибка при сохранении в БД']];
+        if (empty($r['module'])) continue;
+        require_once "./modules/{$r['module']}.php";
+
+        $func = "{$r['module']}_{$method}";
+        if (!function_exists($func)) continue;
+
+        $params = ['request' => $request];
+        if (isset($matches[1])) {
+            $params['url_param'] = $matches[1];
+        }
+
+        $result = call_user_func_array($func, $params);
+
+        if (is_array($result)) {
+            if ($request['is_ajax'] ?? false) {
+                return [
+                    'headers' => ['Content-Type' => 'application/json'],
+                    'entity' => $result
+                ];
+            }
+
+            if (!empty($result['headers'])) {
+                return $result;
+            }
+            $response = array_merge($response, $result);
+        } else {
+            $c['#content'][$r['module']] = $result;
+        }
     }
+
+    if (!empty($c)) {
+        $c['#request'] = $request;
+        $response['entity'] = theme($template, $c);
+    } else {
+        $response = not_found();
+    }
+
+    $response['headers']['Content-Type'] = 'text/html; charset=' . conf('charset');
+    return $response;
 }
 
-function getErrorMessage($field, $code) {
-    $messages = [
-        'fio' => 'Укажите ФИО',
-        'phone' => 'Укажите телефон',
-        'email' => 'Укажите email',
-        'birth_day' => ($code == 1) ? 'Укажите день' : 'Некорректный день',
-        'birth_month' => ($code == 1) ? 'Укажите месяц' : 'Некорректный месяц',
-        'birth_year' => ($code == 1) ? 'Укажите год' : 'Некорректный год',
-        'gender' => 'Укажите пол',
-        'biography' => 'Напишите биографию',
-        'languages' => 'Выберите хотя бы один язык',
-        'agreement' => 'Необходимо согласие'
-    ];
+function conf($key) {
+    global $conf;
+    return $conf[$key] ?? false;
+}
 
-    return $messages[$field] ?? 'Ошибка в поле';
+function url($addr = '', $params = []) {
+    $clean = conf('clean_urls');
+    $r = $clean ? '/' : '?q=';
+    $r = conf('basedir') . ltrim($r . strip_tags($addr), '/');
+    if (count($params) > 0) {
+        $r .= $clean ? '?' : '&';
+        $r .= implode('&', $params);
+    }
+    return $r;
+}
+
+function redirect($l = null, $statusCode = 302) {
+    $location = is_null($l) ? $_SERVER['REQUEST_URI'] : conf('basedir') . $l;
+    return ['headers' => ['Location' => $location], 'statusCode' => $statusCode];
+}
+
+function access_denied() {
+    return ['headers' => ['HTTP/1.1 403 Forbidden'], 'entity' => theme('403')];
+}
+
+function not_found() {
+    return ['headers' => ['HTTP/1.1 404 Not Found'], 'entity' => theme('404')];
+}
+
+function theme($t, $c = []) {
+    $template = conf('theme') . '/' . str_replace('/', '_', $t) . '.tpl.php';
+    if (!file_exists($template)) {
+        return implode('', $c);
+    }
+    ob_start();
+    extract($c);
+    include $template;
+    return ob_get_clean();
 }
