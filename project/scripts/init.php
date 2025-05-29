@@ -70,12 +70,15 @@ function init($request = array(), $urlconf = array()) {
         }
     }
 
-    if (!empty($c)) {
-        $c['#request'] = $request;
-        $response['entity'] = theme($template, $c);
-    } else {
-        $response = not_found();
+   if (!empty($response)) {
+    if (isset($response['template'])) {
+        $template = $response['template'];
+        unset($response['template']);
     }
+    $c = array_merge($c, $response);
+    $c['#request'] = $request;
+    $response['entity'] = theme($template, $c);
+}
 
     $response['headers']['Content-Type'] = 'text/html; charset=' . conf('charset');
     return $response;
