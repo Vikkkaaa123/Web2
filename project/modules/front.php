@@ -1,16 +1,18 @@
 <?php
 
+require_once __DIR__ . '/../scripts/db.php';
+
 function front_get($request) {
     $messages = [];
     $errors = [];
     $values = [];
     $allowed_lang = getLangs();
+
     $all_fields = [
         'fio', 'phone', 'email', 'birth_day', 'birth_month', 'birth_year',
         'gender', 'biography', 'languages', 'agreement'
     ];
 
-    // Если пользователь вошёл — загрузим данные из БД
     if (!empty($_SESSION['login'])) {
         $db = db_connect();
         $stmt = $db->prepare("
@@ -40,12 +42,10 @@ function front_get($request) {
             ];
         }
     } else {
-        // Загружаем значения из куки
         foreach ($all_fields as $field) {
             $errors[$field] = !empty($_COOKIE["{$field}_error"])
                 ? getErrorMessage($field, $_COOKIE["{$field}_error"])
                 : '';
-
             $values[$field] = $_COOKIE["{$field}_value"] ?? '';
             setcookie("{$field}_error", '', time() - 3600, '/');
             setcookie("{$field}_value", '', time() - 3600, '/');
@@ -121,7 +121,6 @@ function front_post($request) {
         }
     }
 
-    // Устанавливаем куки на 1 год для всех значений
     foreach ($values as $key => $val) {
         if ($key === 'languages') {
             setcookie("{$key}_value", implode(',', $val), time() + 365 * 24 * 3600, '/');
@@ -131,7 +130,6 @@ function front_post($request) {
     }
 
     if (!empty($errors)) {
-        // Ошибки — запоминаем их в куки
         foreach ($errors as $key => $_) {
             setcookie("{$key}_error", 1, time() + 60, '/');
         }
@@ -166,7 +164,7 @@ function front_post($request) {
 
         $stmt = $db->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
         foreach ($values['languages'] as $lang_id) {
-        $stmt->execute([$app_id, $lang_id]);
+            $stmt->execute([$app_id, $lang_id]);
         }
 
         $login = 'user_' . bin2hex(random_bytes(3));
