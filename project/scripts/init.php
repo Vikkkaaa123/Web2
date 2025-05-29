@@ -3,17 +3,13 @@
  * Инициализация приложения
  */
 
-function init($request = array(), $urlconf = array()) {
-    global $conf, $db;
+function init($request = [], $urlconf = []) {
+    require_once __DIR__ . '/db.php';
     
-    try {
-        // Подключение к базе данных
-        $db = db_connect();
-        if (!$db) {
-            throw new Exception('Database connection failed');
-        }
-    } catch (Exception $e) {
-        error_log('Init DB Error: ' . $e->getMessage());
+    global $db;
+    $db = db_connect();
+    
+    if (!$db) {
         if ($request['is_ajax'] ?? false) {
             return [
                 'headers' => ['Content-Type' => 'application/json'],
@@ -22,7 +18,7 @@ function init($request = array(), $urlconf = array()) {
         }
         return [
             'headers' => ['HTTP/1.1 500 Internal Server Error'],
-            'entity' => 'Database connection error'
+            'entity' => 'Database connection failed'
         ];
     }
 
