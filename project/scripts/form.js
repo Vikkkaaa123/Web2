@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Функция валидации формы
     function validateForm(form) {
         const errors = {};
+        const langSelect = form.querySelector('[name="languages[]"]');
+        const selectedLanguages = langSelect ? 
+            Array.from(langSelect.selectedOptions).map(opt => opt.value) : 
+            [];
+
         const values = {
             'fio': form.querySelector('[name="fio"]')?.value.trim(),
             'phone': form.querySelector('[name="phone"]')?.value.trim(),
@@ -15,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'birth_month': form.querySelector('[name="birth_month"]')?.value,
             'birth_year': form.querySelector('[name="birth_year"]')?.value,
             'gender': form.querySelector('[name="gender"]:checked')?.value,
-            'languages': Array.from(form.querySelectorAll('[name="languages[]"]:checked')).map(el => el.value),
+            'languages': selectedLanguages,
             'biography': form.querySelector('[name="biography"]')?.value.trim(),
             'agreement': form.querySelector('[name="agreement"]')?.checked
         };
@@ -64,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
             errors.isValid = false;
         }
 
-        // Проверка языков
+        // Проверка языков программирования
         if (values.languages.length === 0) {
             errors.lang = 'Выберите хотя бы один язык';
             errors.isValid = false;
@@ -111,27 +116,34 @@ document.addEventListener('DOMContentLoaded', function() {
         // Добавление новых ошибок
         for (const [field, message] of Object.entries(errors)) {
             let input;
+            let container;
             
             if (field === 'birth_date') {
                 input = form.querySelector('[name="birth_day"]');
+                container = input?.closest('.date-fields') || input?.parentElement;
             } else if (field === 'lang') {
                 input = form.querySelector('[name="languages[]"]');
+                container = input?.closest('label') || input?.parentElement;
+            } else if (field === 'gender') {
+                container = form.querySelector('[name="gender"]')?.closest('.gender-options');
+            } else if (field === 'agreement') {
+                container = form.querySelector('[name="agreement"]')?.closest('.checkbox-block');
             } else {
                 input = form.querySelector(`[name="${field}"]`);
+                container = input?.closest('label') || input?.parentElement;
             }
 
-            if (input) {
-                const fieldContainer = input.closest('label') || input.parentElement;
-                fieldContainer.classList.add('error-field');
+            if (container) {
+                container.classList.add('error-field');
                 
                 const errorElement = document.createElement('span');
                 errorElement.className = 'error-text';
                 errorElement.textContent = message;
                 
-                if (input.nextSibling) {
+                if (input?.nextSibling) {
                     input.parentNode.insertBefore(errorElement, input.nextSibling);
                 } else {
-                    fieldContainer.appendChild(errorElement);
+                    container.appendChild(errorElement);
                 }
             }
         }
@@ -181,6 +193,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Подготовка данных
             const formData = new FormData(form);
             formData.append('is_ajax', '1');
+
+            // Добавляем языки в FormData (нужно для select multiple)
+            const langSelect = form.querySelector('[name="languages[]"]');
+            if (langSelect) {
+                Array.from(langSelect.selectedOptions).forEach(option => {
+                    formData.append('languages[]', option.value);
+                });
+            }
 
             // Отправка запроса
             const response = await fetch('', {
