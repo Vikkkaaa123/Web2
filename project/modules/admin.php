@@ -1,14 +1,8 @@
 <?php
 require_once __DIR__ . '/../scripts/db.php';
 
-function admin_login_check() {
-    session_start();
-    if (empty($_SESSION['admin'])) {
-        header('HTTP/1.1 403 Forbidden');
-        include_once __DIR__ . '/../theme/403.tpl.php';
-        exit();
-    }
-}
+// просто вызываем функцию, не объявляя её заново
+admin_login_check();
 
 function admin_get() {
     $db = connectDB();
@@ -45,5 +39,4 @@ function admin_get() {
     include_once __DIR__ . '/../theme/admin.tpl.php';
 }
 
-admin_login_check();
 admin_get();
