@@ -1,28 +1,22 @@
 $(document).ready(function() {
-    // Инициализация аккордеона
-    $(".b-accordion").each(function() {
-        $(this).find("div:first").addClass("active");
-        $(this).find("h3:first").addClass("active-acc-text");
-        $(this).find("p:not(:first)").hide();
-    });
 
-    // Обработчик клика
-    $(".b-accordion h3").click(function(e) {
-        // Не обрабатываем клики на элементах формы
-        if ($(e.target).is('input, select, textarea, label, a')) {
-            return;
-        }
+    $(".b-accordion div:first").addClass("active");
+    $(".b-accordion h3:first").addClass("active-acc-text");
+    $(".b-accordion p:not(:first)").hide();
 
-        const $accordionItem = $(this).closest(".b-accordion div");
-        
-        // Закрываем другие элементы
-        $accordionItem.siblings("div").removeClass("active")
-            .find("p").slideUp("slow")
-            .prev("div").find("h3").removeClass("active-acc-text");
+    $(".b-accordion h3").click(function() {
+        $(this).parent("div").parent("div").
+        siblings("div").removeClass("active");
+        $(this).parent("div").parent("div").toggleClass("active");
 
-        // Открываем/закрываем текущий
-        $accordionItem.toggleClass("active")
-            .find("p").slideToggle("slow")
-            .prev("div").find("h3").toggleClass("active-acc-text");
+        $(this).parent("div").next("p").slideToggle("slow");
+        $(this).parent("div").parent("div").siblings("div")
+            .children("p:visible").slideUp("slow");
+
+        $(this).toggleClass("active-acc-text");
+        $(this).parent("div").parent("div").siblings("div")
+            .children("div").children("h3").removeClass("active-acc-text");
+
     });
 });
+
