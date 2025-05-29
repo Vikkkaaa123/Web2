@@ -36,8 +36,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Подготовка данных
-            const formData = new FormData(form);
-            formData.append('is_ajax', '1');
+           const formData = new FormData();
+
+  for (const element of form.elements) {
+    if (element.name && element.type !== 'submit') {
+        if (element.type === 'select-multiple') {
+            for (const option of element.selectedOptions) {
+                formData.append(element.name, option.value);
+            }
+        } else if ((element.type === 'checkbox' || element.type === 'radio') && !element.checked) {
+            continue; // Пропускаем неотмеченные чекбоксы и радио
+        } else {
+            formData.append(element.name, element.value);
+        }
+    }
+}
+
+formData.append('is_ajax', '1');
 
             // Определяем правильный URL для отправки
             const formAction = form.getAttribute('action') || window.location.pathname;
