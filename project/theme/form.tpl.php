@@ -892,10 +892,11 @@
       </div>
 
       <div class="b-form col-12 col-md-6 order-2 order-md-2 px-3 pb-3 pt-1 pt-md-3">
-       <div class="auth-buttons">
+       <<?php if (session_status() == PHP_SESSION_NONE) session_start(); ?>
+    <div class="auth-buttons">
   <?php if (!empty($_SESSION['login'])): ?>
     <form action="<?= url('logout') ?>" method="POST">
-      <input type="submit" value="Выйти" class="auth-btn">
+      <button type="submit" class="auth-btn">Выйти</button>
     </form>
   <?php else: ?>
     <a href="<?= url('login') ?>" class="auth-btn">Войти</a>
