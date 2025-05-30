@@ -58,5 +58,5 @@ function admin_get() {
 $data = admin_get();
 $user_table = $data['user_table'];
 $stats = $data['stats'];
-$processedApplications = $applications; 
+$processedApplications = $data['user_table']; 
 require_once __DIR__ . '/../theme/admin.tpl.php';
