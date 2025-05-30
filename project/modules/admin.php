@@ -9,69 +9,59 @@ if (!isset($_SESSION['login']) || !admin_login_check($_SESSION['login'])) {
 function admin_get() {
     global $db;
 
-    // 1. Получаем статистику по языкам
-    $stmt = $db->prepare("SELECT pl.name, COUNT(al.language_id) as count
-                          FROM programming_languages pl
-                          LEFT JOIN application_languages al ON pl.id = al.language_id
-                          GROUP BY pl.id");
-    $stmt->execute();
-    $language_stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Статистика по языкам
+    $stats = $db->query("
+        SELECT p.name, COUNT(DISTINCT al.application_id) as count
+        FROM programming_languages p
+        LEFT JOIN application_languages al ON p.id = al.language_id
+        GROUP BY p.id
+        ORDER BY count DESC
+    ")->fetchAll(PDO::FETCH_ASSOC);
 
-    // 2. Получаем все заявки + логины пользователей
-    $stmt = $db->prepare("
-        SELECT 
-            a.*,
-            u.login
-        FROM applications a
-        LEFT JOIN user_applications ua ON a.id = ua.application_id
-        LEFT JOIN users u ON ua.user_id = u.id
-        ORDER BY a.id DESC
-    ");
-    $stmt->execute();
-    $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Все заявки
+    $applications = $db->query("
+        SELECT * FROM applications ORDER BY id DESC
+    ")->fetchAll(PDO::FETCH_ASSOC);
 
-    // 3. Получаем языки для всех заявок
-    $stmt = $db->prepare("
-        SELECT al.application_id, pl.name
-        FROM application_languages al
-        JOIN programming_languages pl ON al.language_id = pl.id
-    ");
-    $stmt->execute();
-    $language_rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $processedApplications = [];
 
-    // Группируем языки по заявке
-    $lang_data = [];
-    foreach ($language_rows as $row) {
-        $lang_data[$row['application_id']][] = $row['name'];
-    }
-
-    // Формируем таблицу пользователей
-    $user_table = [];
     foreach ($applications as $app) {
-        $id = $app['id'];
-        $user_table[] = [
-            'id' => $id,
-            'login' => $app['login'] ?? '—',
-            'full_name' => $app['full_name'],
-            'email' => $app['email'],
-            'phone' => $app['phone'],
-            'birth_date' => $app['birth_date'],
-            'gender' => $app['gender'] === 'male' ? 'Муж' : ($app['gender'] === 'female' ? 'Жен' : '—'),
-            'biography' => $app['biography'],
-            'agreement' => (int)$app['agreement'] === 1 ? 'Да' : 'Нет',
-            'languages' => isset($lang_data[$id]) ? implode(', ', $lang_data[$id]) : ''
-        ];
+        // Логин пользователя
+        $stmt = $db->prepare("
+            SELECT u.login FROM users u
+            JOIN user_applications ua ON u.id = ua.user_id
+            WHERE ua.application_id = ?
+        ");
+        $stmt->execute([$app['id']]);
+        $app['user_login'] = $stmt->fetchColumn() ?: '—';
+
+        // Языки программирования
+        $stmt = $db->prepare("
+            SELECT GROUP_CONCAT(p.name SEPARATOR ', ')
+            FROM programming_languages p
+            JOIN application_languages al ON p.id = al.language_id
+            WHERE al.application_id = ?
+        ");
+        $stmt->execute([$app['id']]);
+        $app['languages'] = $stmt->fetchColumn() ?: 'Не указано';
+
+        // Пол: м/ж/—
+        $app['gender_short'] = $app['gender'] === 'male' ? 'м' : ($app['gender'] === 'female' ? 'ж' : '—');
+
+        // Согласие
+        $app['agreement_text'] = (int)$app['agreement'] === 1 ? 'Да' : 'Нет';
+
+        $processedApplications[] = $app;
     }
 
     return [
-        'stats' => $language_stats,
-        'user_table' => $user_table,
+        'stats' => $stats,
+        'users' => $processedApplications
     ];
 }
 
 $data = admin_get();
-$user_table = $data['user_table'];
 $stats = $data['stats'];
-$processedApplications = $user_table;
+$processedApplications = $data['users'];
 
 require_once __DIR__ . '/../theme/admin.tpl.php';
