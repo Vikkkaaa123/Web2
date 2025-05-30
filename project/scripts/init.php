@@ -1,4 +1,7 @@
 <?php
+session_start();
+require_once __DIR__ . '/db.php';
+
 function init($request = array(), $urlconf = array()) {
     global $conf;
     
