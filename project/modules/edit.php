@@ -34,7 +34,7 @@ $allowed_lang = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Заполняем значения для формы
 $values = [
-    'fio' => $app['fio'],
+    'fio' => $app['full_name'],
     'email' => $app['email'],
     'phone' => $app['phone'],
     'birth_day' => date('d', strtotime($app['birth_date'])),
