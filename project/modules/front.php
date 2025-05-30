@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../scripts/db.php';
+
 function front_get($request) {
     $messages = [];
     $errors = [];
