@@ -78,3 +78,18 @@ function admin_password_check($login, $password) {
     $row = db_row("SELECT password_hash FROM admins WHERE login = ?", $login);
     return $row && password_verify($password, $row['password_hash']);
 }
+
+function getLangs() {
+    $db = db_connect();
+    $stmt = $db->query("SELECT id, name FROM programming_languages");
+
+    $langs = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $langs[] = [
+            'id' => $row['id'],
+            'name' => $row['name']
+        ];
+    }
+
+    return $langs;
+}
