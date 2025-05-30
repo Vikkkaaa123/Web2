@@ -1,57 +1,68 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Редактирование заявки</title>
-    <link rel="stylesheet" href="/styles/style.css">
+  <meta charset="UTF-8">
+  <title>Редактирование заявки</title>
+  <link rel="stylesheet" href="/styles/style.css">
 </head>
 <body>
-    <h2>Редактировать заявку №<?= htmlspecialchars($application['id']) ?></h2>
-    <form method="POST" action="/modules/edit.php">
-        <input type="hidden" name="id" value="<?= htmlspecialchars($application['id']) ?>">
+  <div class="form-wrapper">
+    <h1 class="form-title">Редактирование заявки</h1>
 
-        <label>ФИО:<br>
-            <input name="full_name" value="<?= htmlspecialchars($application['full_name']) ?>" required>
-        </label><br><br>
+    <?php if (!empty($message)): ?>
+      <p class="success-message"><?= htmlspecialchars($message) ?></p>
+    <?php endif; ?>
 
-        <label>Email:<br>
-            <input name="email" type="email" value="<?= htmlspecialchars($application['email']) ?>" required>
-        </label><br><br>
+    <form action="" method="POST" class="form">
+      <input type="hidden" name="id" value="<?= htmlspecialchars($app['id']) ?>">
 
-        <label>Телефон:<br>
-            <input name="phone" value="<?= htmlspecialchars($application['phone']) ?>" required>
-        </label><br><br>
+      <label class="form-label">
+        Имя:<br>
+        <input name="name" value="<?= htmlspecialchars($app['name']) ?>" class="form-input" required>
+      </label><br>
 
-        <label>Дата рождения:<br>
-            <input type="date" name="birth_date" value="<?= htmlspecialchars($application['birth_date']) ?>" required>
-        </label><br><br>
+      <label class="form-label">
+        Email:<br>
+        <input name="email" type="email" value="<?= htmlspecialchars($app['email']) ?>" class="form-input" required>
+      </label><br>
 
-        <label>Пол:<br>
-            <label><input type="radio" name="gender" value="male" <?= $application['gender'] === 'male' ? 'checked' : '' ?>> Мужской</label>
-            <label><input type="radio" name="gender" value="female" <?= $application['gender'] === 'female' ? 'checked' : '' ?>> Женский</label>
-        </label><br><br>
+      <label class="form-label">
+        Дата рождения:<br>
+        <input name="birthday" type="date" value="<?= htmlspecialchars($app['birthday']) ?>" class="form-input" required>
+      </label><br>
 
-        <label>Биография:<br>
-            <textarea name="biography" rows="5" cols="50"><?= htmlspecialchars($application['biography']) ?></textarea>
-        </label><br><br>
+      <label class="form-label">
+        Пол:<br>
+        <label><input type="radio" name="gender" value="male" <?= $app['gender'] === 'male' ? 'checked' : '' ?>> Мужской</label>
+        <label><input type="radio" name="gender" value="female" <?= $app['gender'] === 'female' ? 'checked' : '' ?>> Женский</label>
+      </label><br>
 
-        <label>Языки программирования:<br>
-            <?php foreach ($languages as $lang): ?>
-                <label>
-                    <input type="checkbox" name="languages[]" value="<?= $lang['id'] ?>"
-                        <?= in_array($lang['id'], $lang_ids) ? 'checked' : '' ?>>
-                    <?= htmlspecialchars($lang['name']) ?>
-                </label><br>
-            <?php endforeach; ?>
-        </label><br>
+      <label class="form-label">
+        Любимый язык программирования:<br>
+        <select name="languages[]" multiple class="form-input">
+          <?php foreach ($languages as $language): ?>
+            <option value="<?= $language['id'] ?>"
+              <?= in_array($language['id'], $app['languages']) ? 'selected' : '' ?>>
+              <?= htmlspecialchars($language['name']) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </label><br>
 
-        <label>
-            <input type="checkbox" name="agreement" value="1" <?= $application['agreement'] ? 'checked' : '' ?>>
-            Согласен с условиями
-        </label><br><br>
+      <label class="form-label">
+        Биография:<br>
+        <textarea name="biography" class="form-input" required><?= htmlspecialchars($app['biography']) ?></textarea>
+      </label><br>
 
-        <button type="submit">Сохранить</button>
-        <a href="/admin"><button type="button">Назад в админку</button></a>
+      <label class="form-label checkbox-label">
+        <input type="checkbox" name="consent" value="1" <?= $app['consent'] ? 'checked' : '' ?>>
+        Согласие с условиями
+      </label><br><br>
+
+      <button type="submit" class="form-button">Сохранить</button>
     </form>
+
+    <p><a href="/admin.php" class="form-button">Назад в админку</a></p>
+  </div>
 </body>
 </html>
