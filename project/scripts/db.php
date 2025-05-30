@@ -57,6 +57,16 @@ function db_insert_id() {
     return db_connect()->lastInsertId();
 }
 
+function user_login_check($login) {
+$row = db_row("SELECT id FROM users WHERE login = ?", $login);
+return $row !== false;
+}
+
+function user_password_check($login, $password) {
+$row = db_row("SELECT password_hash FROM users WHERE login = ?", $login);
+return $row && password_verify($password, $row['password_hash']);
+}
+
 // Проверка логина администратора
 function admin_login_check($login) {
     $row = db_row("SELECT id FROM admins WHERE login = ?", $login);
