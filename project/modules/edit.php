@@ -24,7 +24,7 @@ if (!$app) {
 }
 
 // Получаем языки заявки
-$stmt = $db->prepare("SELECT language_id FROM application_languages WHERE id = ?");
+$stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
 $stmt->execute([$app_id]);
 $app_langs = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
