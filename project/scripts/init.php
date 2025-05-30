@@ -1,4 +1,3 @@
-project/scripts/init.php:
 <?php
 function init($request = array(), $urlconf = array()) {
     global $conf;
