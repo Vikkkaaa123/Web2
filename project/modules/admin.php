@@ -10,12 +10,10 @@ function admin_get() {
     global $db;
 
     // 1. Получаем статистику по языкам
-    $stmt = $db->prepare("
-        SELECT l.name, COUNT(al.language_id) as count
-        FROM languages l
-        LEFT JOIN application_languages al ON l.id = al.language_id
-        GROUP BY l.id
-    ");
+    $stmt = $db->prepare("SELECT pl.name, COUNT(al.language_id) as count
+                          FROM programming_languages pl
+                          LEFT JOIN application_languages al ON pl.id = al.language_id
+                          GROUP BY pl.id");
     $stmt->execute();
     $language_stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -34,9 +32,9 @@ function admin_get() {
 
     // 3. Получаем языки для всех заявок
     $stmt = $db->prepare("
-        SELECT al.application_id, l.name
+        SELECT al.application_id, pl.name
         FROM application_languages al
-        JOIN languages l ON al.language_id = l.id
+        JOIN programming_languages pl ON al.language_id = pl.id
     ");
     $stmt->execute();
     $language_rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -61,7 +59,7 @@ function admin_get() {
             'gender' => $app['gender'] === 'male' ? 'Муж' : ($app['gender'] === 'female' ? 'Жен' : '—'),
             'biography' => $app['biography'],
             'agreement' => (int)$app['agreement'] === 1 ? 'Да' : 'Нет',
-            'languages' => isset($lang_data[$id]) ? implode(', ', $lang_data[$id]) : '—'
+            'languages' => isset($lang_data[$id]) ? implode(', ', $lang_data[$id]) : ''
         ];
     }
 
