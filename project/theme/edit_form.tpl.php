@@ -6,63 +6,82 @@
   <link rel="stylesheet" href="/styles/style.css">
 </head>
 <body>
-  <div class="form-wrapper">
-    <h1 class="form-title">Редактирование заявки</h1>
 
-    <?php if (!empty($message)): ?>
-      <p class="success-message"><?= htmlspecialchars($message) ?></p>
-    <?php endif; ?>
+<div class="form-container">
+  <h1>Редактировать заявку</h1>
 
-    <form action="" method="POST" class="form">
-      <input type="hidden" name="id" value="<?= htmlspecialchars($app['id']) ?>">
+  <form id="editForm" method="POST" action="" class="form">
+    <input type="hidden" name="id" value="<?= htmlspecialchars($app['id']) ?>">
 
-      <label class="form-label">
-        Имя:<br>
-        <input name="name" value="<?= htmlspecialchars($app['name']) ?>" class="form-input" required>
-      </label><br>
+    <div class="form-group">
+      <label for="name">Имя:</label>
+      <input type="text" name="name" id="name" class="form-control<?= isset($errors['name']) ? ' error' : '' ?>" value="<?= htmlspecialchars($app['name']) ?>">
+      <?php if (isset($errors['name'])): ?>
+        <div class="error-text"><?= $errors['name'] ?></div>
+      <?php endif; ?>
+    </div>
 
-      <label class="form-label">
-        Email:<br>
-        <input name="email" type="email" value="<?= htmlspecialchars($app['email']) ?>" class="form-input" required>
-      </label><br>
+    <div class="form-group">
+      <label for="email">E-mail:</label>
+      <input type="email" name="email" id="email" class="form-control<?= isset($errors['email']) ? ' error' : '' ?>" value="<?= htmlspecialchars($app['email']) ?>">
+      <?php if (isset($errors['email'])): ?>
+        <div class="error-text"><?= $errors['email'] ?></div>
+      <?php endif; ?>
+    </div>
 
-      <label class="form-label">
-        Дата рождения:<br>
-        <input name="birthday" type="date" value="<?= htmlspecialchars($app['birthday']) ?>" class="form-input" required>
-      </label><br>
+    <div class="form-group">
+      <label for="birthday">Дата рождения:</label>
+      <input type="date" name="birthday" id="birthday" class="form-control<?= isset($errors['birthday']) ? ' error' : '' ?>" value="<?= htmlspecialchars($app['birthday']) ?>">
+      <?php if (isset($errors['birthday'])): ?>
+        <div class="error-text"><?= $errors['birthday'] ?></div>
+      <?php endif; ?>
+    </div>
 
-      <label class="form-label">
-        Пол:<br>
-        <label><input type="radio" name="gender" value="male" <?= $app['gender'] === 'male' ? 'checked' : '' ?>> Мужской</label>
-        <label><input type="radio" name="gender" value="female" <?= $app['gender'] === 'female' ? 'checked' : '' ?>> Женский</label>
-      </label><br>
+    <div class="form-group">
+      <label>Пол:</label><br>
+      <label><input type="radio" name="gender" value="male" <?= $app['gender'] === 'male' ? 'checked' : '' ?>> Мужской</label>
+      <label><input type="radio" name="gender" value="female" <?= $app['gender'] === 'female' ? 'checked' : '' ?>> Женский</label>
+      <?php if (isset($errors['gender'])): ?>
+        <div class="error-text"><?= $errors['gender'] ?></div>
+      <?php endif; ?>
+    </div>
 
-      <label class="form-label">
-        Любимый язык программирования:<br>
-        <select name="languages[]" multiple class="form-input">
-          <?php foreach ($languages as $language): ?>
-            <option value="<?= $language['id'] ?>"
-              <?= in_array($language['id'], $app['languages']) ? 'selected' : '' ?>>
-              <?= htmlspecialchars($language['name']) ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-      </label><br>
+    <div class="form-group">
+      <label for="languages">Любимые языки программирования:</label>
+      <select name="languages[]" id="languages" multiple class="form-control<?= isset($errors['languages']) ? ' error' : '' ?>">
+        <?php foreach ($languages as $lang): ?>
+          <option value="<?= $lang['id'] ?>" <?= in_array($lang['id'], $app['languages']) ? 'selected' : '' ?>>
+            <?= htmlspecialchars($lang['name']) ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+      <?php if (isset($errors['languages'])): ?>
+        <div class="error-text"><?= $errors['languages'] ?></div>
+      <?php endif; ?>
+    </div>
 
-      <label class="form-label">
-        Биография:<br>
-        <textarea name="biography" class="form-input" required><?= htmlspecialchars($app['biography']) ?></textarea>
-      </label><br>
+    <div class="form-group">
+      <label for="biography">Биография:</label>
+      <textarea name="biography" id="biography" class="form-control<?= isset($errors['biography']) ? ' error' : '' ?>"><?= htmlspecialchars($app['biography']) ?></textarea>
+      <?php if (isset($errors['biography'])): ?>
+        <div class="error-text"><?= $errors['biography'] ?></div>
+      <?php endif; ?>
+    </div>
 
-      <label class="form-label checkbox-label">
-        <input type="checkbox" name="consent" value="1" <?= $app['consent'] ? 'checked' : '' ?>>
-        Согласие с условиями
-      </label><br><br>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="consent" value="1" <?= !empty($app['consent']) ? 'checked' : '' ?>>
+        Согласен с условиями
+      </label>
+      <?php if (isset($errors['consent'])): ?>
+        <div class="error-text"><?= $errors['consent'] ?></div>
+      <?php endif; ?>
+    </div>
 
-      <button type="submit" class="form-button">Сохранить</button>
-    </form>
+    <button type="submit" class="submit-btn">Сохранить</button>
+    <a href="/admin.php" class="submit-btn">Назад</a>
+  </form>
+</div>
 
-    <p><a href="/admin.php" class="form-button">Назад в админку</a></p>
-  </div>
 </body>
 </html>
