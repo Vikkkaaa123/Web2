@@ -1,36 +1,40 @@
 <?php
-require_once __DIR__ . '/../scripts/db.php';
 session_start();
+require_once __DIR__ . '/../scripts/db.php';
 
-$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-if ($id <= 0) {
+if (!isset($_GET['id'])) {
     http_response_code(400);
-    echo "Неверный ID заявки.";
+    echo "ID заявки не передан.";
     exit;
 }
 
-// Загружаем заявку
-$stmt = $db->prepare("SELECT * FROM applications WHERE id = ?");
-$stmt->execute([$id]);
-$app = $stmt->fetch(PDO::FETCH_ASSOC);
+$id = intval($_GET['id']);
 
-if (!$app) {
-    http_response_code(404);
-    echo "Заявка не найдена.";
+try {
+    // Получаем заявку
+    $stmt = $db->prepare("SELECT * FROM applications WHERE id = ?");
+    $stmt->execute([$id]);
+    $app = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$app) {
+        http_response_code(404);
+        echo "Заявка не найдена.";
+        exit;
+    }
+
+    // Получаем выбранные языки программирования
+    $stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
+    $stmt->execute([$id]);
+    $lang_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // Получаем все языки для отображения чекбоксов
+    $stmt = $db->query("SELECT id, name FROM programming_languages");
+    $languages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    include __DIR__ . '/../theme/edit_form.tpl.php';
+
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo "Ошибка при загрузке заявки: " . $e->getMessage();
     exit;
 }
-
-// Загружаем языки, выбранные пользователем
-$stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
-$stmt->execute([$id]);
-$app['languages'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-// Загружаем все возможные языки
-$stmt = $db->query("SELECT * FROM programming_languages");
-$languages = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Ошибки из сессии, если есть
-$errors = $_SESSION['edit_errors'] ?? [];
-unset($_SESSION['edit_errors']);
-
-include __DIR__ . '/../theme/edit_form.tpl.php';
