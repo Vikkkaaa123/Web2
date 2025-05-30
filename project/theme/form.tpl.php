@@ -996,11 +996,11 @@
         $user_languages = isset($values['lang']) ? explode(",", $values['lang']) : [];
         foreach ($allowed_lang as $lang => $value): 
         ?>
-            <option value="<?= htmlspecialchars($lang) ?>"
-                <?= in_array($lang, $user_languages) ? 'selected="selected"' : '' ?>>
-                <?= htmlspecialchars($value) ?>
-            </option>
-        <?php endforeach; ?>
+             <option value="<?= htmlspecialchars($lang['id']) ?>"
+        <?= in_array($lang['id'], $user_languages) ? 'selected' : '' ?>>
+        <?= htmlspecialchars($lang['name']) ?>
+    </option>
+<?php endforeach; ?>
     </select>
     <?php if (!empty($errors['lang'])): ?>
         <span class="error-text"><?= $errors['lang'] ?></span>
