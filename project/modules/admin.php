@@ -20,7 +20,7 @@ function admin_get() {
 
     // Все заявки
     $applications = $db->query("
-        SELECT * FROM applications ORDER BY id DESC
+        SELECT * FROM applications ORDER BY id ASC
     ")->fetchAll(PDO::FETCH_ASSOC);
 
     $processedApplications = [];
