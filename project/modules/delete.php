@@ -2,7 +2,6 @@
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../scripts/db.php';
 
-checkAdminAuth();
 $db = connectDB();
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
