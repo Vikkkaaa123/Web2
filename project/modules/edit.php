@@ -2,6 +2,8 @@
 require_once '../scripts/db.php';
 require_once '../scripts/init.php';
 
+$db = db_connect();
+
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     http_response_code(400);
     echo "Некорректный ID";
