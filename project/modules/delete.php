@@ -2,23 +2,21 @@
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../scripts/db.php';
 
-$db = connectDB();
-
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-if ($id > 0) {
-    // Удаляем связанные языки
-    $stmt = $db->prepare("DELETE FROM application_languages WHERE application_id = ?");
-    $stmt->execute([$id]);
-
-    // Удаляем связь с пользователем
-    $stmt = $db->prepare("DELETE FROM user_applications WHERE application_id = ?");
-    $stmt->execute([$id]);
-
-    // Удаляем саму заявку
-    $stmt = $db->prepare("DELETE FROM applications WHERE id = ?");
-    $stmt->execute([$id]);
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    header('Location: ../admin');
+    exit;
 }
 
-header("Location: admin.php");
-exit();
+$id = (int)$_GET['id'];
+$db = db_connect();
+
+// Удалить из таблицы связи
+$stmt = $db->prepare("DELETE FROM application_languages WHERE application_id = ?");
+$stmt->execute([$id]);
+
+// Удалить из основной таблицы
+$stmt = $db->prepare("DELETE FROM applications WHERE id = ?");
+$stmt->execute([$id]);
+
+header('Location: ../admin');
+exit;
