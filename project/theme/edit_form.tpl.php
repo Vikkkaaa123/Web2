@@ -56,10 +56,10 @@
                 </label>
             </div>
 
-            <div class="form-actions">
-                <button type="submit" class="button">Сохранить</button>
-                <a href="admin.php" class="button">Выйти без сохранения</a>
-            </div>
+            <div class="action-buttons">
+    <button type="submit" class="button">Сохранить</button>
+    <a href="../admin.php" class="button">Отмена</a>
+     </div>
         </form>
     </div>
 </body>
