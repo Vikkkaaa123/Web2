@@ -1,0 +1,59 @@
+/* Заголовки таблицы — белые */
+thead td {
+    padding: 14px;
+    font-weight: bold;
+    color: #ffffff; /* БЫЛО: #ff4b5c */
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 13px;
+}
+
+/* Кнопка "Удалить" — серый стиль */
+.delete_button {
+    background-color: #777777; /* Серый цвет */
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.3s ease;
+}
+
+.delete_button:hover {
+    background-color: #5e5e5e;
+}
+
+/* Кнопка "Редактировать" — тоже серый стиль */
+.change_button a {
+    display: inline-block;
+    background-color: #777777; /* Серый цвет */
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    margin-top: 6px;
+    transition: background-color 0.3s ease;
+}
+
+.change_button a:hover {
+    background-color: #5e5e5e;
+}
+
+/* Кнопка "Выйти" — серый стиль */
+.admin-logout {
+    display: inline-block;
+    background-color: #777777;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.admin-logout:hover {
+    background-color: #5e5e5e;
+}
