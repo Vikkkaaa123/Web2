@@ -8,43 +8,60 @@ require_once './auth.php';
 
 checkAdminAuth();
 
-$db = db_connect();
-$appId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+<?php
+require_once DIR . '/../scripts/db.php';
 
-if ($appId <= 0) {
-    die("Неверный ID заявки.");
+// Проверка авторизации администратора
+session_start();
+if (empty($_SESSION['login$_SESSION['admin'] !== true) {
+    header('Location: login.php?error=' . urlencode('Доступ запрещен'));
+    exit;
+}
+
+$db = db_connect();
+$appId = $_GET['id'] ?? null;
+
+if (!$appId) {
+    http_response_code(400);
+    exit('Не передан ID заявки.');
 }
 
 // Получаем все языки
-$allLangs = db_all("SELECT id, name FROM programming_languages");
+$allLangs = db_all("SELECT * FROM programming_languages");
 
-// Получаем заявку
+// Получаем текущую заявку
 $app = db_row("SELECT * FROM applications WHERE id = ?", $appId);
 if (!$app) {
-    die("Заявка не найдена.");
+    http_response_code(404);
+    exit("Заявка не найдена");
 }
 
-// Получаем языки этой заявки
+// Получаем выбранные языки
 $selectedLangs = db_all("SELECT language_id FROM application_languages WHERE application_id = ?", $appId);
 $selectedLangs = array_column($selectedLangs, 'language_id');
 
-// Если отправлена форма — обрабатываем
+// Обработка формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    db_query("UPDATE applications SET full_name = ?, email = ?, phone = ?, gender = ?, biography = ? WHERE id = ?", 
-        $_POST['full_name'], $_POST['email'], $_POST['phone'], $_POST['gender'], $_POST['biography'], $appId);
+    db_query("UPDATE applications SET full_name = ?, email = ?, phone = ?, gender = ?, biography = ?, agreement = ? WHERE id = ?",
+        $_POST['full_name'],
+        $_POST['email'],
+        $_POST['phone'],
+        $_POST['gender'],
+        $_POST['biography'],
+        isset($_POST['agreement']) ? 1 : 0,
+        $appId
+    );
 
     db_query("DELETE FROM application_languages WHERE application_id = ?", $appId);
-
     if (!empty($_POST['languages'])) {
-        $stmt = db_connect()->prepare("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)");
         foreach ($_POST['languages'] as $langId) {
-            $stmt->execute([$appId, $langId]);
+            db_query("INSERT INTO application_languages (application_id, language_id) VALUES (?, ?)", $appId, $langId);
         }
     }
 
-    header("Location: admin.php");
+    header('Location: admin.php');
     exit();
 }
 
 // Загружаем шаблон
-include '../theme/edit_form.tpl.php';
+include __DIR__ . '../theme/edit_form.tpl.php';
