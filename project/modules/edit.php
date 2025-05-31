@@ -3,12 +3,7 @@ require_once '../scripts/db.php';
 //require_once '../scripts/init.php';
 require_once './auth.php';
 
-// Проверка авторизации администратора
-session_start();
-if (empty($_SESSION['login']) || empty($_SESSION['admin']) || $_SESSION['admin'] !== true) {
-    header('Location: login.php?error=' . urlencode('Доступ запрещен'));
-    exit;
-}
+checkAdminAuth();
 
 $db = db_connect();
 $appId = $_GET['id'] ?? null;
