@@ -4,8 +4,9 @@ require_once __DIR__ . '/../scripts/db.php';
 
 checkAdminAuth();
 
-function admin_get($request) {
+function get_admin_data() {
     $db = db_connect();
+
     // Статистика по языкам
     $stats = $db->query("
         SELECT p.name, COUNT(DISTINCT al.application_id) as count
@@ -42,7 +43,7 @@ function admin_get($request) {
         $stmt->execute([$app['id']]);
         $app['languages'] = $stmt->fetchColumn() ?: 'Не указано';
 
-        // Пол: м/ж/—
+        // Пол
         $app['gender_short'] = $app['gender'] === 'male' ? 'м' : ($app['gender'] === 'female' ? 'ж' : '—');
 
         // Согласие
@@ -53,9 +54,10 @@ function admin_get($request) {
 
     return [
         'stats' => $stats,
-        'users' => $processedApplications
+        'processedApplications' => $processedApplications
     ];
 }
+
 
 $data = admin_get($db);
 $stats = $data['stats'];
