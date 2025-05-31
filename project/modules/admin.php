@@ -2,7 +2,7 @@
 //require_once __DIR__ . '/auth.php'
 require_once __DIR__ . '/../scripts/db.php';
 
-//checkAdminAuth();
+checkAdminAuth();
 
 function get_admin_data() {
     $db = db_connect();
