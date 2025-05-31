@@ -1,10 +1,8 @@
 <?php
+require_once __DIR__ . './auth.php';
 require_once __DIR__ . '/../scripts/db.php';
 
-if (!isset($_SESSION['login']) || !admin_login_check($_SESSION['login'])) {
-    header('Location: login.php');
-    exit;
-}
+checkAdminAuth();
 
 function admin_get() {
     global $db;
