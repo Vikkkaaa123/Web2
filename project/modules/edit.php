@@ -1,9 +1,10 @@
 <?php
 // modules/edit.php
 
-require_once dirname(__DIR__) . '/scripts/init.php';
-require_once dirname(__DIR__) . '/scripts/db.php';
-require_once dirname(__DIR__) . '/modules/auth_basic.php'; // <-- добавляем подключение
+require_once '../scripts/db.php';
+require_once '../scripts/init.php';
+require_once './auth.php';
+
 
 checkAdminAuth();
 
@@ -46,4 +47,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Загружаем шаблон
-include dirname(__DIR__) . '/theme/edit_form.tpl.php';
+include '../theme/edit_form.tpl.php';
