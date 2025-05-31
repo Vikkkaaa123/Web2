@@ -53,9 +53,9 @@ function init($request = array(), $urlconf = array()) {
         $func = "{$r['module']}_{$method}";
         if (!function_exists($func)) continue;
 
-        $params = array('request' => $request);
+        $params = [$request];
         if (isset($matches[1])) {
-            $params['url_param'] = $matches[1];
+            $params[] = $matches[1];
         }
 
         $result = call_user_func_array($func, $params);
