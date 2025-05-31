@@ -1,60 +1,66 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Редактирование заявки #<?= $appId ?></title>
+    <title>Редактирование заявки</title>
     <link rel="stylesheet" href="../styles/style.css">
     <link rel="stylesheet" href="../styles/table.css">
 </head>
 <body>
-<div class="container">
-    <h1>Редактирование заявки #<?= $appId ?></h1>
-    <form method="post" action="edit.php?id=<?= $appId ?>" class="form">
+    <div class="admin-container">
+        <h1>Редактирование заявки #<?= htmlspecialchars($appId) ?></h1>
+        <form method="POST" class="form">
+            <div class="form-group">
+                <label>ФИО:</label>
+                <input type="text" name="full_name" value="<?= htmlspecialchars($app['full_name']) ?>" required>
+            </div>
 
-        <div class="form-group">
-            <label for="full_name">ФИО:</label>
-            <input type="text" id="full_name" name="full_name" value="<?= htmlspecialchars($app['full_name']) ?>" required>
-        </div>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" name="email" value="<?= htmlspecialchars($app['email']) ?>" required>
+            </div>
 
-        <div class="form-group">
-            <label for="email">E-mail:</label>
-            <input type="email" id="email" name="email" value="<?= htmlspecialchars($app['email']) ?>" required>
-        </div>
+            <div class="form-group">
+                <label>Телефон:</label>
+                <input type="text" name="phone" value="<?= htmlspecialchars($app['phone']) ?>">
+            </div>
 
-        <div class="form-group">
-            <label for="phone">Телефон:</label>
-            <input type="text" id="phone" name="phone" value="<?= htmlspecialchars($app['phone']) ?>">
-        </div>
+            <div class="form-group">
+                <label>Пол:</label>
+                <select name="gender">
+                    <option value="male" <?= $app['gender'] === 'male' ? 'selected' : '' ?>>Мужской</option>
+                    <option value="female" <?= $app['gender'] === 'female' ? 'selected' : '' ?>>Женский</option>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label for="gender">Пол:</label>
-            <select id="gender" name="gender">
-                <option value="male" <?= $app['gender'] == 'male' ? 'selected' : '' ?>>Мужской</option>
-                <option value="female" <?= $app['gender'] == 'female' ? 'selected' : '' ?>>Женский</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label>Языки программирования:</label>
+                <select name="languages[]" multiple class="multiselect">
+                    <?php foreach ($allLangs as $lang): ?>
+                        <option value="<?= $lang['id'] ?>" <?= in_array($lang['id'], $selectedLangs) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($lang['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label for="biography">Биография:</label>
-            <textarea id="biography" name="biography"><?= htmlspecialchars($app['biography']) ?></textarea>
-        </div>
+            <div class="form-group">
+                <label>Биография:</label>
+                <textarea name="biography"><?= htmlspecialchars($app['biography']) ?></textarea>
+            </div>
 
-        <div class="form-group">
-            <label for="languages">Языки программирования:</label>
-            <select id="languages" name="languages[]" multiple>
-                <?php foreach ($allLangs as $lang): ?>
-                    <option value="<?= $lang['id'] ?>" <?= in_array($lang['id'], $selectedLangs) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($lang['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="agreement" <?= $app['agreement'] ? 'checked' : '' ?>>
+                    Согласен с условиями
+                </label>
+            </div>
 
-        <div class="form-group action-buttons">
-            <button type="submit" class="button">💾 Сохранить</button>
-            <a href="admin.php" class="button">↩ Выйти без сохранения</a>
-        </div>
-    </form>
-</div>
+            <div class="form-actions">
+                <button type="submit" class="button">Сохранить</button>
+                <a href="admin.php" class="button">Выйти без сохранения</a>
+            </div>
+        </form>
+    </div>
 </body>
 </html>
