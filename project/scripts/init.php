@@ -58,7 +58,7 @@ function init($request = array(), $urlconf = array()) {
             $params[] = $matches[1];
         }
 
-        $result = $func($request);
+        $result = call_user_func_array($func, $params);
 
    if (is_array($result)) {
     // Если front_post вернул JSON, сразу вернуть (AJAX-запрос)
