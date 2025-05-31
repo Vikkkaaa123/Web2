@@ -1,51 +1,29 @@
 <?php
-require_once '../scripts/db.php';
-require_once '../scripts/init.php';
+// modules/edit.php
+
+require_once dirname(__DIR__) . '/scripts/init.php';
+require_once dirname(__DIR__) . '/scripts/db.php';
+checkAdminAuth();
 
 $db = db_connect();
+$appId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    http_response_code(400);
-    echo "Некорректный ID";
-    exit();
+if ($appId <= 0) {
+    die("Неверный ID заявки.");
 }
 
-$app_id = intval($_GET['id']);
+// Получаем все языки
+$allLangs = db_all("SELECT id, name FROM programming_languages");
 
 // Получаем заявку
-$stmt = $db->prepare("SELECT * FROM applications WHERE id = ?");
-$stmt->execute([$app_id]);
-$app = $stmt->fetch(PDO::FETCH_ASSOC);
-
+$app = db_row("SELECT * FROM applications WHERE id = ?", $appId);
 if (!$app) {
-    http_response_code(404);
-    echo "Заявка не найдена";
-    exit();
+    die("Заявка не найдена.");
 }
 
-// Получаем языки заявки
-$stmt = $db->prepare("SELECT language_id FROM application_languages WHERE application_id = ?");
-$stmt->execute([$app_id]);
-$app_langs = $stmt->fetchAll(PDO::FETCH_COLUMN);
+// Получаем языки этой заявки
+$selectedLangs = db_all("SELECT language_id FROM application_languages WHERE application_id = ?", $appId);
+$selectedLangs = array_column($selectedLangs, 'language_id');
 
-// Получаем список всех языков
-$stmt = $db->query("SELECT * FROM programming_languages");
-$allowed_lang = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Заполняем значения для формы
-$values = [
-    'fio' => $app['full_name'],
-    'email' => $app['email'],
-    'phone' => $app['phone'],
-    'birth_day' => date('d', strtotime($app['birth_date'])),
-    'birth_month' => date('m', strtotime($app['birth_date'])),
-    'birth_year' => date('Y', strtotime($app['birth_date'])),
-    'gender' => $app['gender'],
-    'lang' => implode(",", $app_langs),
-    'biography' => $app['biography'],
-    'agreement' => true
-];
-
-$errors = []; // Если будут ошибки, сюда попадут
-
-include '../theme/edit_form.tpl.php';
+// Загружаем шаблон
+include dirname(__DIR__) . '/theme/edit_form.tpl.php';
