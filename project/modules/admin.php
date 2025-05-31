@@ -52,7 +52,6 @@ function admin_get($request) {
     }
 
     return [
-        'title' => 'Панель администратора',
         'stats' => $stats,
         'users' => $processedApplications
     ];
