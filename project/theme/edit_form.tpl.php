@@ -58,7 +58,7 @@
 
             <div class="action-buttons">
     <button type="submit" class="button">Сохранить</button>
-    <a href="../modules/admin.php" class="button">Отмена</a>
+    <a href="../admin.php" class="button">Отмена</a>
      </div>
         </form>
     </div>
