@@ -1,7 +1,8 @@
 <?php
-require_once '../scripts/db.php';
-require_once '../scripts/init.php';
+// modules/edit.php
 
+require_once dirname(__DIR__) . '/scripts/init.php';
+require_once dirname(__DIR__) . '/scripts/db.php';
 checkAdminAuth();
 
 $db = db_connect();
@@ -25,4 +26,4 @@ $selectedLangs = db_all("SELECT language_id FROM application_languages WHERE app
 $selectedLangs = array_column($selectedLangs, 'language_id');
 
 // Загружаем шаблон
-include '../theme/edit_form.tpl.php';
+include dirname(__DIR__) . '/theme/edit_form.tpl.php';
