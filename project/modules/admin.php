@@ -1,6 +1,4 @@
 <?php
-ob_end_clean();
-ob_start();
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../scripts/db.php';
 
