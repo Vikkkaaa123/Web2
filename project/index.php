@@ -15,7 +15,6 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     header('Content-Type: application/json');
 }
 
-// Определяем тип запроса
 $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
@@ -29,23 +28,19 @@ $request = array(
   'Content-Type' => $is_ajax ? 'application/json' : 'text/html',
 );
 
-// Обработка raw POST данных для AJAX
 if ($is_ajax && empty($_POST) && $input = file_get_contents('php://input')) {
     parse_str($input, $request['post']);
     $_POST = $request['post'];
 }
 
-
 $response = init($request, $urlconf);
 
-// Установка заголовков
 if (!empty($response['headers'])) {
     foreach ($response['headers'] as $key => $value) {
         header(is_string($key) ? "$key: $value" : $value);
     }
 }
 
-// Вывод ответа
 if (!empty($response['entity'])) {
     if ($is_ajax && is_array($response['entity'])) {
         header('Content-Type: application/json');
