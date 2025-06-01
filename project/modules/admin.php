@@ -53,12 +53,12 @@ function admin_get() {
 
     return [
         'stats' => $stats,
-        'users' => $processedApplications  
+        'processedApplications' => $processedApplications  
     ];
 }
 
 $data = admin_get($db);
 $stats = $data['stats'];
-$processedApplications = $data['users'];
+$processedApplications = $data['processedApplications'];
 
 require_once __DIR__ . '/../theme/admin.tpl.php';
