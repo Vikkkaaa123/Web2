@@ -11,7 +11,6 @@ function front_get($request) {
         'gender', 'biography', 'languages', 'agreement'
     ];
 
-    // Если пользователь вошёл — загрузим данные из БД
     if (!empty($_SESSION['login'])) {
         $db = db_connect();
         $stmt = $db->prepare("
@@ -41,16 +40,13 @@ function front_get($request) {
             ];
         }
    } else {
-        // Загружаем значения из куки
         foreach ($all_fields as $field) {
             $errors[$field] = !empty($_COOKIE["{$field}_error"])
                 ? getErrorMessage($field, $_COOKIE["{$field}_error"])
                 : '';
 
             if ($field === 'languages') {
-                // Особый случай для языков - должен быть массивом
                 if (!empty($_COOKIE["{$field}_value"])) {
-                    // Разделяем строку куки по запятой и фильтруем пустые значения
                     $langs = explode(',', $_COOKIE["{$field}_value"]);
                     $values[$field] = array_filter($langs, function($item) {
                         return !empty($item);
@@ -61,8 +57,6 @@ function front_get($request) {
             } else {
                 $values[$field] = $_COOKIE["{$field}_value"] ?? '';
             }
-            
-            // Удаляем только ошибки, а не значения
             setcookie("{$field}_error", '', time() - 3600, '/');
         }
 
@@ -107,7 +101,6 @@ function front_post($request) {
 
     foreach ($required_fields as $field => $error_message) {
         if ($field === 'languages') {
-            // Обработка множественного выбора языков
             $values[$field] = isset($post_data['languages']) && is_array($post_data['languages']) 
                 ? $post_data['languages'] 
                 : [];
@@ -139,10 +132,8 @@ function front_post($request) {
         }
     }
 
-    // Устанавливаем куки на 1 год для всех значений
     foreach ($values as $key => $val) {
         if ($key === 'languages') {
-            // Для языков - объединяем массив в строку через запятую
             $langs_str = !empty($val) && is_array($val) ? implode(',', $val) : '';
             setcookie("{$key}_value", $langs_str, time() + 365 * 24 * 3600, '/');
         } else {
@@ -150,7 +141,6 @@ function front_post($request) {
         }
     }
     if (!empty($errors)) {
-        // Ошибки — запоминаем их в куки
         foreach ($errors as $key => $_) {
             setcookie("{$key}_error", 1, time() + 60, '/');
         }
