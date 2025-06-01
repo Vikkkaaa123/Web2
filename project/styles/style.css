@@ -147,7 +147,7 @@ body{
     right: 0;
     bottom: 0;
     left: 0;
-    background: url(./img/drupal-logo-2.svg) no-repeat right bottom;
+    background: url(img/drupal-logo-2.svg) no-repeat right bottom;
     background-size: contain;
     z-index: 5;
 }
@@ -188,7 +188,7 @@ body{
 .inf-3-item>p>a:hover{
     text-decoration: none;
 }
-  
+ 
 .b-tarif{
     position: relative;
     background-color: #ffffff;
