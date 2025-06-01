@@ -1,6 +1,13 @@
 <?php
+ob_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Затем уже проверка авторизации
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../scripts/db.php';
+
+checkAdminAuth();
 
 checkAdminAuth();
 
@@ -62,3 +69,4 @@ $stats = $data['stats'];
 $processedApplications = $data['processedApplications'];
 
 require_once __DIR__ . '/../theme/admin.tpl.php';
+ob_end_flush();
