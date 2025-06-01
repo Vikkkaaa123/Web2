@@ -993,19 +993,19 @@
             style="height: auto; min-height: 100px; padding: 10px;">
         
         <?php 
-        $user_languages = isset($values['lang']) ? explode(",", $values['lang']) : [];
-        foreach ($allowed_lang as $lang):
-          ?>
-    <option value="<?= htmlspecialchars($lang['id']) ?>"
-        <?= in_array($lang['id'], $user_languages) ? 'selected="selected"' : '' ?>>
-        <?= htmlspecialchars($lang['name']) ?>
-    </option>
-<?php endforeach; ?>
-    </select>
-    <?php if (!empty($errors['lang'])): ?>
-        <span class="error-text"><?= $errors['lang'] ?></span>
-    <?php endif; ?>
-</label><br/>
+         $user_languages = isset($values['languages']) ? $values['languages'] : [];
+          foreach ($allowed_lang as $lang):
+              ?>
+            <option value="<?= htmlspecialchars($lang['id']) ?>"
+           <?= in_array($lang['id'], $user_languages) ? 'selected="selected"' : '' ?>>
+           <?= htmlspecialchars($lang['name']) ?>
+        </option>
+         <?php endforeach; ?>
+         </select>
+     <?php if (!empty($errors['languages'])): ?>
+    <span class="error-text"><?= $errors['languages'] ?></span>
+   <?php endif; ?>
+   </label><br/>
 
             <label>
               Биография: <br/>
