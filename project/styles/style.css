@@ -128,16 +128,25 @@ body{
   
 .b-info-3 {
     position: relative;
-    background: 
-    linear-gradient(270deg, 
+    background: linear-gradient(270deg, 
     rgba(255, 255, 255, .276) -114.85%, 
     rgba(255, 255, 255, 0) 69.04%), 
     #040613;
     padding: 250px 0 0;
+    overflow: visible; /* Важно для отображения всего изображения */
 }
-.b-info-3 .container{
+
+.b-info-3 .container {
     position: relative;
     z-index: 6;
+    display: flex; /* Делаем flex-контейнер */
+    align-items: flex-start; /* Выравниваем по верхнему краю */
+}
+
+.inf-3-body {
+    width: 50%; /* Занимает половину ширины */
+    padding-left: 50px; /* Отступ от изображения */
+    box-sizing: border-box;
 }
 .b-info-3:before{
     content: "";
@@ -161,13 +170,16 @@ body{
     margin-bottom: 30px;
 }
 .side-image {
+    width: 50%; /* Занимает вторую половину */
     position: relative;
     z-index: 6;
-    width: 80vw;
 }
-.side-image img{
-    width: 100%;
-    transform: translateY(15%);
+
+.side-image img {
+    width: auto; /* Сохраняем оригинальные пропорции */
+    max-width: 100%; /* Не больше ширины контейнера */
+    height: auto;
+    transform: translateY(15%); /* Оригинальное смещение */
 }
 .b-info-3 h2 {
     color:#ffffff;
