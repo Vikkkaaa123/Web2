@@ -22,6 +22,5 @@ if (ini_get("session.use_cookies")) {
 
 session_destroy();
 
-// Перенаправление на главную
 header('Location: /Web2/project/');
 exit;
