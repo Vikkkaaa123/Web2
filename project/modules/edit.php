@@ -1,6 +1,6 @@
 <?php
 require_once '../scripts/db.php';
-require_once '../scripts/init.php';
+//require_once '../scripts/init.php';
 require_once './auth.php';
 
 checkAdminAuth();
@@ -13,21 +13,17 @@ if (!$appId) {
     exit('Не передан ID заявки.');
 }
 
-// Получаем все языки
 $allLangs = db_all("SELECT * FROM programming_languages");
 
-// Получаем текущую заявку
 $app = db_row("SELECT * FROM applications WHERE id = ?", $appId);
 if (!$app) {
     http_response_code(404);
     exit("Заявка не найдена");
 }
 
-// Получаем выбранные языки
 $selectedLangs = db_all("SELECT language_id FROM application_languages WHERE application_id = ?", $appId);
 $selectedLangs = array_column($selectedLangs, 'language_id');
 
-// Обработка формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     db_query("UPDATE applications SET full_name = ?, email = ?, phone = ?, gender = ?, biography = ?, agreement = ? WHERE id = ?",
         $_POST['full_name'],
