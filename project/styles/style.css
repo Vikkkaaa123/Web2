@@ -127,18 +127,24 @@ body{
 }
   
 .b-info-3 {
-    position: relative;
-    background: 
-    linear-gradient(270deg, 
-    rgba(255, 255, 255, .276) -114.85%, 
-    rgba(255, 255, 255, 0) 69.04%), 
-    #040613;
-    padding: 250px 0 0;
+  position: relative;
+  overflow: hidden;  /* Важно! */
+  background: linear-gradient(270deg, rgba(255,255,255,.276) -114.85%, rgba(255,255,255,0) 69.04%), #040613;
+  padding: 250px 0 0;
+  z-index: 1;
 }
-.b-info-3 .container{
-    position: relative;
-    z-index: 6;
+.b-info-3 .container {
+  position: relative;
+  z-index: 6; 
 }
+.side-image {
+  position: absolute;
+  right: -50px;
+  bottom: 0;
+  width: 40%;
+  z-index: 5;
+}
+
 .b-info-3:before{
     content: "";
     display: block;
