@@ -9,3 +9,7 @@ function checkAdminAuth() {
         exit;
     }
 }
+
+function isLoggedIn() {
+    return !empty($_SESSION['login']);
+}
