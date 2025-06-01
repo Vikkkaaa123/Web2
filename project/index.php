@@ -1,4 +1,5 @@
 <?php
+ob_start();
 session_start();
 include('./settings.php');
 
@@ -53,3 +54,4 @@ if (!empty($response['entity'])) {
         echo $response['entity'];
     }
 }
+ob_end_flush();
