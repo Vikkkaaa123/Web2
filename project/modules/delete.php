@@ -10,11 +10,9 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $id = (int)$_GET['id'];
 $db = db_connect();
 
-// Удалить из таблицы связи
 $stmt = $db->prepare("DELETE FROM application_languages WHERE application_id = ?");
 $stmt->execute([$id]);
 
-// Удалить из основной таблицы
 $stmt = $db->prepare("DELETE FROM applications WHERE id = ?");
 $stmt->execute([$id]);
 
