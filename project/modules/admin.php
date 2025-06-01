@@ -1,5 +1,4 @@
 <?php
-ob_start();
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../scripts/db.php';
 
@@ -63,4 +62,3 @@ $stats = $data['stats'];
 $processedApplications = $data['processedApplications'];
 
 require_once __DIR__ . '/../theme/admin.tpl.php';
-ob_end_flush();
