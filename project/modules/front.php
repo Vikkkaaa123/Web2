@@ -41,37 +41,27 @@ function front_get($request) {
             ];
         }
     } else {
-    // Загружаем значения из куки
-    foreach ($all_fields as $field) {
-        $errors[$field] = !empty($_COOKIE["{$field}_error"])
-            ? getErrorMessage($field, $_COOKIE["{$field}_error"])
-            : '';
+        // Загружаем значения из куки
+        foreach ($all_fields as $field) {
+            $errors[$field] = !empty($_COOKIE["{$field}_error"])
+                ? getErrorMessage($field, $_COOKIE["{$field}_error"])
+                : '';
 
-        // Особый случай для языков программирования
-        if ($field === 'languages') {
-            // Проверяем, есть ли значение в куках и что оно не пустое
-            if (!empty($_COOKIE["{$field}_value"])) {
-                // Разбиваем строку из куки на массив и фильтруем пустые значения
-                $langs = explode(',', $_COOKIE["{$field}_value"]);
-                $values[$field] = array_filter($langs, function($item) {
-                    return !empty($item);
-                });
+            if ($field === 'languages' && !empty($_COOKIE["{$field}_value"])) {
+                $values[$field] = explode(',', $_COOKIE["{$field}_value"]);
             } else {
-                $values[$field] = [];
+                $values[$field] = $_COOKIE["{$field}_value"] ?? '';
             }
-        } else {
-            $values[$field] = $_COOKIE["{$field}_value"] ?? '';
+            
+            // Удаляем только ошибки, а не значения
+            setcookie("{$field}_error", '', time() - 3600, '/');
         }
-        
-        // Удаляем только ошибки, а не значения
-        setcookie("{$field}_error", '', time() - 3600, '/');
-    }
 
-    if (!empty($_COOKIE['save'])) {
-        $messages[] = 'Спасибо, результаты сохранены.';
-        setcookie('save', '', time() - 3600, '/');
+        if (!empty($_COOKIE['save'])) {
+            $messages[] = 'Спасибо, результаты сохранены.';
+            setcookie('save', '', time() - 3600, '/');
+        }
     }
-}
 
     return theme('form', [
         'messages' => $messages,
@@ -138,23 +128,19 @@ function front_post($request) {
     }
 
     // Устанавливаем куки на 1 год для всех значений
-foreach ($values as $key => $val) {
-    if ($key === 'languages') {
-        // Фильтруем пустые значения перед сохранением
-        $filtered_langs = array_filter($val, function($item) {
-            return !empty($item);
-        });
-        // Сохраняем только если есть выбранные языки
-        if (!empty($filtered_langs)) {
-            setcookie("{$key}_value", implode(',', $filtered_langs), time() + 365 * 24 * 3600, '/');
+    foreach ($values as $key => $val) {
+        if ($key === 'languages') {
+            setcookie("{$key}_value", implode(',', $val), time() + 365 * 24 * 3600, '/');
         } else {
-            // Если языки не выбраны, удаляем куку
-            setcookie("{$key}_value", '', time() - 3600, '/');
+            setcookie("{$key}_value", $val, time() + 365 * 24 * 3600, '/');
         }
-    } else {
-        setcookie("{$key}_value", $val, time() + 365 * 24 * 3600, '/');
     }
-}
+
+    if (!empty($errors)) {
+        // Ошибки — запоминаем их в куки
+        foreach ($errors as $key => $_) {
+            setcookie("{$key}_error", 1, time() + 60, '/');
+        }
 
         $first_error_field = array_key_first($errors);
 
@@ -215,6 +201,7 @@ foreach ($values as $key => $val) {
         error_log('DB Error: ' . $e->getMessage());
         return ['success' => false, 'errors' => ['db' => 'Ошибка при сохранении в БД']];
     }
+}
 
 function getErrorMessage($field, $code) {
     $messages = [
