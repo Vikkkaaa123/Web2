@@ -27,21 +27,15 @@
 
                 <div class="form-group">
                     <label class="b-form label">Пол:</label>
-                    <div class="gender-options">
-                        <label>
-                            <input type="radio" name="gender" value="male" <?= $app['gender'] === 'male' ? 'checked' : '' ?>>
-                            Мужской
-                        </label>
-                        <label>
-                            <input type="radio" name="gender" value="female" <?= $app['gender'] === 'female' ? 'checked' : '' ?>>
-                            Женский
-                        </label>
-                    </div>
+                    <select name="gender" class="input-field">
+                        <option value="male" <?= $app['gender'] === 'male' ? 'selected' : '' ?>>Мужской</option>
+                        <option value="female" <?= $app['gender'] === 'female' ? 'selected' : '' ?>>Женский</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label class="b-form label">Языки программирования:</label>
-                    <select name="languages[]" multiple class="input-field">
+                    <select name="languages[]" multiple class="input-field" style="height: auto; min-height: 100px;">
                         <?php foreach ($allLangs as $lang): ?>
                             <option value="<?= $lang['id'] ?>" <?= in_array($lang['id'], $selectedLangs) ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($lang['name']) ?>
@@ -52,7 +46,7 @@
 
                 <div class="form-group">
                     <label class="b-form label">Биография:</label>
-                    <textarea name="biography" class="input-field"><?= htmlspecialchars($app['biography']) ?></textarea>
+                    <textarea name="biography" class="input-field" style="min-height: 100px;"><?= htmlspecialchars($app['biography']) ?></textarea>
                 </div>
 
                 <div class="form-group checkbox-block">
@@ -65,7 +59,7 @@
 
                 <div class="action-buttons">
                     <button type="submit" class="submit-btn">Сохранить</button>
-                    <a href="../modules/admin.php" class="submit-btn" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); margin-left: 10px;">Отмена</a>
+                    <a href="../modules/admin.php" class="submit-btn" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); text-align: center; display: inline-block; margin-left: 10px;">Отмена</a>
                 </div>
             </form>
         </div>
