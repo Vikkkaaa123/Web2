@@ -170,17 +170,15 @@ body{
     margin-bottom: 30px;
 }
 .side-image {
-    width: 50%; /* Занимает вторую половину */
     position: relative;
     z-index: 6;
+    width: 80vw;
+}
+.side-image img{
+    width: 100%;
+    transform: translateY(15%);
 }
 
-.side-image img {
-    width: auto; /* Сохраняем оригинальные пропорции */
-    max-width: 100%; /* Не больше ширины контейнера */
-    height: auto;
-    transform: translateY(15%); /* Оригинальное смещение */
-}
 .b-info-3 h2 {
     color:#ffffff;
     font-size: 42px;
