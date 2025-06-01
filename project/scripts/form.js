@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      // Подготовка данных
       const formData = new FormData();
       for (const element of form.elements) {
         if (!element.name || element.type === 'submit') continue;
