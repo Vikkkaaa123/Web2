@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Редактирование заявки</title>
     <link rel="stylesheet" href="../styles/style.css">
-    <link rel="stylesheet" href="../styles/admin.css">
+    //<link rel="stylesheet" href="../styles/admin.css">
 </head>
 <body>
     <div class="admin-container">
