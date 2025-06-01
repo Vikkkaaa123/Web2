@@ -61,7 +61,6 @@ function init($request = array(), $urlconf = array()) {
         $result = call_user_func_array($func, $params);
 
    if (is_array($result)) {
-    // Если front_post вернул JSON, сразу вернуть (AJAX-запрос)
     if ($request['is_ajax'] ?? false) {
         return [
             'headers' => ['Content-Type' => 'application/json'],
@@ -69,7 +68,6 @@ function init($request = array(), $urlconf = array()) {
         ];
     }
 
-    // Иначе продолжить как обычно (например, front_get)
     if (!empty($result['headers'])) {
         return $result;
     }
