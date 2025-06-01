@@ -136,17 +136,41 @@ body{
     overflow: visible; /* Важно для отображения всего изображения */
 }
 
+.b-info-3 {
+    position: relative;
+    background: linear-gradient(270deg, 
+    rgba(255, 255, 255, .276) -114.85%, 
+    rgba(255, 255, 255, 0) 69.04%), 
+    #040613;
+    padding: 250px 0 0;
+    overflow: visible;
+}
+
 .b-info-3 .container {
     position: relative;
     z-index: 6;
-    display: flex; /* Делаем flex-контейнер */
-    align-items: flex-start; /* Выравниваем по верхнему краю */
+    display: flex;
+    align-items: flex-start;
+    padding-left: 0; /* Убираем левый padding у контейнера */
+    padding-right: 15px; /* Сохраняем правый padding */
+}
+
+.side-image {
+    width: auto; /* Ширина по содержимому */
+    margin-right: 50px; /* Отступ от текста */
+    margin-left: -15px; /* Компенсируем стандартный padding контейнера */
+}
+
+.side-image img {
+    max-width: none; /* Убираем ограничение */
+    width: auto;
+    height: auto;
+    transform: translateY(15%);
 }
 
 .inf-3-body {
-    width: 50%; /* Занимает половину ширины */
-    padding-left: 50px; /* Отступ от изображения */
-    box-sizing: border-box;
+    flex: 1; /* Занимает оставшееся пространство */
+    padding-left: 0; /* Убираем левый padding */
 }
 .b-info-3:before{
     content: "";
@@ -169,16 +193,6 @@ body{
 .inf-3-col {
     margin-bottom: 30px;
 }
-.side-image {
-    position: relative;
-    z-index: 6;
-    width: 80vw;
-}
-.side-image img{
-    width: 100%;
-    transform: translateY(15%);
-}
-
 .b-info-3 h2 {
     color:#ffffff;
     font-size: 42px;
