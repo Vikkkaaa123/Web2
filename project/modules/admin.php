@@ -53,7 +53,7 @@ function admin_get() {
 
     return [
         'stats' => $stats,
-        'processedApplications' => $processedApplications  //users
+        'users' => $processedApplications  
     ];
 }
 
