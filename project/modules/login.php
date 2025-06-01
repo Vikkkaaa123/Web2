@@ -27,7 +27,6 @@ function login_post($request) {
     $password = trim($request['post']['password'] ?? '');
 
     try {
-        // Проверяем среди админов
         $stmt = $db->prepare("SELECT * FROM admins WHERE login = ?");
         $stmt->execute([$login]);
 
@@ -41,7 +40,6 @@ function login_post($request) {
             }
         }
 
-        // Проверяем среди пользователей
         $stmt = $db->prepare("SELECT * FROM users WHERE login = ?");
         $stmt->execute([$login]);
 
