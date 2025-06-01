@@ -21,9 +21,9 @@
     <input name="login" />
   </label> <br/>
   <label> 
-    Пароль <br/>
-    <input name="password" />
-  </label> <br/>
+  Пароль <br/>
+  <input type="password" name="password" />
+</label> <br/>
   
   <input class="login_button" type="submit" value="Войти" />
   <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
