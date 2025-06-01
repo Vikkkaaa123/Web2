@@ -47,9 +47,14 @@ function front_get($request) {
                 ? getErrorMessage($field, $_COOKIE["{$field}_error"])
                 : '';
 
-            $values[$field] = $_COOKIE["{$field}_value"] ?? '';
+            if ($field === 'languages' && !empty($_COOKIE["{$field}_value"])) {
+                $values[$field] = explode(',', $_COOKIE["{$field}_value"]);
+            } else {
+                $values[$field] = $_COOKIE["{$field}_value"] ?? '';
+            }
+            
+            // Удаляем только ошибки, а не значения
             setcookie("{$field}_error", '', time() - 3600, '/');
-            setcookie("{$field}_value", '', time() - 3600, '/');
         }
 
         if (!empty($_COOKIE['save'])) {
@@ -65,7 +70,6 @@ function front_get($request) {
         'allowed_lang' => $allowed_lang
     ]);
 }
-
 
 function front_post($request) {
     $db = db_connect();
