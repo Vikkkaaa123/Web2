@@ -134,6 +134,11 @@ body{
     rgba(255, 255, 255, 0) 69.04%), 
     #040613;
     padding: 250px 0 0;
+    
+    isolation: isolate;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
 }
 .b-info-3 .container{
     position: relative;
