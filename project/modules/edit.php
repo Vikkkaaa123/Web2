@@ -1,6 +1,6 @@
 <?php
 require_once '../scripts/db.php';
-//require_once '../scripts/init.php';
+require_once '../scripts/init.php';
 require_once './auth.php';
 
 checkAdminAuth();
