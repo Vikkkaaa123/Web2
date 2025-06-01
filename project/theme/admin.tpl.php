@@ -46,7 +46,7 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($processedApplications as $app): ?>
+                <?php foreach ($users as $app): ?>
                 <tr>
                     <td><?= $app['id'] ?></td>
                     <td><?= htmlspecialchars($app['user_login'] ?? 'N/A') ?></td>
