@@ -47,21 +47,27 @@ function front_get($request) {
                 ? getErrorMessage($field, $_COOKIE["{$field}_error"])
                 : '';
 
-            if ($field === 'languages' && !empty($_COOKIE["{$field}_value"])) {
-                $values[$field] = explode(',', $_COOKIE["{$field}_value"]);
-            } else {
-                $values[$field] = $_COOKIE["{$field}_value"] ?? '';
-            }
-            
-            // Удаляем только ошибки, а не значения
-            setcookie("{$field}_error", '', time() - 3600, '/');
-        }
-
-        if (!empty($_COOKIE['save'])) {
-            $messages[] = 'Спасибо, результаты сохранены.';
-            setcookie('save', '', time() - 3600, '/');
-        }
+            if ($field === 'languages') {
+    // Убедимся, что данные приходят как массив
+    $values[$field] = is_array($post_data['languages'] ?? []) 
+        ? $post_data['languages'] 
+        : (isset($post_data['languages']) ? [$post_data['languages']] : []);
+    
+    if (empty($values[$field])) {
+        $errors[$field] = $error_message;
     }
+}
+
+// При сохранении в куки:
+foreach ($values as $key => $val) {
+    if ($key === 'languages') {
+        // Фильтруем и проверяем значения перед сохранением
+        $langs = is_array($val) ? array_filter($val) : [];
+        setcookie("{$key}_value", implode(',', $langs), time() + 365 * 24 * 3600, '/');
+    } else {
+        setcookie("{$key}_value", $val, time() + 365 * 24 * 3600, '/');
+    }
+}
 
     return theme('form', [
         'messages' => $messages,
