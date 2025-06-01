@@ -215,7 +215,6 @@ foreach ($values as $key => $val) {
         error_log('DB Error: ' . $e->getMessage());
         return ['success' => false, 'errors' => ['db' => 'Ошибка при сохранении в БД']];
     }
-}
 
 function getErrorMessage($field, $code) {
     $messages = [
