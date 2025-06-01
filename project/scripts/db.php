@@ -1,11 +1,6 @@
 <?php
-// scripts/db.php
-
 $db = null;
 
-/**
- * Подключение к БД
- */
 function db_connect() {
     global $db;
     if ($db !== null) return $db;
@@ -67,13 +62,11 @@ $row = db_row("SELECT password_hash FROM users WHERE login = ?", $login);
 return $row && password_verify($password, $row['password_hash']);
 }
 
-// Проверка логина администратора
 function admin_login_check($login) {
     $row = db_row("SELECT id FROM admins WHERE login = ?", $login);
     return $row !== false;
 }
 
-// Проверка пароля администратора
 function admin_password_check($login, $password) {
     $row = db_row("SELECT password_hash FROM admins WHERE login = ?", $login);
     return $row && password_verify($password, $row['password_hash']);
