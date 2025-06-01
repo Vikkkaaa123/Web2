@@ -282,27 +282,23 @@
     </div>
 
 
-   <div class="b-info-3">
-    <div class="container">
-        <!-- Изображение слева -->
-        <div class="side-image">
-            <img alt="side-laptop" src="./styles/img/laptop.png">
-        </div>
-        
-        <!-- Текст справа -->
-        <div class="inf-3-body">
-            <div class="row">
-                <h2 class="col-12 mb-5 mt-3">Экспертиза в Drupal, <br> опыт 14 лет!</h2>
-            </div>
+  <div class="b-info-3 ">
 
-            <div class="row row-flex">
-                <!-- Ваши текстовые блоки здесь -->
+        <div class="container">
+          <div class="row">
+            <div class="inf-3-body col-md-12 col-lg-6 col-xs-12 col-md-offset-6">
+              <div class="row">
+                <h2 class="col-12 mb-5 mt-3"> Экспертиза в Drupal, <br> опыт 14 лет! </h2>
+              </div>
+
+              <div class="row row-flex">
+
                 <div class="col-sm-6 col-xs-12 inf-3-col">
-                    <div class="inf-3-item">
-                        <p>
-                            Только системный подход - контроль версий, резервирование и тестирование!
-                        </p>
-                    </div>
+                  <div class="inf-3-item">
+                    <p>
+                      Только системный подход – контроль версий, резервирование и тестирование!
+                    </p>
+                  </div>
                 </div>
 
                 <div class="col-sm-6 col-xs-12 inf-3-col">
@@ -333,6 +329,10 @@
           </div>
         </div>
         
+        <div class="side-image">
+          <img alt="side-laptop" src="./styles/img/laptop.png">
+        </div>
+    </div>
 
 
     <div class="b-tarif col-12 row d-flex justify-content-around px-0 mx-0 pb-5 pt-3" id="tariffs">
