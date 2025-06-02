@@ -1,12 +1,37 @@
+html {
+  overflow-y: auto;
+}
+
 body {
-    background-color: #1e1e2f;
-    font-family: 'Segoe UI', sans-serif;
-    margin: 20px;
-    color: #fff;
+  overflow-x: hidden; 
+  margin: 0; 
+  padding: 20px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2c2c3e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f14d34;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d8432d;
 }
 
 table {
     width: 100%;
+    /* width: calc(100% - 40px); */
+    margin: 20px auto 40px; 
     border-collapse: collapse;
     margin-bottom: 40px;
     background-color: #2c2c3e;
@@ -98,13 +123,10 @@ tbody tr:hover {
     gap: 4px;
 }
 
-
-
-
-
 .admin-edit-form-container {
+    overflow: visible;
     max-width: 800px;
-    margin: 0 auto;
+    margin: 20px auto; 
     padding: 30px;
     background-color: #2c2c3e;
     border-radius: 10px;
