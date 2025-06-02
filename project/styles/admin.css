@@ -1,14 +1,18 @@
-html {
-  overflow-y: auto;
+body {
+    background-color: #1e1e2f;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 20px;
+    color: #fff;
 }
 
-body {
-  background-color: #1e1e2f;
-  overflow-x: hidden; 
-  margin: 0; 
-  padding: 20px;
-  min-height: 100vh;
-  box-sizing: border-box;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+    background-color: #2c2c3e;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 ::-webkit-scrollbar {
@@ -82,7 +86,7 @@ tbody tr:hover {
 }
 
 .delete_button:hover {
-    background-color: #e32636;
+    background-color: red;
 }
 
 .change_button a {
