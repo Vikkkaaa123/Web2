@@ -7,7 +7,7 @@
     <title>Вход в систему</title>
   </head>
   <body>
-  <h1>Вход в систему</h1>
+  <h1>Вход</h1>
 
 <?php if (!empty($error)): ?>
   <div class="error-message" style="color: red; margin-bottom: 10px;">
