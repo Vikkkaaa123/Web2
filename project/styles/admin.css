@@ -102,7 +102,7 @@ tbody tr:hover {
 }
 
 .change_button a:hover {
-    background-color: #e63632;
+    background-color: blue;
 }
 
 .admin-logout {
