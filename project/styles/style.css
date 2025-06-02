@@ -870,6 +870,24 @@ select[multiple] option:checked {
     box-shadow: 0px 0px 5px #bf1d56;
 }
 
+.input-field.error {
+    border-color: #fb547e !important;
+    background-color: rgba(251, 84, 126, 0.1) !important;
+}
+
+.gender-options input[type="radio"].error {
+    outline: 2px solid #fb547e;
+}
+
+.custom-checkbox.error + .checkmark {
+    border-color: #fb547e !important;
+}
+
+select[multiple].error {
+    border-color: #fb547e !important;
+    background-color: rgba(251, 84, 126, 0.1) !important;
+}
+
 .ftr {
     padding-top: 20px;
     position: relative;
